@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="template.html :: header('Social Network', false)"></head>
+
+<body>
+<div th:replace="template.html :: navbar" ></div>
+
+<div class="jumbotron" >
+	<div class="container">
+		<h1>TSorry, an error occurred while processing the system.</h1>
+		<hr/>
+		<p><a th:href="@{/}">Please return to the login page</a></p>
+	</div>
+</div>
+
+<div th:replace="template.html :: footer"></div>
+
+</body>
+</html>
