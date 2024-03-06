@@ -4,6 +4,7 @@ import com.example.datasocialnetwork.common.SendCodeType;
 import com.example.datasocialnetwork.entity.Otp;
 import com.example.datasocialnetwork.repository.OtpRepository;
 import com.example.datasocialnetwork.service.MailService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -18,15 +19,22 @@ public class MailServiceImpl implements MailService {
 
     @Value("${email.username}")
     private String emailUsername;
-    private  JavaMailSender emailSender;
+    private  JavaMailSender emailSender ;
     private  int MIN_CODE = 10106383, MAX_CODE = 99898981;
     private  int MINUTE_LIMIT = 5;
-    private Random random;
+    private Random random ;
+
+    @Autowired
+    public MailServiceImpl(Random random, JavaMailSender javaMailSender) {
+        this.random = random;
+        this.emailSender = javaMailSender;
+    }
+    @Autowired
     private OtpRepository otpRepository;
     @Override
     public boolean sendCode(String email, String username, SendCodeType sendCodeType) {
         String title = "Confirm %s";
-        String content = "<h1 style='color:red;'>Hello "+username+"!</h1>\n" +
+        String content = "<h1>Hello "+username+"!</h1>\n" +
                 "<p>Your security code is: <i><b><u>%s</u></b></i></p>"+
                 "<p>Please do not give this code to others.</p>" +
                 "<p>This is a one-time use code and can be used for a maximum of 5 minutes.</p>"+
@@ -40,26 +48,23 @@ public class MailServiceImpl implements MailService {
         }
         title= String.format(title,type);
         content = String.format(content,code,type);
+
         Otp otp = otpRepository.findOneByEmail(email);
         Otp newOtp = new Otp();
         newOtp.setCode(code);
         newOtp.setEmail(email);
         newOtp.setCreatedDate(LocalDateTime.now());
         if(otp != null){
-            deleteByEmail(email);
-            if( sendSimpleMessage(email, title, content)){
-                otpRepository.save(newOtp);
-                return true;
-            }
-            return false;
+            deleteByEmail(otp);
         }
-        otpRepository.save(newOtp);
-        return true;
+        if( sendSimpleMessage(email, title, content)){
+            otpRepository.save(newOtp);
+            return true;
+        }
+        return false;
     }
-
-    @Override
-    public void deleteByEmail(String email) {
-        otpRepository.deleteByEmail(email);
+    public void deleteByEmail(Otp otp) {
+        otpRepository.delete(otp);
     }
     private int renderRandom(){
         return random.nextInt((MAX_CODE - MIN_CODE) + 1) + MIN_CODE;

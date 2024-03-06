@@ -18,6 +18,8 @@ import javax.validation.Valid;
 import java.io.IOException;
 
 import static com.example.websocialnetwork.common.Const.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Controller
 public class MainController {
@@ -26,10 +28,11 @@ public class MainController {
     private String path;
 
     private static RestTemplate restTemplate = new RestTemplate();
+    private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 
     @GetMapping("/")
     public String indexPage(HttpServletRequest request, HttpServletResponse response, Model model) throws IOException {
-        model.addAttribute("loginError", true);
+        logger.debug("Request GET to / received.");
         model.addAttribute("user", new UserDTO());
         return VIEW_LOGIN;
     }
@@ -42,6 +45,7 @@ public class MainController {
     @PostMapping("/register")
     public String registerUser(@Valid @ModelAttribute("user") UserDTO userDTO, BindingResult bindingResult,
                                Model model) {
+        logger.debug("Request POST to /register");
         //userDTO validator
         //Check if there are any errors during the validator process.
         if (bindingResult.hasErrors()) {
@@ -58,7 +62,9 @@ public class MainController {
                     ResponseOk.class
             );
             ResponseOk responseBody = response.getBody();
-            if (responseBody.getCode() == 1) {
+            if ( responseBody == null){
+                return VIEW_ERROR;
+            }else if (responseBody.getCode() == 1) {
                 model.addAttribute("registrationError", true);
                 model.addAttribute("error", responseBody.getMessage());
                 model.addAttribute("user", userDTO);
@@ -86,8 +92,12 @@ public class MainController {
     <returns></returns>
      */
     @PostMapping("/login")
-    public String loginUser(@RequestBody LoginDTO userLogin, Model model) {
+    public String loginUser(@RequestParam("email") String email,@RequestParam("password") String password, Model model) {
         try {
+            logger.debug("Request POST to /login");
+            LoginDTO userLogin = new LoginDTO();
+            userLogin.setEmail(email);
+            userLogin.setPassword(password);
             HttpHeaders headers = new HttpHeaders();
             HttpEntity<LoginDTO> requestEntity = new HttpEntity<>(userLogin, headers);
             //call API
@@ -98,13 +108,16 @@ public class MainController {
                     ResponseOk.class
             );
             ResponseOk responseBody = response.getBody();
-            if (responseBody.getCode() == 1) {
+            if ( responseBody == null){
+                return VIEW_ERROR;
+            }else if (responseBody.getCode() == 1) {
                 model.addAttribute("loginError", true);
                 model.addAttribute("error", responseBody.getMessage());
                 model.addAttribute("user", new UserDTO());
-                return indexPage(null, null, model);
+                return VIEW_LOGIN;
             }
-            return VIEW_COMFIRM_REGISTER;
+            model.addAttribute("email", email);
+            return VIEW_COMFIRM_OTP;
 
         }catch (Exception e) {
         return VIEW_ERROR;

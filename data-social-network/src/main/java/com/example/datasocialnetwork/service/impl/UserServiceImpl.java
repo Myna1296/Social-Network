@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService {
             ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_004);
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
-        if ( !user.getPassword().equals(passwordEncoder.encode(userLogin.getPassword()))){
+        if ( !passwordEncoder.matches(userLogin.getPassword(),user.getPassword())){
             ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_005);
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
