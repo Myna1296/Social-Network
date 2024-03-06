@@ -27,17 +27,16 @@
             <a class="navbar-brand" th:href="@{/}" th:text="#{header}">Social Network</a>
         </div>
         <div class="navbar-collapse collapse">
-            <form action="#" th:action="@{/authenticateUser}" method="POST" class="navbar-form navbar-right">
+            <form id="loginForm" class="navbar-form navbar-right" onsubmit="validateForm()">
                 <div class="form-group">
-                    <input name="email" type="text" placeholder="Email" class="form-control login_email">
+                    <input id="email_login" name="email" type="text" placeholder="Email" class="form-control login_email">
                 </div>
                 <div class="form-group">
-                    <input name="password" type="password" placeholder="Password" class="form-control login_password">
+                    <input id="password_login" name="password" type="password" placeholder="Password" class="form-control login_password">
                 </div>
-                <button type="submit" class="btn btn-success login_submit" th:text="#{login}">Вход</button>
-                <button type="submit" class="btn btn-success login_submit">Forgot Password</button>
+                <button type="submit" class="btn btn-success " th:text="#{login}">Login</button>
+                <button type="button" class="btn btn-success " onclick="forgotPassword()">Forgot Password</button>
             </form>
-
         </div>
     </div>
 </div>
@@ -80,7 +79,52 @@
             <p th:text="#{footer.copyright}">&copy; All rights reserved</p>
         </footer>
     </footer>
+    <script>
+        function validateForm() {
+            var email = document.getElementById("email_login").value;
+            var password = document.getElementById("password_login").value;
+            var emailRegex = /^[a-zA-Z0-9_]+@[a-zA-Z0-9]+\\.[a-zA-Z]{2,}$/
+            if (email.trim() === "") {
+                // Email is empty, show an alert or error message
+                alert("Please enter a valid email.");
+                return; // Prevent form submission
+            }
+            if (emailRegex.test(email)) {
+                alert("Email format is not correct example@examle.com, example@examle.co,...");
+                return
+            }
+            var data = {
+                email: email,
+                password: password
+            };
+            // Define the URL to submit the form data to
+            var url = "/login";
+            // Define the method (POST in this case)
+            var method = "POST";
 
+            // Send AJAX request
+            $.ajax({
+                type: method,
+                url: url,  // Replace with your actual endpoint
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(response) {
+                    // Handle success, if needed
+                    console.log(response);
+                },
+                error: function(error) {
+                    // Handle error, if needed
+                    console.error(error);
+                }
+            });
+        }
+
+        function forgotPassword() {
+            // Perform actions for the "Forgot Password" button click
+            // For example, show a modal or navigate to a forgot password page
+            alert("Forgot Password clicked!");
+        }
+    </script>
     <script src="../static/js/jquery.min.js" th:src="@{/js/jquery.min.js}"></script>
     <script src="../static/js/bootstrap.min.js" th:src="@{/js/bootstrap.min.js}"></script>
     <script src="../static/js/validation.js" th:src="@{/js/validation.js}"></script>

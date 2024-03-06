@@ -1,13 +1,14 @@
 package com.example.websocialnetwork.controller;
+
+import com.example.websocialnetwork.dto.LoginDTO;
 import com.example.websocialnetwork.dto.UserDTO;
 import com.example.websocialnetwork.dto.reponse.ResponseOk;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -28,7 +29,7 @@ public class MainController {
 
     @GetMapping("/")
     public String indexPage(HttpServletRequest request, HttpServletResponse response, Model model) throws IOException {
-
+        model.addAttribute("loginError", true);
         model.addAttribute("user", new UserDTO());
         return VIEW_LOGIN;
     }
@@ -46,19 +47,69 @@ public class MainController {
         if (bindingResult.hasErrors()) {
             return VIEW_LOGIN;
         }
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<UserDTO> requestEntity = new HttpEntity<>(userDTO, headers);
         try {
-            ResponseOk response = restTemplate.postForObject(path + API_REGISTER, userDTO, ResponseOk.class);
-            if (response.getCode() == 1) {
+            //call API
+            ResponseEntity<ResponseOk> response = restTemplate.exchange(
+                    path + API_REGISTER,
+                    HttpMethod.POST,
+                    requestEntity,
+                    ResponseOk.class
+            );
+            ResponseOk responseBody = response.getBody();
+            if (responseBody.getCode() == 1) {
                 model.addAttribute("registrationError", true);
-                model.addAttribute("error", response.getMessage());
+                model.addAttribute("error", responseBody.getMessage());
                 model.addAttribute("user", userDTO);
                 return VIEW_LOGIN;
             }
-            //userService.createUser(userDTO);
             return VIEW_COMFIRM_REGISTER;
-        }catch(HttpClientErrorException exception){
-            return VIEW_ERROR;
+        }catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
+                model.addAttribute("registrationError", true);
+                model.addAttribute("error", "Invalid data submitted");
+                model.addAttribute("user", userDTO);
+                return VIEW_LOGIN;
+            } else {
+                return VIEW_ERROR;
+            }
+        }catch (Exception e) {
+                return VIEW_ERROR;
         }
+    }
+
+    /*
+    Handles user login
+    Create by NgaPLT 2024/03/06
+    <param name="user">UserDTO</param>
+    <returns></returns>
+     */
+    @PostMapping("/login")
+    public String loginUser(@RequestBody LoginDTO userLogin, Model model) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            HttpEntity<LoginDTO> requestEntity = new HttpEntity<>(userLogin, headers);
+            //call API
+            ResponseEntity<ResponseOk> response = restTemplate.exchange(
+                    path + API_LOGIN,
+                    HttpMethod.POST,
+                    requestEntity,
+                    ResponseOk.class
+            );
+            ResponseOk responseBody = response.getBody();
+            if (responseBody.getCode() == 1) {
+                model.addAttribute("loginError", true);
+                model.addAttribute("error", responseBody.getMessage());
+                model.addAttribute("user", new UserDTO());
+                return indexPage(null, null, model);
+            }
+            return VIEW_COMFIRM_REGISTER;
+
+        }catch (Exception e) {
+        return VIEW_ERROR;
+        }
+
     }
 
 }
