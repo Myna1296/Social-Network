@@ -27,7 +27,7 @@
             <a class="navbar-brand" th:href="@{/}" th:text="#{header}">Social Network</a>
         </div>
         <div class="navbar-collapse collapse">
-            <form id="loginForm" class="navbar-form navbar-right" th:action="@{/login}" method="POST" >
+            <form th:if="${session.email == null}" id="loginForm" class="navbar-form navbar-right" th:action="@{/login}" method="POST" >
                 <div class="form-group">
                     <input id="email_login" name="email" type="text" placeholder="Email" class="form-control login_email" required>
                 </div>
@@ -36,6 +36,9 @@
                 </div>
                 <button type="submit" class="btn btn-success " th:text="#{login}">Login</button>
                 <button type="button" class="btn btn-success " onclick="forgotPassword()">Forgot Password</button>
+            </form>
+            <form th:if="${session.email != null}" th:action="@{/logout}" method="POST" class="navbar-form navbar-right">
+                <button type="submit" class="btn btn-success" th:text="#{logout}">Logout</button>
             </form>
         </div>
     </div>

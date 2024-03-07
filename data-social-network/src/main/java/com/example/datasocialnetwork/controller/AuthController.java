@@ -1,6 +1,7 @@
 package com.example.datasocialnetwork.controller;
 
 import com.example.datasocialnetwork.dto.request.LoginDTO;
+import com.example.datasocialnetwork.dto.request.OTPComfirmDTO;
 import com.example.datasocialnetwork.dto.request.UserDTO;
 import com.example.datasocialnetwork.dto.response.ErrorResponse;
 import com.example.datasocialnetwork.service.impl.UserServiceImpl;
@@ -55,6 +56,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO userLogin){
         return userService.loginUser(userLogin);
+    }
+
+    @PostMapping("/comfirm-otp-login")
+    public ResponseEntity<?> comfirmOTPLogin(@RequestBody OTPComfirmDTO otpComfirm){
+        return userService.comfirmOTPLogin(otpComfirm);
     }
 
 }

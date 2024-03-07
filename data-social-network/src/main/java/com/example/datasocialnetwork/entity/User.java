@@ -40,6 +40,9 @@ public class User {
     @Column(name = "phone")
     private String phone;
 
+    @Column(name = "token")
+    private String token;
+
     @Column(name = "image")
     private String image;
 }

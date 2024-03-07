@@ -1,6 +1,6 @@
-CREATE SCHEMA `social-network` DEFAULT CHARACTER SET utf8 ;
+CREATE SCHEMA IF NOT EXISTS `social-network` DEFAULT CHARACTER SET utf8;
 
-CREATE TABLE `social-network`.`user` (
+CREATE TABLE IF NOT EXISTS `social-network`.`user` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `user_name` VARCHAR(255) NOT NULL,
   `password` VARCHAR(255) NOT NULL,
@@ -11,16 +11,18 @@ CREATE TABLE `social-network`.`user` (
   `address` VARCHAR(255) NULL,
   `image` VARCHAR(255) NULL,
   `job` VARCHAR(255) NULL,
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB
+  `token` VARCHAR(255) NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_email` (`email`)
+) ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8;
 
-CREATE TABLE `social-network`.`otp` (
+CREATE TABLE IF NOT EXISTS `social-network`.`otp` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `email` VARCHAR(255) NOT NULL,
   `code` VARCHAR(45) NOT NULL,
   `created_date` DATETIME NOT NULL,
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`email`) REFERENCES `user`(`email`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8;
-

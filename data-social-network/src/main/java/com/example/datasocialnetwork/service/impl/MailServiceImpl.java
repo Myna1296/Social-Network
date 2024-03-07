@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.mail.internet.MimeMessage;
 import java.time.LocalDateTime;
@@ -21,7 +22,6 @@ public class MailServiceImpl implements MailService {
     private String emailUsername;
     private  JavaMailSender emailSender ;
     private  int MIN_CODE = 10106383, MAX_CODE = 99898981;
-    private  int MINUTE_LIMIT = 5;
     private Random random ;
 
     @Autowired
@@ -32,6 +32,7 @@ public class MailServiceImpl implements MailService {
     @Autowired
     private OtpRepository otpRepository;
     @Override
+    @Transactional
     public boolean sendCode(String email, String username, SendCodeType sendCodeType) {
         String title = "Confirm %s";
         String content = "<h1>Hello "+username+"!</h1>\n" +

@@ -15,30 +15,30 @@
             <h1>Comfirm OTP</h1>
             <p>OTP code has been sent to email</p>
             <div class="form-group">
-                <form th:action="@{/comfirmOTP}"  method="POST" id="register">
+                <form th:action="@{/comfirmOTP}"  method="POST">
 
                     <div class="form-group">
                         <div class="col-xs-15">
                             <div>
                                 <!-- Check for registration error -->
-                                <div th:if="${comfirmOTPError}" class="alert alert-danger col-xs-offset-1 col-xs-10">
+                                <div th:if="${comfirmOTPError}" style="color: red">
                                     <p th:text="${error}"></p>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="register_password">
-                            <span>Email</span>: <input type="text" th:value="${email}" name="email" class="form-control register_password" id="register_password" readonly />
+                        <label for="otp_email">
+                            <span>Email</span>: <input type="text" th:value="${email}" name="email" class="form-control" id="otp_email" readonly />
                         </label>
                     </div>
                     <div class="form-group">
-                        <label for="register_firstName">
-                            <span>OTP</span>: <input type="text"  name="otp" class="form-control" id="register_firstName" required/>
+                        <label for="otp">
+                            <span>OTP</span>: <input type="text"  name="otp" class="form-control" id="otp" required/>
                         </label>
                     </div>
                     <div class="form-group">
-                        <input type="submit" name="submit" value="Register" class="btn btn-lg btn-success register_submit"/>
+                        <input type="submit" name="submit" value="Comfirm" class="btn btn-lg btn-success"/>
                     </div>
                 </form>
             </div>

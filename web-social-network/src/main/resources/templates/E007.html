@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="template.html :: header('Profile', false)"></head>
+
+<body>
+
+<div th:replace="template.html :: navbar" ></div>
+<hr/>
+
+<div class="container">
+    <div class="row">
+        <div th:replace="template.html :: menu" ></div>
+
+        <div class="col-md-9">
+
+            <div class="profile-block margin-top">
+                <table class="table">
+                    <tr>
+                        <td>
+                            <div class="card">
+                                <img th:if="${user.avata != null}" class="img-circle img-thumbnail social-img"
+                                     th:src="@{'/' + ${user.avata}}" alt="Your profile image">
+                                <img th:unless="${user.avata != null}" class="img-circle img-thumbnail social-img"
+                                     th:src="@{/images/noname.svg}" alt="Your profile image">
+                                <h3 th:text="${user.userName}">User Name</h3>
+                            </div>
+                        </td>
+                        <td class="profile-info">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h3 th:text="#{profile.info}">Profile</h3>
+                                </div>
+                                <div class="list-group">
+                                    <p class="list-group-item">
+                                        <span >User name</span>:
+                                        <span th:text="${user.userName}">Tyron</span>
+                                    </p>
+                                    <p class="list-group-item">
+                                        <span th:text="#{birth.date}">Birth date</span>:
+                                        <span th:text="${#temporals.format(user.birthday, 'dd.MM.yyyy')}">11.01.1989</span>
+                                    </p>
+                                    <p class="list-group-item">
+                                        <span th:text="#{gender}">Gender</span>:
+                                        <span th:if="${user.sex.equals('MALE')}" th:text="#{gender.male}">Male</span>
+                                        <span th:if="${user.sex.equals('FEMALE')}" th:text="#{gender.female}">Female</span>
+                                    </p>
+                                    <p class="list-group-item">
+                                        <span th:text="#{phone}">Phone</span>:
+                                        <span th:text="${user.phone}">+7 999 999 99 99</span>
+                                    </p>
+                                    <p class="list-group-item">
+                                        <span >Address</span>:
+                                        <span th:text="${user.address}">None</span>
+                                    </p>
+                                    <p class="list-group-item">
+                                        <span >Job</span>:
+                                        <span th:text="${user.job}">None</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <hr/>
+</div>
+
+<div th:replace="template.html :: footer"></div>
+
+</body>
+</html>

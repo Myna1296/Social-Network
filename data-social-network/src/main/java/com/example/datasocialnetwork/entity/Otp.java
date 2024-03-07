@@ -25,4 +25,5 @@ public class Otp {
 
     @Column(name = "created_date", updatable = false)
     private LocalDateTime createdDate;
+
 }

@@ -2,21 +2,35 @@ package com.example.datasocialnetwork.service.impl;
 
 import com.example.datasocialnetwork.common.Gender;
 import com.example.datasocialnetwork.common.SendCodeType;
+import com.example.datasocialnetwork.config.JwtTokenUtil;
+import com.example.datasocialnetwork.config.UserAuthDetails;
 import com.example.datasocialnetwork.dto.request.LoginDTO;
+import com.example.datasocialnetwork.dto.request.OTPComfirmDTO;
 import com.example.datasocialnetwork.dto.request.UserDTO;
+import com.example.datasocialnetwork.dto.response.UserInfoResponse;
+import com.example.datasocialnetwork.entity.Otp;
 import com.example.datasocialnetwork.entity.User;
 import com.example.datasocialnetwork.dto.response.ResponseOk;
+import com.example.datasocialnetwork.repository.OtpRepository;
 import com.example.datasocialnetwork.repository.UserRepository;
 import com.example.datasocialnetwork.service.MailService;
 import com.example.datasocialnetwork.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.StandardPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.datasocialnetwork.common.Constants;
+
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -25,7 +39,13 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
 
     @Autowired
+    private OtpRepository otpRepository;
+
+    @Autowired
     private MailService mailService;
+
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -80,8 +100,57 @@ public class UserServiceImpl implements UserService {
             ResponseOk response = new ResponseOk(Constants.CODE_OK, "");
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
-        ResponseOk response = new ResponseOk(Constants.CODE_OK, Constants.MESS_006);
+        ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_006);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<?> comfirmOTPLogin(OTPComfirmDTO otpComfirm) {
+        Otp otp = otpRepository.findOneByEmail(otpComfirm.getEmail());
+        if(otp == null){
+            ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_007);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        if(otp.getCode().equals(otpComfirm.getOtp())){
+            LocalDateTime otpDate = LocalDateTime.now().minusMinutes(5);
+            if( otpDate.compareTo(otp.getCreatedDate()) > 0 ) {
+                ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_009);
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            }
+            User user = userRepository.findOneByEmail(otp.getEmail());
+            String token = jwtTokenUtil.generateToken(user.getUserName());
+            user.setToken(token);
+            userRepository.save(user);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", "Bearer " + token);
+            ResponseOk response = new ResponseOk(Constants.CODE_OK, "");
+            return new ResponseEntity<>(response,headers, HttpStatus.OK);
+        }
+        ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_008);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @Override
+    public UserInfoResponse findByEmail(String email) {
+        UserInfoResponse userInfo = new UserInfoResponse();
+        User users= userRepository.findOneByEmail(email);
+        if(users == null){
+            userInfo.setError(Constants.MESS_010);
+        } else {
+            userInfo.setUserName(users.getUserName());
+            userInfo.setBirthday(users.getBirthday());
+            userInfo.setAddress(users.getAddress());
+            userInfo.setJob(users.getJob());
+            userInfo.setPhone(users.getPhone());
+            userInfo.setAvata(users.getImage());
+            userInfo.setSex(Gender.getGenderById(users.getSex()).name());
+        }
+        return userInfo;
+    }
+
+    public UserDetails findUserByToken(String token){
+        User user = userRepository.findOneByToken(token);
+        return  new UserAuthDetails(user);
     }
 
     private String validateInfo(User user){
