@@ -1,30 +1,34 @@
 package com.example.websocialnetwork.dto.reponse;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import lombok.Data;
 
 import java.time.LocalDate;
 
 @Data
-@ToString
-@Builder
-@Getter
-@Setter
-public class UserInfoResponse {
+public class UserInfo {
 
+    @JsonProperty("user_name")
     private String userName;
 
+    @JsonProperty("birthday")
     private LocalDate birthday ;
 
+    @JsonProperty("address")
     private String address;
 
+    @JsonProperty("job")
     private String job;
 
+    @JsonProperty("sex")
     private String sex;
 
+    @JsonProperty("phone")
     private String phone;
 
+    @JsonProperty("avata")
     private String avata;
 
+    @JsonProperty("error")
     private String error;
 }

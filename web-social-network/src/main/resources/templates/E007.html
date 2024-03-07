@@ -10,7 +10,7 @@
 
 <div class="container">
     <div class="row">
-        <div th:replace="template.html :: menu" ></div>
+        <div th:replace="template.html :: menu('profile') ></div>
 
         <div class="col-md-9">
 
@@ -25,6 +25,16 @@
                                      th:src="@{/images/noname.svg}" alt="Your profile image">
                                 <h3 th:text="${user.userName}">User Name</h3>
                             </div>
+                            <table class="table">
+                                <tr th:if="${sessionUser.id != user.id}">
+                                    <td th:if="${usersHaveFriendship}">
+                                        <a th:href="@{/user/friends}" class="btn btn-success">Friend <span class="glyphicon glyphicon-ok"></span></a>
+                                    </td>
+                                    <td th:unless="${usersHaveFriendship}">
+                                        <a th:href="@{'/user/friends/' + ${user.id} + '/addToFriends'}" class="btn btn-success">Add to friends</a>
+                                    </td>
+                                </tr>
+                            </table>
                         </td>
                         <td class="profile-info">
                             <div class="panel panel-default">

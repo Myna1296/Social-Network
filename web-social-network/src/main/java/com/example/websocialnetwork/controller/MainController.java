@@ -31,14 +31,10 @@ public class MainController {
     private static RestTemplate restTemplate = new RestTemplate();
     private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 
-    @GetMapping("/**")
+    @GetMapping("/")
     public String indexPage(HttpServletRequest request, HttpServletResponse response, Model model) throws IOException {
         if (request.getSession().getAttribute("user") != null) {
             response.sendRedirect(request.getContextPath() + "/user/profile");
-            return null;
-        }
-        if(request.getRequestURI().length() > 1 ){
-            response.sendRedirect(request.getContextPath());
             return null;
         }
         model.addAttribute("user", new UserDTO());
@@ -167,6 +163,12 @@ public class MainController {
             return VIEW_ERROR;
         }
 
+    }
+
+    @GetMapping("/error")
+    public String handle404Error(Model model) {
+        model.addAttribute("message", MESS_002);
+        return VIEW_ERR;
     }
 
 }

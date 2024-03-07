@@ -11,4 +11,8 @@ public class Const {
     public static final String API_LOGIN ="/auth/login";
     public static final String API_COMFIRM_OTP_LOGIN ="/auth/comfirm-otp-login";
     public static final String API_USER_INFO = "/user/user-info/{email}";
+    public static final String PROFILE_IMAGES = "avataImage";
+    public static final String MESS_001 = "This account does not exist";
+    public static final String MESS_002 = "Page does not exist or has no data.";
+
 }
