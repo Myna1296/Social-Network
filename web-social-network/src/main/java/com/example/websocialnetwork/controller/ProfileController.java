@@ -60,7 +60,7 @@ public class ProfileController {
             model.addAttribute("user", userInfo);
             return "E007";
         } catch (Exception ex) {
-            model.addAttribute("message", ex);
+        model.addAttribute("message", ex);
             return VIEW_ERR;
         }
     }

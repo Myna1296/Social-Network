@@ -2,6 +2,7 @@ package com.example.websocialnetwork.dto.reponse;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 
@@ -18,7 +19,8 @@ public class UserInfo {
     private String email;
 
     @JsonProperty("birthday")
-    private LocalDate birthday ;
+    @DateTimeFormat(pattern="yyyyMMdd")
+    private String birthday ;
 
     @JsonProperty("address")
     private String address;

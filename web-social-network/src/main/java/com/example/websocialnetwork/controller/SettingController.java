@@ -10,15 +10,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,7 +36,9 @@ import java.util.concurrent.CountDownLatch;
 
 import static com.example.websocialnetwork.common.Const.*;
 import static com.example.websocialnetwork.common.Const.VIEW_ERR;
-import static com.example.websocialnetwork.util.ServerUtils.getUserFromSession;
+import static com.example.websocialnetwork.util.ServerUtils.*;
+import static com.example.websocialnetwork.util.Validation.checkBirthday;
+import static com.example.websocialnetwork.util.Validation.checkUserName;
 
 @Controller
 @RequestMapping("/user")
@@ -43,12 +49,8 @@ public class SettingController {
     @Value("${api.path}")
     private String path;
 
-    @Value("${image.path}")
-    private String pathImage;
-
     private static RestTemplate restTemplate = new RestTemplate();
     private static final Logger logger = LoggerFactory.getLogger(ProfileController.class);
-    private final CountDownLatch latch = new CountDownLatch(1);
 
     @GetMapping("/settings")
     public String getSettingsPage(Model model, HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -78,7 +80,6 @@ public class SettingController {
             }
             request.getSession().setAttribute("user", userInfo);
             model.addAttribute("passwordChangeDTO", new PasswordChangeDTO());
-            model.addAttribute("passwordError", "Passwords doesn't match");
             return "settings";
         } catch (Exception ex) {
             model.addAttribute("message", ex);
@@ -94,17 +95,18 @@ public class SettingController {
             model.addAttribute("imageError","File extension is not supported");
             return "settings";
         }
-        String fileName = multipartFile.getOriginalFilename();
         UserInfo user = getUserFromSession(request);
-        String fileExtension = fileName.substring(fileName.lastIndexOf("."));
-        String newFileName = user.getUserName() + "_" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()) + fileExtension;
-        // Copy image
+        byte[] bytes = multipartFile.getBytes();
+        Path pathImages = getProfileImagesPath();
         try {
-            Path destinationPath = Paths.get(pathImage, newFileName);
-            Files.copy(multipartFile.getInputStream(), destinationPath, StandardCopyOption.REPLACE_EXISTING);
-            // Signal đến CountDownLatch rằng quá trình copy đã hoàn tất
-            latch.countDown();
-            user.setAvata(PROFILE_IMAGES + "/"+ newFileName );
+            if(user.getAvata() !=null) {
+                if (Files.exists(pathImages.resolve(user.getAvata()))) {
+                    Files.delete(pathImages.resolve(user.getAvata()));
+                }
+            }
+            String newFileName = getNewFileName(user.getUserName(), multipartFile);
+            Files.write(pathImages.resolve(newFileName), bytes);
+            user.setAvata(newFileName);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
@@ -117,23 +119,98 @@ public class SettingController {
             );
             ResponseOk responseBody = response.getBody();
             if (responseBody == null) {
-                Files.deleteIfExists(Paths.get(pathImage, newFileName));
                 return VIEW_ERROR;
             } else if (responseBody.getCode() == 1) {
-                Files.deleteIfExists(Paths.get(pathImage, newFileName));
+                Files.delete(pathImages.resolve(user.getAvata()));
                 model.addAttribute("imageError", responseBody.getMessage());
                 return "settings";
             }
-            latch.await();  // Đợi cho đến khi CountDownLatch được giảm xuống 0
             return "redirect:/user/settings";
-        } catch (IOException e) {
-            // Xử lý lỗi copy ảnh (nếu có)
-            e.printStackTrace();
+        } catch (IOException ex) {
             model.addAttribute("imageError", "Error copying the image");
             return "settings";
         } catch (Exception e) {
-            Files.deleteIfExists(Paths.get(pathImage, newFileName));
-            e.printStackTrace();
+            model.addAttribute("message", e);
+            return VIEW_ERR;
+        }
+    }
+
+    @PostMapping("/settings")
+    public String updateProfileUser(@ModelAttribute("user") UserInfo userInfo,
+                                    Model model,HttpServletRequest request )  {
+        String checkBirthDay = checkBirthday(userInfo.getBirthday());
+        if(checkBirthDay != null) {
+            model.addAttribute("passwordChangeDTO", new PasswordChangeDTO());
+            model.addAttribute("passwordError", "");
+            model.addAttribute("updateError", true);
+            model.addAttribute("error", checkBirthDay);
+            return "settings";
+        }
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
+            HttpEntity<UserInfo> requestEntity = new HttpEntity<>(userInfo,headers);
+            ResponseEntity<ResponseOk> response = restTemplate.exchange(
+                    path + API_UPDATE_PROFILE,
+                    HttpMethod.POST,
+                    requestEntity,
+                    ResponseOk.class
+            );
+            ResponseOk responseBody = response.getBody();
+            if (responseBody == null) {
+                return VIEW_ERROR;
+            } else if (responseBody.getCode() == 1) {
+                model.addAttribute("updateError", true);
+                model.addAttribute("error", responseBody.getMessage());
+                model.addAttribute("passwordChangeDTO", new PasswordChangeDTO());
+                return "settings";
+            }
+            return "redirect:/user/settings";
+        } catch (Exception e) {
+            model.addAttribute("message", e);
+            return VIEW_ERR;
+        }
+    }
+
+    @PostMapping("/updatePassword")
+    public String updatePassword(@Valid @ModelAttribute("passwordChangeDTO") PasswordChangeDTO passwordChangeDTO,
+                                 BindingResult bindingResult, HttpServletRequest request, Model model) {
+        if(bindingResult.hasErrors()) {
+            return "settings";
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
+        HttpEntity<PasswordChangeDTO> requestEntity = new HttpEntity<>(passwordChangeDTO,headers);
+        try {
+            //call API
+            ResponseEntity<ResponseOk> response = restTemplate.exchange(
+                    path + API_UPDATE_PASSWORD,
+                    HttpMethod.POST,
+                    requestEntity,
+                    ResponseOk.class
+            );
+            ResponseOk responseBody = response.getBody();
+            if ( responseBody == null){
+                return VIEW_ERROR;
+            }else if (responseBody.getCode() == 1) {
+                model.addAttribute("passwordError", true);
+                model.addAttribute("error", responseBody.getMessage());
+                model.addAttribute("passwordChangeDTO", passwordChangeDTO);
+                return "settings";
+            }
+            return "settings";
+        }catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
+                model.addAttribute("passwordError", true);
+                model.addAttribute("error", "Invalid data submitted");
+                model.addAttribute("passwordChangeDTO", passwordChangeDTO);
+                return "settings";
+            } else {
+                return VIEW_ERROR;
+            }
+        }catch (Exception e) {
             return VIEW_ERROR;
         }
     }

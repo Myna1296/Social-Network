@@ -48,7 +48,7 @@
                                     </p>
                                     <p class="list-group-item">
                                         <span th:text="#{birth.date}">Birth date</span>:
-                                        <span th:text="${#temporals.format(user.birthday, 'dd.MM.yyyy')}">11.01.1989</span>
+                                        <span th:text="${user.birthday}"></span>
                                     </p>
                                     <p class="list-group-item">
                                         <span th:text="#{gender}">Gender</span>:

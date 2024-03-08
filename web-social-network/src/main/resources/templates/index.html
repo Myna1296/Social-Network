@@ -35,7 +35,7 @@
                         <label for="register_firstName">
                             <span>User name</span>: <input type="text" th:field="*{userName}" name="register_firstName" class="form-control" id="register_firstName" required/>
                         </label>
-                        <div class="help-block register_firstName_error hidden">Please, provide valid first name</div>
+                        <div class="help-block register_firstName_error hidden">Please, provide valid user name</div>
                         <div th:if="${#fields.hasErrors('userName')}" style="margin-bottom: 25px" class="text-danger">
                             <ul>
                                 <li th:each="err : ${#fields.errors('userName')}" th:text="'User name ' + ${err}" />

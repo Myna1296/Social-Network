@@ -44,7 +44,7 @@ public class UserDTO {
     private String userName;
 
     @PastOrPresent
-    @DateTimeFormat(pattern = "dd.MM.yyyy")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthday;
     private String address;
     private String job;

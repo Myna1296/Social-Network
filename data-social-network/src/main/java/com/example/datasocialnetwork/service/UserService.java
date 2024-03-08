@@ -1,9 +1,6 @@
 package com.example.datasocialnetwork.service;
 
-import com.example.datasocialnetwork.dto.request.LoginDTO;
-import com.example.datasocialnetwork.dto.request.OTPComfirmDTO;
-import com.example.datasocialnetwork.dto.request.UserDTO;
-import com.example.datasocialnetwork.dto.request.UserInfo;
+import com.example.datasocialnetwork.dto.request.*;
 import com.example.datasocialnetwork.dto.response.UserInfoResponse;
 import com.example.datasocialnetwork.entity.User;
 import org.springframework.http.ResponseEntity;
@@ -16,4 +13,7 @@ public interface UserService {
     ResponseEntity<?> comfirmOTPLogin(OTPComfirmDTO otpComfirm);
     UserInfoResponse findByEmail(String email);
     ResponseEntity<?> updateImageUser(UserInfo userInfo);
+    ResponseEntity<?> updateProfileUser(UserInfo userInfo);
+
+    ResponseEntity<?> updatePassword(PasswordChangeDTO passwordChangeDTO);
 }

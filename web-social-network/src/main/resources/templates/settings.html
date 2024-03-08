@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 
 <head th:replace="template.html :: header('Your settings', true)"></head>
 
@@ -36,6 +36,10 @@
             </div>
             <div class="profile-block">
                 <h2 th:text="#{settings.your.profile}">Your profile.</h2>
+                <!-- Check for registration error -->
+                <div th:if="${updateError}" style="color:red">
+                    <p th:text="${error}"></p>
+                </div>
                 <form th:action="@{/user/settings}" th:object="${user}" action="/user/settings" method="post">
                     <div class="panel panel-default">
                         <div class="list-group">
@@ -46,15 +50,15 @@
                                 </label>
                             </div>
                             <div class="list-group-item">
-                                <label for="firstName"><span >User name</span>: <input type="text" name="firstName" class="form-control"
+                                <label for="firstName"><span >User name</span>: <input type="text" name="userName" class="form-control"
                                                                           th:value="${user.userName}"
-                                                                          id="firstName"/>
+                                                                          id="firstName" readonly/>
                                 </label>
                             </div>
                             <div class="list-group-item">
                                 <label for="datepicker"><span th:text="#{birth.date}">Birth date</span>:
-                                    <input type="text" size="30" class="form-control" name="dob"
-                                           th:value="${#temporals.format(user.birthday, 'dd.MM.yyyy')}"
+                                    <input type="text" size="30" class="form-control" name="birthday"
+                                           th:value="${user.birthday}"
                                            id="datepicker">
                                 </label>
                             </div>
@@ -72,6 +76,18 @@
                                 <label for="phone"><span th:text="#{phone}">Phone</span>: <input type="text" name="phone" class="form-control"
                                                                  th:value="${user.phone}"
                                                                  id="phone"/>
+                                </label>
+                            </div>
+                            <div class="list-group-item">
+                                <label for="address"><span >Address</span>: <input type="text" name="address" class="form-control"
+                                                                                                 th:value="${user.address}"
+                                                                                                 id="address"/>
+                                </label>
+                            </div>
+                            <div class="list-group-item">
+                                <label for="job"><span >Job</span>: <input type="text" name="job" class="form-control"
+                                                                                                     th:value="${user.job}"
+                                                                                                     id="job"/>
                                 </label>
                             </div>
                         </div>
@@ -94,7 +110,7 @@
                                            id="oldPassword"/>
                                 </label>
                                 <div th:if="${passwordError}" style="margin-bottom: 10px" class="text-danger">
-                                    <p th:text="#{provide.pas.conf}">You entered wrong old password</p>
+                                    <p th:text="${error}">You entered wrong old password</p>
                                 </div>
                                 <div th:if="${#fields.hasErrors('oldPassword')}" style="margin-bottom: 10px" class="text-danger">
                                     <ul>
@@ -143,36 +159,6 @@
 
 <script src="../static/js/jquery-ui.min.js" th:src="@{/js/jquery-ui.min.js}"></script>
 <script src="../static/js/profile.js" th:src="@{/js/profile.js}"></script>
-<script>
-    $( function() {
-        $.datepicker.regional['ru'] = {
-            closeText: 'Закрыть',
-            prevText: 'Пред',
-            nextText: 'След',
-            currentText: 'Сегодня',
-            monthNames: ['Январь','Февраль','Март','Апрель','Май','Июнь',
-                'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'],
-            monthNamesShort: ['Янв','Фев','Мар','Апр','Май','Июн',
-                'Июл','Авг','Сен','Окт','Ноя','Дек'],
-            dayNames: ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'],
-            dayNamesShort: ['вск','пнд','втр','срд','чтв','птн','сбт'],
-            dayNamesMin: ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'],
-            weekHeader: 'Нед',
-            dateFormat: 'dd.mm.yy',
-            firstDay: 1,
-            isRTL: false,
-            showMonthAfterYear: false,
-            yearSuffix: '',};
-        $.datepicker.setDefaults($.datepicker.regional['ru']);
-        var options = {
-                changeMonth: true,
-                changeYear: true,
-                highlightWeek: true,
-                yearRange: "-100:+0"
-            };
-        $( "#datepicker" ).datepicker(options);
-    } );
-</script>
 
 </body>
 </html>

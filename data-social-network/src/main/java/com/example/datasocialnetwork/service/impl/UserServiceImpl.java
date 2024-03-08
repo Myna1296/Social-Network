@@ -4,14 +4,12 @@ import com.example.datasocialnetwork.common.Gender;
 import com.example.datasocialnetwork.common.SendCodeType;
 import com.example.datasocialnetwork.config.JwtTokenUtil;
 import com.example.datasocialnetwork.config.UserAuthDetails;
-import com.example.datasocialnetwork.dto.request.LoginDTO;
-import com.example.datasocialnetwork.dto.request.OTPComfirmDTO;
-import com.example.datasocialnetwork.dto.request.UserDTO;
-import com.example.datasocialnetwork.dto.request.UserInfo;
+import com.example.datasocialnetwork.dto.request.*;
 import com.example.datasocialnetwork.dto.response.UserInfoResponse;
 import com.example.datasocialnetwork.entity.Otp;
 import com.example.datasocialnetwork.entity.User;
 import com.example.datasocialnetwork.dto.response.ResponseOk;
+import com.example.datasocialnetwork.exceptions.UserNotFoundException;
 import com.example.datasocialnetwork.repository.OtpRepository;
 import com.example.datasocialnetwork.repository.UserRepository;
 import com.example.datasocialnetwork.service.MailService;
@@ -21,9 +19,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.StandardPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -35,9 +36,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Optional;
+
+import static com.example.datasocialnetwork.common.Gender.getGenderById;
+import static com.example.datasocialnetwork.common.Gender.getGenderByName;
+import static com.example.datasocialnetwork.common.Validation.checkBirthday;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -140,29 +147,39 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserInfoResponse findByEmail(String email) {
         UserInfoResponse userInfo = new UserInfoResponse();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
         User users= userRepository.findOneByEmail(email);
         if(users == null){
             userInfo.setError(Constants.MESS_010);
         } else {
+            if (!userDetails.getUsername().equals(users.getUserName())){
+                throw(new UserNotFoundException("Authentication information does not match"));
+            }
             userInfo.setId(users.getId().toString());
             userInfo.setEmail(users.getEmail());
             userInfo.setUserName(users.getUserName());
-            userInfo.setBirthday(users.getBirthday());
+            userInfo.setBirthday(users.getBirthday() == null ? "": DateTimeFormatter.ISO_LOCAL_DATE.format(users.getBirthday()));
             userInfo.setAddress(users.getAddress());
             userInfo.setJob(users.getJob());
             userInfo.setPhone(users.getPhone());
             userInfo.setAvata(users.getImage());
-            userInfo.setSex(Gender.getGenderById(users.getSex()).name());
+            userInfo.setSex(getGenderById(users.getSex()).name());
         }
         return userInfo;
     }
 
     @Override
     public ResponseEntity<?> updateImageUser(UserInfo userInfo) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
         User user = userRepository.findOneByEmail(userInfo.getEmail());
         if (user == null){
             ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_010);
             return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        if (!userDetails.getUsername().equals(user.getUserName())){
+            throw(new UserNotFoundException("Authentication information does not match"));
         }
         try {
             if (!isImageFile(userInfo.getAvata())){
@@ -178,6 +195,68 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         ResponseOk response = new ResponseOk(Constants.CODE_OK, "");
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<?> updateProfileUser(UserInfo userInfo) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
+        User user = findOneById(Long.parseLong(userInfo.getId()));
+        if (user == null){
+            ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_010);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        if (!userDetails.getUsername().equals(user.getUserName())){
+            throw(new UserNotFoundException("Authentication information does not match"));
+        }
+        String checkBirthday = checkBirthday(userInfo.getBirthday());
+        if(checkBirthday != null){
+            ResponseOk response = new ResponseOk(Constants.CODE_ERROR, "date không hợp ệ");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        if(userInfo.getJob() != null) {
+            user.setJob(userInfo.getJob());
+        }
+        if(userInfo.getAddress() != null) {
+            user.setAddress(userInfo.getAddress());
+        }
+        if(userInfo.getPhone() != null) {
+            user.setPhone(userInfo.getPhone());
+        }
+        if(userInfo.getSex() !=null){
+            user.setSex(getGenderByName(userInfo.getSex()));
+        }
+        if(userInfo.getBirthday() !=null & !userInfo.getBirthday().equals("") ){
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate date = LocalDate.parse(userInfo.getBirthday(),dateFormatter);
+            user.setBirthday(date);
+        } else {
+            user.setBirthday(null);
+        }
+        userRepository.save(user);
+        ResponseOk response = new ResponseOk(Constants.CODE_OK, "");
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<?> updatePassword(PasswordChangeDTO passwordChangeDTO) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
+        if (!passwordEncoder.matches(passwordChangeDTO.getOldPassword(),userDetails.getPassword())){
+            ResponseOk response = new ResponseOk(Constants.CODE_ERROR, "Passwords doesn't match");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        User user = userRepository.findOneByUserName(userDetails.getUsername());
+        user.setPassword(passwordEncoder.encode(passwordChangeDTO.getPassword()));
+        userRepository.save(user);
+        ResponseOk response = new ResponseOk(Constants.CODE_OK, "");
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    public User findOneById(Long id) {
+        return userRepository.findOneById(id);
     }
 
     public UserDetails findUserByToken(String token){
@@ -202,7 +281,7 @@ public class UserServiceImpl implements UserService {
         user.setUserName(userDTO.getUserName());
         user.setAddress(userDTO.getAddress());
         user.setPhone(userDTO.getPhone());
-        user.setSex(Gender.getGenderByName(userDTO.getSex()));
+        user.setSex(getGenderByName(userDTO.getSex()));
         user.setImage(userDTO.getImage());
         user.setBirthday(userDTO.getBirthday());
         user.setJob(userDTO.getJob());
