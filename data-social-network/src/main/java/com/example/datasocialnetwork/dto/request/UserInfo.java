@@ -1,11 +1,16 @@
-package com.example.datasocialnetwork.dto.response;
+package com.example.datasocialnetwork.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDate;
 
 @Data
-public class UserInfoResponse {
+@Getter
+@Setter
+public class UserInfo {
 
     @JsonProperty("id")
     private String id;

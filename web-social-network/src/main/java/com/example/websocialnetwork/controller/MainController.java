@@ -4,6 +4,7 @@ import com.example.websocialnetwork.dto.LoginDTO;
 import com.example.websocialnetwork.dto.OTPComfirmDTO;
 import com.example.websocialnetwork.dto.UserDTO;
 import com.example.websocialnetwork.dto.reponse.ResponseOk;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
@@ -23,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Controller
+@RequiredArgsConstructor
 public class MainController {
 
     @Value("${api.path}")
@@ -31,7 +33,7 @@ public class MainController {
     private static RestTemplate restTemplate = new RestTemplate();
     private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 
-    @GetMapping("/")
+    @GetMapping(value = {"/", "/login"})
     public String indexPage(HttpServletRequest request, HttpServletResponse response, Model model) throws IOException {
         if (request.getSession().getAttribute("user") != null) {
             response.sendRedirect(request.getContextPath() + "/user/profile");
@@ -144,31 +146,23 @@ public class MainController {
                     ResponseOk.class
             );
             ResponseOk responseBody = response.getBody();
-            if ( responseBody == null){
+            if (responseBody == null) {
                 return VIEW_ERROR;
-            }else if (responseBody.getCode() == 1) {
+            } else if (responseBody.getCode() == 1) {
                 model.addAttribute("comfirmOTPError", true);
                 model.addAttribute("error", responseBody.getMessage());
                 model.addAttribute("email", email);
                 return VIEW_COMFIRM_OTP;
             }
             HttpHeaders headersResponse = response.getHeaders();
-            String token  = headersResponse.getFirst("Authorization");
+            String token = headersResponse.getFirst("Authorization");
             request.getSession().setAttribute("token", token.substring(7));
             request.getSession().setAttribute("email", email);
             responseHttp.sendRedirect(request.getContextPath() + "/user/profile");
             return null;
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             return VIEW_ERROR;
         }
-
     }
-
-    @GetMapping("/error")
-    public String handle404Error(Model model) {
-        model.addAttribute("message", MESS_002);
-        return VIEW_ERR;
-    }
-
 }

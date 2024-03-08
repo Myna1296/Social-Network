@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="_csrf" th:if="${csrf}" />
+    <meta name="_csrf" th:if="${csrf}" th:content="${_csrf.token}"/>
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <title th:text="${title}">Social Network</title>
 
@@ -64,11 +64,11 @@
                 <div class="panel-heading">
                     <h3 class="panel-title" th:text="#{menu.user.menu}" style="font-weight: bold; background-color:#f5f5f5">User menu</h3>
                 </div>
-                <a th:href="@{/user/profile}" class="list-group-item" th:text="#{menu.profile}" th:class="${activePage == 'profile'} ? 'active-menu' : ''">Profile</a>
-                <a th:href="@{/user/messages}" class="list-group-item" th:text="#{menu.messages}" th:class="${activePage == 'messages'} ? 'active-menu' : ''">Messages</a>
-                <a th:href="@{/user/friends}" class="list-group-item" th:text="#{menu.friends}" th:class="${activePage == 'friends'} ? 'active-menu' : ''">Friends</a>
-                <a th:href="@{/user/users}" class="list-group-item" th:text="#{menu.users}" th:class="${activePage == 'users'} ? 'active-menu' : ''">Users</a>
-                <a th:href="@{/user/settings}" class="list-group-item" th:text="#{menu.settings}" th:class="${activePage == 'settings'} ? 'active-menu' : ''">Settings</a>
+                <a th:href="@{/user/profile}" class="list-group-item" th:text="#{menu.profile}" th:style="${activePage == 'profile'} ? 'background-color: #f4f4f4' : ''">Profile</a>
+                <a th:href="@{/user/messages}" class="list-group-item" th:text="#{menu.messages}" >Messages</a>
+                <a th:href="@{/user/friends}" class="list-group-item" th:text="#{menu.friends}" >Friends</a>
+                <a th:href="@{/user/users}" class="list-group-item" th:text="#{menu.users}" >Users</a>
+                <a th:href="@{/user/settings}" class="list-group-item" th:text="#{menu.settings}"  th:style="${activePage == 'settings'} ? 'background-color: #f4f4f4' : ''">Settings</a>
             </div>
             </div>
         </div>

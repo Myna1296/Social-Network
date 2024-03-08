@@ -7,6 +7,7 @@ import com.example.datasocialnetwork.config.UserAuthDetails;
 import com.example.datasocialnetwork.dto.request.LoginDTO;
 import com.example.datasocialnetwork.dto.request.OTPComfirmDTO;
 import com.example.datasocialnetwork.dto.request.UserDTO;
+import com.example.datasocialnetwork.dto.request.UserInfo;
 import com.example.datasocialnetwork.dto.response.UserInfoResponse;
 import com.example.datasocialnetwork.entity.Otp;
 import com.example.datasocialnetwork.entity.User;
@@ -15,6 +16,7 @@ import com.example.datasocialnetwork.repository.OtpRepository;
 import com.example.datasocialnetwork.repository.UserRepository;
 import com.example.datasocialnetwork.service.MailService;
 import com.example.datasocialnetwork.service.UserService;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -28,6 +30,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.datasocialnetwork.common.Constants;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Optional;
@@ -137,6 +144,8 @@ public class UserServiceImpl implements UserService {
         if(users == null){
             userInfo.setError(Constants.MESS_010);
         } else {
+            userInfo.setId(users.getId().toString());
+            userInfo.setEmail(users.getEmail());
             userInfo.setUserName(users.getUserName());
             userInfo.setBirthday(users.getBirthday());
             userInfo.setAddress(users.getAddress());
@@ -146,6 +155,29 @@ public class UserServiceImpl implements UserService {
             userInfo.setSex(Gender.getGenderById(users.getSex()).name());
         }
         return userInfo;
+    }
+
+    @Override
+    public ResponseEntity<?> updateImageUser(UserInfo userInfo) {
+        User user = userRepository.findOneByEmail(userInfo.getEmail());
+        if (user == null){
+            ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_010);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        try {
+            if (!isImageFile(userInfo.getAvata())){
+                ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_011);
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            }
+        }catch (IOException ex){
+            ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_012);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+
+        user.setImage(userInfo.getAvata());
+        userRepository.save(user);
+        ResponseOk response = new ResponseOk(Constants.CODE_OK, "");
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     public UserDetails findUserByToken(String token){
@@ -178,5 +210,13 @@ public class UserServiceImpl implements UserService {
             user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         }
         return user;
+    }
+    private static boolean isImageFile(String filePath) throws IOException {
+        Path path = Paths.get(filePath);
+
+        // Check if the file is of type image/jpeg or image/png
+        String contentType = Files.probeContentType(path);
+        return contentType != null &&
+                (contentType.equals("image/jpeg") || contentType.equals("image/png"));
     }
 }

@@ -8,8 +8,14 @@ import java.time.LocalDate;
 @Data
 public class UserInfo {
 
+    @JsonProperty("id")
+    private String id;
+
     @JsonProperty("user_name")
     private String userName;
+
+    @JsonProperty("email")
+    private String email;
 
     @JsonProperty("birthday")
     private LocalDate birthday ;

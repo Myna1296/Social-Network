@@ -10,7 +10,7 @@
 
 <div class="container">
     <div class="row">
-        <div th:replace="template.html :: menu('profile') ></div>
+        <div th:replace="template.html :: menu('profile')" ></div>
 
         <div class="col-md-9">
 
@@ -26,7 +26,7 @@
                                 <h3 th:text="${user.userName}">User Name</h3>
                             </div>
                             <table class="table">
-                                <tr th:if="${sessionUser.id != user.id}">
+                                <tr th:if="${sessionUser != null and user != null and sessionUser.id != user.id}">
                                     <td th:if="${usersHaveFriendship}">
                                         <a th:href="@{/user/friends}" class="btn btn-success">Friend <span class="glyphicon glyphicon-ok"></span></a>
                                     </td>

@@ -11,6 +11,8 @@ public class Constants {
     public static final String MESS_008 = "OTP is not correct, please re-enter.";
     public static final String MESS_009 = "OTP has expired, please login again";
     public static final String MESS_010 = "Account has been deleted";
+    public static final String MESS_011 = "The file is not in the format image/jpeg,image/png";
+    public static final String MESS_012 = "File extension is not supported";
 
     public static final int CODE_OK = 0;
     public static final int CODE_ERROR = 1;
