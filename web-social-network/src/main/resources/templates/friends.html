@@ -11,71 +11,50 @@
 <div class="container">
     <div class="row">
         <div th:replace="template.html :: menu('friends')" ></div>
-
         <div class="col-md-9">
             <div class="friends-top">
-                <form action="#" th:action="@{/user/friends}" method="get">
-                    <div class="input-group stylish-input-group">
-                        <input type="text" name="search" th:value="${search}" class="form-control" placeholder="Search">
-                        <span class="input-group-addon">
-                        <button type="submit">
-                            <span class="glyphicon glyphicon-search"></span>
-                        </button>
-                    </span>
-                    </div>
-                </form>
             </div>
-
-            <div class="friends-top">
-                <h3 th:text="#{friends.your.requests}">Your requests</h3>
-                <table class="table friends">
-                    <tr th:each="user : ${usersNotAcceptedRequests}">
-                        <td>
-                            <a th:replace="template.html :: profileImage(${user})"></a>
-                        </td>
-                        <td>
-                            <a th:href="@{'/user/conversation/' + ${user.id}}" href="#" class="btn btn-info" th:text="#{message}">Message</a>
-                        </td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                </table>
-            </div>
-
-            <div class="friends-top">
-                <h3 th:text="#{friends.requests}">Friends requests to you</h3>
-                <table class="table friends">
-                    <tr th:each="user : ${notAcceptedRequestsToUser}">
-                        <td>
-                            <a th:replace="template.html :: profileImage(${user})"></a>
-                        </td>
-                        <td>
-                            <a class="btn btn-success" th:href="@{'/user/friends/' + ${user.id} + '/accept'}" th:text="#{friends.accept}">Accept</a>
-                        </td>
-                        <td>
-                            <a class="btn btn-danger" th:href="@{'/user/friends/' + ${user.id} + '/decline'}" th:text="#{friends.decline}">Decline</a>
-                        </td>
-                        <td>
-                            <a th:href="@{'/user/conversation/' + ${user.id}}" href="#" class="btn btn-info" th:text="#{message}">Message</a>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-
             <div class="friends-top">
                 <h3 th:text="#{friends.your}">Your friends</h3>
                 <table class="table friends">
                     <tr th:each="user : ${friendsOfUser}">
                         <td>
-                            <a th:replace="template.html :: profileImage(${user})"></a>
-                        <td>
-                        <a th:href="@{'/user/conversation/' + ${user.id}}" href="#" class="btn btn-info" th:text="#{message}">Message</a>
-                        </td>
+                            <a th:href="@{'/user/profile/' + ${user.id}}">
+                                <img th:if="${user.avata != null}" class="img-circle img-thumbnail img-message"
+                                     th:src="@{'/' + ${user.image}}" alt="User's image">
+                                <img th:unless="${user.avata != null}" class="img-circle img-thumbnail img-message"
+                                     th:src="@{/images/noname.svg}" alt="User's image">
+                            </a>
+                            <span th:text="${user.userName}"></span>
                         <td>
                             <a class="btn btn-danger" th:href="@{'/user/friends/' + ${user.id} + '/decline'}" th:text="#{friends.remove}">Remove</a>
                         </td>
                     </tr>
                 </table>
+                <div>
+                    <nav>
+                        <ul class="pagination">
+                            <li class="page-item" th:classappend="${friendsOfUserTotal > friendsOfUserPage} ? '' : 'disabled'">
+                                <a th:if="${friendsOfUserTotal > 0}" class="page-link"
+                                   th:href="@{/user/users(page=${friendsOfUserPage - 1})}" th:text="#{previous}">
+                                    Previous
+                                </a>
+                                <a th:if="${friendsOfUserTotal == friendsOfUserPage}" class="page-link" href="#" th:text="#{previous}">Previous</a>
+                            </li>
+                            <li class="page-item" th:each="i: ${#numbers.sequence(0, friendsOfUserTotal - 1)}"
+                                th:classappend="${i == friendsOfUserPage} ? 'active' : '' " >
+                                <a class="page-link" th:href="@{/user/users(page=${i})}" th:text="${i+1}">1</a>
+                            </li>
+                            <li class="page-item" th:classappend="${friendsOfUserTotal > friendsOfUserPage} ? '' : 'disabled'">
+                                <a th:if="${friendsOfUserTotal > friendsOfUserPage}" class="page-link"
+                                   th:href="@{/user/users(page=${friendsOfUserPage + 1})}" th:text="#{next}">
+                                    Next
+                                </a>
+                                <a th:if="${friendsOfUserTotal == friendsOfUserPage}" class="page-link" href="#" th:text="#{next}">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
             </div>
         </div>
     </div>

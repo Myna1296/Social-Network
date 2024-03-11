@@ -89,6 +89,9 @@ public class SettingController {
 
     @PostMapping("/uploadImage")
     public String uploadImage(MultipartHttpServletRequest request ,Model model) throws IOException {
+        if (request.getSession().getAttribute("user") == null) {
+            return "redirect:/";
+        }
         MultipartFile multipartFile = request.getFile("imagefile");
         String contentType = multipartFile.getContentType();
         if(!allowedExtensions.contains(contentType)) {
@@ -138,6 +141,9 @@ public class SettingController {
     @PostMapping("/settings")
     public String updateProfileUser(@ModelAttribute("user") UserInfo userInfo,
                                     Model model,HttpServletRequest request )  {
+        if (request.getSession().getAttribute("user") == null) {
+            return "redirect:/";
+        }
         String checkBirthDay = checkBirthday(userInfo.getBirthday());
         if(checkBirthDay != null) {
             model.addAttribute("passwordChangeDTO", new PasswordChangeDTO());

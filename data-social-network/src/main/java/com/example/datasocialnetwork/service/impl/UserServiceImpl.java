@@ -177,8 +177,7 @@ public class UserServiceImpl implements UserService {
         if (user == null){
             ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_010);
             return new ResponseEntity<>(response, HttpStatus.OK);
-        }
-        if (!userDetails.getUsername().equals(user.getUserName())){
+        } else if (!userDetails.getUsername().equals(user.getUserName())){
             throw(new UserNotFoundException("Authentication information does not match"));
         }
         try {

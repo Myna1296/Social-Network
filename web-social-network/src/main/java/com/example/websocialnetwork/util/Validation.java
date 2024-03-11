@@ -5,6 +5,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.example.websocialnetwork.common.Const.LIMIT;
+
 public class Validation {
     public static String checkUserName(String user){
         if(user.trim().isEmpty()){
@@ -35,5 +37,12 @@ public class Validation {
         } catch (Exception ex){
             return "Invalid date of birth or incorrect format yyyy-MM-dd";
         }
+    }
+    public static int calculateTotalPages(long totalItems) {
+        if (totalItems <= 0) {
+            return 0;
+        }
+
+        return (int) Math.ceil((double) totalItems / LIMIT);
     }
 }

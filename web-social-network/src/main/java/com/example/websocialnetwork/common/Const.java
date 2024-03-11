@@ -15,9 +15,11 @@ public class Const {
     public static final String API_UPDATE_IMAGE = "/user/update-image";
     public static final String API_UPDATE_PROFILE = "/user/update-profile-user";
     public static final String API_UPDATE_PASSWORD = "/user/update-password";
+    public static final String API_GET_FRIENF_OF_USER = "/friends/get-all";
 
     public static final String PROFILE_IMAGES = "profileImages";
     public static final String MESS_001 = "This account does not exist";
     public static final String MESS_002 = "Page does not exist or has no data.";
+    public static final  int LIMIT  = 3;
 
 }
