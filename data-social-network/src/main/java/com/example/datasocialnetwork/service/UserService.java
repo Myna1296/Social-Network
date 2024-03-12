@@ -12,6 +12,7 @@ public interface UserService {
     ResponseEntity<?> loginUser(LoginDTO userLogin);
     ResponseEntity<?> comfirmOTPLogin(OTPComfirmDTO otpComfirm);
     UserInfoResponse findByEmail(String email);
+    UserInfoResponse findById(Long id);
     ResponseEntity<?> updateImageUser(UserInfo userInfo);
     ResponseEntity<?> updateProfileUser(UserInfo userInfo);
 

@@ -21,7 +21,7 @@
                         <td>
                             <a th:href="@{'/user/profile/' + ${user.id}}">
                                 <img th:if="${user.avata != null}" class="img-circle img-thumbnail img-message"
-                                     th:src="@{'/' + ${user.image}}" alt="User's image">
+                                     th:src="@{'/' + ${user.avata}}" alt="User's image">
                                 <img th:unless="${user.avata != null}" class="img-circle img-thumbnail img-message"
                                      th:src="@{/images/noname.svg}" alt="User's image">
                             </a>
@@ -35,7 +35,7 @@
                     <nav>
                         <ul class="pagination">
                             <li class="page-item" th:classappend="${friendsOfUserTotal > friendsOfUserPage} ? '' : 'disabled'">
-                                <a th:if="${friendsOfUserTotal > 0}" class="page-link"
+                                <a th:if="${friendsOfUserTotal > friendsOfUserPage}" class="page-link"
                                    th:href="@{/user/users(page=${friendsOfUserPage - 1})}" th:text="#{previous}">
                                     Previous
                                 </a>

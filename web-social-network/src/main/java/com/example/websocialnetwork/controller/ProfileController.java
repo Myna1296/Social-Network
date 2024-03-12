@@ -1,5 +1,6 @@
 package com.example.websocialnetwork.controller;
 
+import com.example.websocialnetwork.dto.reponse.CheckFriendShipResponse;
 import com.example.websocialnetwork.dto.reponse.UserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,11 +82,11 @@ public class ProfileController {
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
         try {
             ResponseEntity<UserInfo> responseEntity = restTemplate.exchange(
-                    path + API_USER_INFO,
+                    path + API_USER_INFO_BY_ID,
                     HttpMethod.GET,
                     requestEntity,
                     UserInfo.class,
-                    request.getSession().getAttribute("email")
+                    id
             );
             UserInfo userInfo = responseEntity.getBody();
             if (userInfo == null) {
@@ -96,8 +97,25 @@ public class ProfileController {
                 model.addAttribute("message", userInfo.getError());
                 return VIEW_ERR;
             }
+
+            ResponseEntity<CheckFriendShipResponse> responseCheckFriendShip = restTemplate.exchange(
+                    path + API_CHECK_FRIEND_SHIP,
+                    HttpMethod.POST,
+                    requestEntity,
+                    CheckFriendShipResponse.class,
+                    id
+            );
+            CheckFriendShipResponse checkFriendShipResponse = responseCheckFriendShip.getBody();
+            if (checkFriendShipResponse == null) {
+                model.addAttribute("message", MESS_001);
+                return VIEW_ERR;
+            }
+            if (checkFriendShipResponse.getCode() != 0) {
+                model.addAttribute("message", userInfo.getError());
+                return VIEW_ERR;
+            }
             model.addAttribute("sessionUser", sessionUser);
-            model.addAttribute("usersHaveFriendship", false);
+            model.addAttribute("usersHaveFriendship", checkFriendShipResponse.isCheckFriendShip());
             model.addAttribute("user", userInfo);
             return "E007";
         } catch (Exception ex) {

@@ -28,6 +28,11 @@ public class UserController {
           return userService.findByEmail(email);
     }
 
+    @GetMapping("/profile-user/{id}")
+    public UserInfoResponse getProfileUserInfoById( @PathVariable("id")  Long id){
+        return userService.findById(id);
+    }
+
     @PostMapping("/update-image")
     public ResponseEntity<?> updateImage(@RequestBody UserInfo user){
         return userService.updateImageUser(user);

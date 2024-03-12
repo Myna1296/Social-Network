@@ -12,10 +12,12 @@ public class Const {
     public static final String API_LOGIN ="/auth/login";
     public static final String API_COMFIRM_OTP_LOGIN ="/auth/comfirm-otp-login";
     public static final String API_USER_INFO = "/user/user-info/{email}";
+    public static final String API_USER_INFO_BY_ID = "/user/profile-user/{id}";
     public static final String API_UPDATE_IMAGE = "/user/update-image";
     public static final String API_UPDATE_PROFILE = "/user/update-profile-user";
     public static final String API_UPDATE_PASSWORD = "/user/update-password";
     public static final String API_GET_FRIENF_OF_USER = "/friends/get-all";
+    public static final String API_CHECK_FRIEND_SHIP = "/friends/check-friend-ship/{id}";
 
     public static final String PROFILE_IMAGES = "profileImages";
     public static final String MESS_001 = "This account does not exist";

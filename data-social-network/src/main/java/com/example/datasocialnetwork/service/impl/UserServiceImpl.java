@@ -170,6 +170,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserInfoResponse findById(Long id) {
+        UserInfoResponse userInfo = new UserInfoResponse();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
+        User users= userRepository.findOneByUserName(userDetails.getUsername());
+        if(users == null){
+            userInfo.setError(Constants.MESS_010);
+        } else {
+            User usersById = userRepository.findOneById(id);
+            userInfo.setId(usersById.getId().toString());
+            userInfo.setUserName(usersById.getUserName());
+            userInfo.setBirthday(usersById.getBirthday() == null ? "": DateTimeFormatter.ISO_LOCAL_DATE.format(usersById.getBirthday()));
+            userInfo.setAddress(usersById.getAddress());
+            userInfo.setJob(usersById.getJob());
+            userInfo.setPhone(usersById.getPhone());
+            userInfo.setAvata(usersById.getImage());
+            userInfo.setSex(getGenderById(usersById.getSex()).name());
+        }
+        return userInfo;
+    }
+
+    @Override
     public ResponseEntity<?> updateImageUser(UserInfo userInfo) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();

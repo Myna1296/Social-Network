@@ -1,9 +1,11 @@
 package com.example.datasocialnetwork.service.impl;
 
 import com.example.datasocialnetwork.common.Constants;
+import com.example.datasocialnetwork.common.Gender;
 import com.example.datasocialnetwork.config.UserAuthDetails;
 import com.example.datasocialnetwork.dto.request.FriendRequestDTO;
 import com.example.datasocialnetwork.dto.request.UserInfo;
+import com.example.datasocialnetwork.dto.response.CheckFriendShipResponse;
 import com.example.datasocialnetwork.dto.response.FriendResponse;
 import com.example.datasocialnetwork.dto.response.ResponseOk;
 import com.example.datasocialnetwork.entity.FriendShip;
@@ -14,6 +16,7 @@ import com.example.datasocialnetwork.repository.UserRepository;
 import com.example.datasocialnetwork.service.FriendsService;
 import com.example.datasocialnetwork.service.MailService;
 import com.example.datasocialnetwork.service.UserService;
+import javafx.scene.input.KeyCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -85,11 +88,42 @@ public class FriendsServiceImpl implements FriendsService {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseEntity<CheckFriendShipResponse> checkFriendship(Long id) {
+        CheckFriendShipResponse response = new CheckFriendShipResponse();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
+        User user = userRepository.findOneByUserName(userDetails.getUsername());
+        if (user == null) {
+            response.setCode(Constants.CODE_ERROR);
+            response.setMessage(Constants.MESS_004);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        User userFriend = userRepository.findOneById(id);
+        Boolean checkFriendShip = friendShipRepository.checkFriendshipExists(user, userFriend);
+        response.setCode(Constants.CODE_OK);
+        response.setCheckFriendShip(checkFriendShip);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     private static UserInfo convertToUserInfo(User user) {
         UserInfo userInfo = new UserInfo();
         userInfo.setId(String.valueOf(user.getId()));
         userInfo.setUserName(user.getUserName());
         userInfo.setAvata(user.getImage());
         return userInfo;
+    }
+
+    private static User convertToUser(UserInfo userInfo) {
+        User user = new User();
+        user.setId(Long.parseLong(userInfo.getId()));
+        user.setUserName(userInfo.getUserName());
+        user.setImage(userInfo.getAvata());
+        user.setSex(Gender.getGenderByName(userInfo.getSex()));
+        user.setPhone(userInfo.getPhone());
+        user.setAddress(userInfo.getAddress());
+        user.setJob(userInfo.getJob());
+        return user;
     }
 }
