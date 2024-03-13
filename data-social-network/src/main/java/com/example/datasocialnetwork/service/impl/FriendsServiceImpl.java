@@ -10,6 +10,7 @@ import com.example.datasocialnetwork.dto.response.FriendResponse;
 import com.example.datasocialnetwork.dto.response.ResponseOk;
 import com.example.datasocialnetwork.entity.FriendShip;
 import com.example.datasocialnetwork.entity.User;
+import com.example.datasocialnetwork.exceptions.BadRequestException;
 import com.example.datasocialnetwork.exceptions.UserNotFoundException;
 import com.example.datasocialnetwork.repository.FriendShipRepository;
 import com.example.datasocialnetwork.repository.UserRepository;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -105,6 +107,44 @@ public class FriendsServiceImpl implements FriendsService {
         response.setCode(Constants.CODE_OK);
         response.setCheckFriendShip(checkFriendShip);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<?> addFriendRequest(Long idTarget) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
+        User user = userRepository.findOneByUserName(userDetails.getUsername());
+        if (user == null) {
+            ResponseOk response = new ResponseOk(Constants.CODE_ERROR,"User does not exist");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        User userTarget = userRepository.findOneById(idTarget);
+        if (userTarget == null) {
+            ResponseOk response = new ResponseOk(Constants.CODE_ERROR,"Friend does not exist");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        if (user.getEmail().equals(userTarget.getEmail())){
+            ResponseOk response = new ResponseOk(Constants.CODE_ERROR,"Can't send friend requests to myself");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        if(friendShipRepository.checkFriendshipExists(user, userTarget)) {
+            ResponseOk response = new ResponseOk(Constants.CODE_ERROR, "Already friends");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } else {
+            if (friendShipRepository.checkFriendshipRequest(user,userTarget)) {
+                ResponseOk response = new ResponseOk(Constants.CODE_ERROR, "Friend request already exists");
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            } else {
+                FriendShip friendship = new FriendShip();
+                friendship.setUserSender(user);
+                friendship.setUserReceiver(userTarget);
+                friendship.setAccepted(false);
+                friendship.setCreatedDate(LocalDateTime.now());
+                friendShipRepository.save(friendship);
+                ResponseOk response = new ResponseOk(Constants.CODE_OK, "Send friend request successfully");
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            }
+        }
     }
 
     private static UserInfo convertToUserInfo(User user) {

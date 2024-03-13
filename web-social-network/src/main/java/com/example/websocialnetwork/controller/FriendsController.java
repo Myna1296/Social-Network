@@ -2,7 +2,9 @@ package com.example.websocialnetwork.controller;
 import com.example.websocialnetwork.dto.FriendRequestDTO;
 import com.example.websocialnetwork.dto.PasswordChangeDTO;
 import com.example.websocialnetwork.dto.reponse.FriendResponse;
+import com.example.websocialnetwork.dto.reponse.ResponseOk;
 import com.example.websocialnetwork.dto.reponse.UserInfo;
+import com.example.websocialnetwork.exceptionHandling.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -63,6 +66,32 @@ public class FriendsController {
             model.addAttribute("friendsOfUserTotal", calculateTotalPages(friendResponse.getTotal()));
             model.addAttribute("friendsOfUserPage", 1);
             return "friends";
+        } catch (Exception ex) {
+            model.addAttribute("message", ex);
+            return VIEW_ERR;
+        }
+    }
+
+    @GetMapping("/addToFriends/{friendId}")
+    public String addToFriends(@PathVariable Long friendId, HttpServletRequest request, Model model, RedirectAttributes redirectAttributes) {
+        if (request.getSession().getAttribute("user") == null) {
+            return "redirect:/";
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
+        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+        try {
+            ResponseEntity<ResponseOk> responseEntity = restTemplate.exchange(
+                    path + API_ADD_FRIEND,
+                    HttpMethod.POST,
+                    requestEntity,
+                    ResponseOk.class,
+                    friendId
+            );
+            ResponseOk responseOk = responseEntity.getBody();
+            redirectAttributes.addFlashAttribute("message", responseOk.getMessage());
+                return "redirect:/user/profile/"+ friendId;
         } catch (Exception ex) {
             model.addAttribute("message", ex);
             return VIEW_ERR;

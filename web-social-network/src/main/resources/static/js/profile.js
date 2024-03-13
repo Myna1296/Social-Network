@@ -53,6 +53,15 @@ $("button.btn-left").click(function (event) {
         window.location.reload();
     })
 });
+$(document).ready(function() {
+    // Xử lý sự kiện khi nút "Add to friends" được nhấn
+    $("#addToFriendsBtn").click(function (event) {
+        event.preventDefault();
+        // Thực hiện các hành động mong muốn khi nút được nhấn
+        console.log("Add to friends button clicked!");
+        // Đặt code xử lý tại đây
+    });
+});
 $(function() {
     $.datepicker.regional['en'] = {
         closeText: 'Close',

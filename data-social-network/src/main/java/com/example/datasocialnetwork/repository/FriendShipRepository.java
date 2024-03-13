@@ -39,7 +39,12 @@ public interface FriendShipRepository extends JpaRepository<FriendShip,Long> {
 //    @Query("SELECT COUNT(f) FROM FriendShip f WHERE f.userReceiver.id = :userId AND f.accepted = false")
 //    long countUnacceptedFriendshipsByUserReceiver(@Param("userId") Long userId);
 
-    @Query("SELECT CASE WHEN COUNT(f) > 0 THEN true ELSE false END FROM FriendShip f WHERE (f.userSender = :userSender AND f.userReceiver = :userReceiver) OR (f.userSender = :userReceiver AND f.userReceiver = :userSender)")
+    @Query("SELECT CASE WHEN COUNT(f) > 0 THEN true ELSE false END FROM FriendShip f WHERE (f.userSender = :userSender AND f.userReceiver = :userReceiver AND f.accepted = true) " +
+            "OR (f.userSender = :userReceiver AND f.userReceiver = :userSender AND f.accepted = true)")
     boolean checkFriendshipExists(@Param("userSender") User userSender, @Param("userReceiver") User userReceiver);
+
+    @Query("SELECT CASE WHEN COUNT(f) > 0 THEN true ELSE false END FROM FriendShip f WHERE (f.userSender = :userSender AND f.userReceiver = :userReceiver AND f.accepted = false) " +
+            "OR (f.userSender = :userReceiver AND f.userReceiver = :userSender AND f.accepted = false)")
+    boolean checkFriendshipRequest(@Param("userSender") User userSender, @Param("userReceiver") User userReceiver);
 
 }

@@ -11,4 +11,5 @@ import org.springframework.stereotype.Service;
 public interface FriendsService {
     ResponseEntity<FriendResponse> getFriendsOfUser(FriendRequestDTO friendRequestDTO);
     ResponseEntity<CheckFriendShipResponse> checkFriendship(Long id);
+    ResponseEntity<?> addFriendRequest(Long idTarget);
 }

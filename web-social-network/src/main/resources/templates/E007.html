@@ -28,10 +28,12 @@
                             <table class="table">
                                 <tr th:if="${sessionUser != null and user != null and sessionUser.id != user.id}">
                                     <td th:if="${usersHaveFriendship}">
-                                        <a th:href="@{/user/profile}" class="btn btn-success">Home <span class="glyphicon glyphicon-ok"></span></a>
+                                        <a th:href="@{'/user/profile/' + ${user.id}}" class="btn btn-success">Friends <span class="glyphicon glyphicon-ok"></span></a>
                                     </td>
                                     <td th:unless="${usersHaveFriendship}">
-                                        <a th:href="@{'/user/friends/' + ${user.id} + '/addToFriends'}" class="btn btn-success">Add to friends</a>
+                                        <a th:href="@{'/user/friends/addToFriends/' + ${user.id}}" class="btn btn-success" id="addToFriendsBtn">Add to friends</a>
+                                        <br/><br/>
+                                        <span th:text="${message}" style="color:#ac2925"></span>
                                     </td>
                                 </tr>
                             </table>
@@ -79,6 +81,5 @@
 </div>
 
 <div th:replace="template.html :: footer"></div>
-
 </body>
 </html>

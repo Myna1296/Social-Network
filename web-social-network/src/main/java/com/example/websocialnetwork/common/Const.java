@@ -18,6 +18,8 @@ public class Const {
     public static final String API_UPDATE_PASSWORD = "/user/update-password";
     public static final String API_GET_FRIENF_OF_USER = "/friends/get-all";
     public static final String API_CHECK_FRIEND_SHIP = "/friends/check-friend-ship/{id}";
+    public static final String API_SEARCH_USER = "/user/search-user";
+    public static final String API_ADD_FRIEND = "/friends/add-to-friends/{id}";
 
     public static final String PROFILE_IMAGES = "profileImages";
     public static final String MESS_001 = "This account does not exist";

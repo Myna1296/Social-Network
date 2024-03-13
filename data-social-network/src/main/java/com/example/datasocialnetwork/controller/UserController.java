@@ -1,8 +1,10 @@
 package com.example.datasocialnetwork.controller;
 
 import com.example.datasocialnetwork.dto.request.PasswordChangeDTO;
+import com.example.datasocialnetwork.dto.request.SearchUserRequestDTO;
 import com.example.datasocialnetwork.dto.request.UserInfo;
 import com.example.datasocialnetwork.dto.response.ErrorResponse;
+import com.example.datasocialnetwork.dto.response.SearchResponse;
 import com.example.datasocialnetwork.dto.response.UserInfoResponse;
 import com.example.datasocialnetwork.service.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,5 +57,10 @@ public class UserController {
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
         return userService.updatePassword(passwordChangeDTO);
+    }
+
+    @PostMapping("/search-user")
+    public ResponseEntity<SearchResponse> searchUserByUsername(@RequestBody SearchUserRequestDTO sreachUserRequestDTO){
+        return userService.searchUserByUserName(sreachUserRequestDTO);
     }
 }

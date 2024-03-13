@@ -25,4 +25,9 @@ public class FriendsController {
    public ResponseEntity<CheckFriendShipResponse> checkFriendShip(@PathVariable("id")  Long id ){
       return friendsService.checkFriendship(id);
    }
+
+   @PostMapping("/add-to-friends/{id}")
+   public ResponseEntity<?> addFriendRequest(@PathVariable("id") Long idTarget){
+      return friendsService.addFriendRequest(idTarget);
+   }
 }

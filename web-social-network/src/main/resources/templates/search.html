@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="template.html :: header('Users', false)"></head>
+
+<body th:with="sessionUser=${session.user}">
+
+<div th:replace="template.html :: navbar" ></div>
+<hr/>
+
+<div class="container">
+    <div class="row">
+        <div th:replace="template.html :: menu('search')" ></div>
+
+        <div class="col-md-9">
+            <div class="friends-top">
+                <form action="#" th:action="@{/user/search}" method="get">
+                    <div class="input-group stylish-input-group">
+                        <input type="text" name="search" th:value="${search}" class="form-control" placeholder="Search">
+                        <span class="input-group-addon">
+                        <button type="submit">
+                            <span class="glyphicon glyphicon-search"></span>
+                        </button>
+                    </span>
+                    </div>
+                </form>
+            </div>
+
+            <div class="friends-top">
+                <h3 th:text="#{users.header}">Users:</h3>
+                <table class="table users">
+                    <tr th:each="user : ${listUser}">
+                        <td>
+                            <a th:href="@{'/user/profile/' + ${user.id}}">
+                                <img th:if="${user.avata != null}" class="img-circle img-thumbnail img-message"
+                                     th:src="@{'/' + ${user.avata}}" alt="User's image">
+                                <img th:unless="${user.avata != null}" class="img-circle img-thumbnail img-message"
+                                     th:src="@{/images/noname.svg}" alt="User's image">
+                            </a>
+                            <span th:text="${user.userName}"></span>
+                            <br/><span th:text="${user.birthday}"></span>
+                            <span th:if="${user.sex.equals('MALE')}" th:text="#{gender.male}">Male</span>
+                            <span th:if="${user.sex.equals('FEMALE')}" th:text="#{gender.female}">Female</span>
+                        </td>
+                    </tr>
+                </table>
+                <div th:if="${totalPage > 0 }">
+                    <nav>
+                        <ul class="pagination">
+                            <li class="page-item" th:classappend="${ page > 1} ? '' : 'disabled'">
+                                <a th:if="${page > 1}" class="page-link"
+                                   th:href="@{/user/search(search=${search},page=${page - 1})}" th:text="#{previous}">
+                                    Previous
+                                </a>
+                                <a th:if="${page <= 1}" class="page-link" href="#" th:text="#{previous}">Previous</a>
+                            </li>
+                            <li class="page-item" th:each="i: ${#numbers.sequence(1, totalPage )}"
+                                th:classappend="${i == page} ? 'active' : '' " >
+                                <a class="page-link" th:href="@{/user/search(search=${search},page=${i})}" th:text="${i}">1</a>
+                            </li>
+                            <li class="page-item" th:classappend="${totalPage > page} ? '' : 'disabled'">
+                                <a th:if="${totalPage > page}" class="page-link"
+                                   th:href="@{/user/search(search=${search},page=${page + 1})}" th:text="#{next}">
+                                    Next
+                                </a>
+                                <a th:if="${totalPage == page}" class="page-link" href="#" th:text="#{next}">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div th:replace="template.html :: footer"></div>
+
+</body>
+</html>

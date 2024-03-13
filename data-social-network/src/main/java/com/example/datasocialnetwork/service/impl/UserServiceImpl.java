@@ -1,10 +1,10 @@
 package com.example.datasocialnetwork.service.impl;
 
-import com.example.datasocialnetwork.common.Gender;
 import com.example.datasocialnetwork.common.SendCodeType;
 import com.example.datasocialnetwork.config.JwtTokenUtil;
 import com.example.datasocialnetwork.config.UserAuthDetails;
 import com.example.datasocialnetwork.dto.request.*;
+import com.example.datasocialnetwork.dto.response.SearchResponse;
 import com.example.datasocialnetwork.dto.response.UserInfoResponse;
 import com.example.datasocialnetwork.entity.Otp;
 import com.example.datasocialnetwork.entity.User;
@@ -14,24 +14,22 @@ import com.example.datasocialnetwork.repository.OtpRepository;
 import com.example.datasocialnetwork.repository.UserRepository;
 import com.example.datasocialnetwork.service.MailService;
 import com.example.datasocialnetwork.service.UserService;
-import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.StandardPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.datasocialnetwork.common.Constants;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,8 +37,8 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.example.datasocialnetwork.common.Gender.getGenderById;
 import static com.example.datasocialnetwork.common.Gender.getGenderByName;
@@ -66,6 +64,8 @@ public class UserServiceImpl implements UserService {
     public UserServiceImpl() {
         this.passwordEncoder = new StandardPasswordEncoder();
     }
+
+    private int LIMIT = 3;
 
     /*
     Handles user registration
@@ -261,6 +261,34 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public ResponseEntity<SearchResponse> searchUserByUserName(SearchUserRequestDTO searchUserRequestDTO) {
+        SearchResponse sreachResponse = new SearchResponse();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
+        User user = userRepository.findOneByUserName(userDetails.getUsername());
+        if (user == null){
+            sreachResponse.setCode(Constants.CODE_ERROR);
+            sreachResponse.setMessage(Constants.MESS_010);
+            return new ResponseEntity<>(sreachResponse, HttpStatus.OK);
+        }
+        Pageable pageable = PageRequest.of(searchUserRequestDTO.getPage() - 1 , LIMIT);
+        Page<User> users;
+        if ( searchUserRequestDTO.getSearch().isEmpty()){
+            users = userRepository.findAll(pageable);
+        } else {
+            users = userRepository.findByUserNameContaining(searchUserRequestDTO.getSearch(), pageable);
+        }
+        List<User> userList = users.getContent();
+        List<UserInfo>  listUserInfo = userList.stream()
+                .map(this::convertUserToUserInfo)
+                .collect(Collectors.toList());
+        sreachResponse.setListUser(listUserInfo);
+        sreachResponse.setTotalPage(users.getTotalPages());
+        sreachResponse.setCode(Constants.CODE_OK);
+        return new ResponseEntity<>(sreachResponse, HttpStatus.OK);
+    }
+
+    @Override
     @Transactional
     public ResponseEntity<?> updatePassword(PasswordChangeDTO passwordChangeDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -318,5 +346,19 @@ public class UserServiceImpl implements UserService {
         String contentType = Files.probeContentType(path);
         return contentType != null &&
                 (contentType.equals("image/jpeg") || contentType.equals("image/png"));
+    }
+    private UserInfo convertUserToUserInfo(User user) {
+        UserInfo userInfo = new UserInfo();
+        userInfo.setId(String.valueOf(user.getId()));
+        userInfo.setUserName(user.getUserName());
+        userInfo.setEmail(user.getEmail());
+        userInfo.setBirthday(user.getBirthday() == null ? null : user.getBirthday().toString());
+        userInfo.setAddress(user.getAddress());
+        userInfo.setJob(user.getJob());
+        userInfo.setSex(getGenderById(user.getSex()).name());
+        userInfo.setPhone(user.getPhone());
+        userInfo.setAvata(user.getImage());
+
+        return userInfo;
     }
 }

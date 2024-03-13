@@ -1,8 +1,8 @@
 package com.example.datasocialnetwork.service;
 
 import com.example.datasocialnetwork.dto.request.*;
+import com.example.datasocialnetwork.dto.response.SearchResponse;
 import com.example.datasocialnetwork.dto.response.UserInfoResponse;
-import com.example.datasocialnetwork.entity.User;
 import org.springframework.http.ResponseEntity;
 
 public interface UserService {
@@ -15,6 +15,6 @@ public interface UserService {
     UserInfoResponse findById(Long id);
     ResponseEntity<?> updateImageUser(UserInfo userInfo);
     ResponseEntity<?> updateProfileUser(UserInfo userInfo);
-
+    ResponseEntity<SearchResponse> searchUserByUserName(SearchUserRequestDTO sreachUserRequestDTO);
     ResponseEntity<?> updatePassword(PasswordChangeDTO passwordChangeDTO);
 }
