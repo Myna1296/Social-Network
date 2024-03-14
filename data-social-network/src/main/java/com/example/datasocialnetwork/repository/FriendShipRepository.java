@@ -38,6 +38,21 @@ public interface FriendShipRepository extends JpaRepository<FriendShip,Long> {
 //
 //    @Query("SELECT COUNT(f) FROM FriendShip f WHERE f.userReceiver.id = :userId AND f.accepted = false")
 //    long countUnacceptedFriendshipsByUserReceiver(@Param("userId") Long userId);
+    @Query("SELECT f FROM FriendShip f WHERE (f.userSender.id = :userId) AND f.accepted = false ORDER BY f.createdDate DESC")
+    Page<FriendShip> findUsersNotAcceptedRequestsByUserIdWithLimitOffset(
+            @Param("userId") Long userId,
+            Pageable pageable
+    );
+    @Query("SELECT COUNT(f) FROM FriendShip f WHERE (f.userSender.id = :userId) AND f.accepted = false")
+    long countUsersNotAcceptedRequestsByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT f FROM FriendShip f WHERE (f.userReceiver.id = :userId) AND f.accepted = false ORDER BY f.createdDate DESC")
+    Page<FriendShip> findNotAcceptedRequestsToUserByUserIdWithLimitOffset(
+            @Param("userId") Long userId,
+            Pageable pageable
+    );
+    @Query("SELECT COUNT(f) FROM FriendShip f WHERE (f.userReceiver.id = :userId) AND f.accepted = false")
+    long countNotAcceptedRequestsToUserByUserId(@Param("userId") Long userId);
 
     @Query("SELECT CASE WHEN COUNT(f) > 0 THEN true ELSE false END FROM FriendShip f WHERE (f.userSender = :userSender AND f.userReceiver = :userReceiver AND f.accepted = true) " +
             "OR (f.userSender = :userReceiver AND f.userReceiver = :userSender AND f.accepted = true)")

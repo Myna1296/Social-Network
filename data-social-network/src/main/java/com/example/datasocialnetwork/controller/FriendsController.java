@@ -30,4 +30,21 @@ public class FriendsController {
    public ResponseEntity<?> addFriendRequest(@PathVariable("id") Long idTarget){
       return friendsService.addFriendRequest(idTarget);
    }
+
+   @PostMapping("/get-request-user-notaccepte")
+   public ResponseEntity<FriendResponse> getRequestUserNotAccepte(@RequestBody FriendRequestDTO friendRequestDTO ){
+      return friendsService.getUsersNotAcceptedRequests(friendRequestDTO);
+   }
+
+   @PostMapping("/get-request-notaccepte-touser")
+   public ResponseEntity<FriendResponse> getRequestNotAccepteToUser(@RequestBody FriendRequestDTO friendRequestDTO ){
+      return friendsService.getNotAcceptedRequestsToUser(friendRequestDTO);
+   }
+
+   @PostMapping("/delete/{id}")
+   public ResponseEntity<?> deleteFriendship(@PathVariable("id") Long  id){
+      return friendsService.getNotAcceptedRequestsToUser(friendRequestDTO);
+   }
+
+
 }

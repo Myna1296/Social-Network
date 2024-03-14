@@ -17,6 +17,8 @@ public class Const {
     public static final String API_UPDATE_PROFILE = "/user/update-profile-user";
     public static final String API_UPDATE_PASSWORD = "/user/update-password";
     public static final String API_GET_FRIENF_OF_USER = "/friends/get-all";
+    public static final String API_GET_REQUEST_USER_NOT_ACCEPTE = "/friends/get-request-user-notaccepte";
+    public static final String API_GET_REQUEST_NOT_ACCEPTE_TO_USER = "/friends/get-request-notaccepte-touser";
     public static final String API_CHECK_FRIEND_SHIP = "/friends/check-friend-ship/{id}";
     public static final String API_SEARCH_USER = "/user/search-user";
     public static final String API_ADD_FRIEND = "/friends/add-to-friends/{id}";

@@ -15,7 +15,7 @@
             <div class="friends-top">
             </div>
             <div class="friends-top">
-                <h3 th:text="#{friends.your.requests}">Your Request</h3>
+                <h3 th:text="#{friends.your.requests}">Your request</h3>
                 <table class="table friends">
                     <tr th:each="user : ${usersNotAcceptedRequests}">
                         <td>
@@ -27,30 +27,30 @@
                             </a>
                             <span th:text="${user.userName}"></span>
                         <td>
-                            <a class="btn btn-danger" th:href="@{'/user/friends/' + ${user.id} + '/decline'}" th:text="#{friends.remove}">Remove</a>
+                            <a class="btn btn-danger" th:href="@{'/user/friends/delete' + ${user.id}}" th:text="#{friends.remove}">Remove</a>
                         </td>
                     </tr>
                 </table>
-                <div th:if="${friendsOfUserTotal > 0 }">
+                <div th:if="${usersNotAcceptedRequestsTotal > 0 }">
                     <nav>
                         <ul class="pagination">
-                            <li class="page-item" th:classappend="${friendsOfUserTotal > friendsOfUserPage} ? '' : 'disabled'">
-                                <a th:if="${friendsOfUserTotal > friendsOfUserPage}" class="page-link"
-                                   th:href="@{/user/users(page=${friendsOfUserPage - 1})}" th:text="#{previous}">
+                            <li class="page-item" th:classappend="${ usersNotAcceptedRequestsPage > 1} ? '' : 'disabled'">
+                                <a th:if="${usersNotAcceptedRequestsPage > 1}" class="page-link"
+                                   th:href="@{/user/friends(index=,page=${1usersNotAcceptedRequestsPage - 1})}" th:text="#{previous}">
                                     Previous
                                 </a>
-                                <a th:if="${friendsOfUserTotal == friendsOfUserPage}" class="page-link" href="#" th:text="#{previous}">Previous</a>
+                                <a th:if="${usersNotAcceptedRequestsPage <= 1}" class="page-link" href="#" th:text="#{previous}">Previous</a>
                             </li>
-                            <li class="page-item" th:each="i: ${#numbers.sequence(0, friendsOfUserTotal - 1)}"
-                                th:classappend="${i == friendsOfUserPage} ? 'active' : '' " >
-                                <a class="page-link" th:href="@{/user/users(page=${i})}" th:text="${i+1}">1</a>
+                            <li class="page-item" th:each="i: ${#numbers.sequence(1, usersNotAcceptedRequestsTotal )}"
+                                th:classappend="${i == usersNotAcceptedRequestsPage} ? 'active' : '' " >
+                                <a class="page-link" th:href="@{/user/friends(index=1,page=${i})}" th:text="${i}">1</a>
                             </li>
-                            <li class="page-item" th:classappend="${friendsOfUserTotal > friendsOfUserPage} ? '' : 'disabled'">
-                                <a th:if="${friendsOfUserTotal > friendsOfUserPage}" class="page-link"
-                                   th:href="@{/user/users(page=${friendsOfUserPage + 1})}" th:text="#{next}">
+                            <li class="page-item" th:classappend="${usersNotAcceptedRequestsTotal > usersNotAcceptedRequestsPage} ? '' : 'disabled'">
+                                <a th:if="${usersNotAcceptedRequestsTotal > usersNotAcceptedRequestsPage}" class="page-link"
+                                   th:href="@{/user/friends(index=1,page=${usersNotAcceptedRequestsPage + 1})}" th:text="#{next}">
                                     Next
                                 </a>
-                                <a th:if="${friendsOfUserTotal == friendsOfUserPage}" class="page-link" href="#" th:text="#{next}">Next</a>
+                                <a th:if="${usersNotAcceptedRequestsTotal == usersNotAcceptedRequestsPage}" class="page-link" href="#" th:text="#{next}">Next</a>
                             </li>
                         </ul>
                     </nav>
@@ -59,7 +59,7 @@
             <div class="friends-top">
                 <h3 th:text="#{friends.requests}">Friends requests to you</h3>
                 <table class="table friends">
-                    <tr th:each="user : ${usersNotAcceptedRequests}">
+                    <tr th:each="user : ${notAcceptedRequestsToUser}">
                         <td>
                             <a th:href="@{'/user/profile/' + ${user.id}}">
                                 <img th:if="${user.avata != null}" class="img-circle img-thumbnail img-message"
@@ -69,30 +69,33 @@
                             </a>
                             <span th:text="${user.userName}"></span>
                         <td>
-                            <a class="btn btn-danger" th:href="@{'/user/friends/' + ${user.id} + '/decline'}" th:text="#{friends.remove}">Remove</a>
+                            <a class="btn btn-danger" th:href="@{'/user/friends/accepte' + ${user.id}}" th:text="#{friends.accept}">Accepte</a>
+                        </td>
+                        <td>
+                            <a class="btn btn-danger" th:href="@{'/user/friends/delete' + ${user.id}}" th:text="#{friends.remove}">Remove</a>
                         </td>
                     </tr>
                 </table>
-                <div th:if="${friendsOfUserTotal > 0 }">
+                <div th:if="${notAcceptedRequestsToUserTotal > 0 }">
                     <nav>
                         <ul class="pagination">
-                            <li class="page-item" th:classappend="${friendsOfUserTotal > friendsOfUserPage} ? '' : 'disabled'">
-                                <a th:if="${friendsOfUserTotal > friendsOfUserPage}" class="page-link"
-                                   th:href="@{/user/users(page=${friendsOfUserPage - 1})}" th:text="#{previous}">
+                            <li class="page-item" th:classappend="${ notAcceptedRequestsToUserPage > 1} ? '' : 'disabled'">
+                                <a th:if="${notAcceptedRequestsToUserPage > 1}" class="page-link"
+                                   th:href="@{/user/friends(index=,page=${1notAcceptedRequestsToUserPage - 1})}" th:text="#{previous}">
                                     Previous
                                 </a>
-                                <a th:if="${friendsOfUserTotal == friendsOfUserPage}" class="page-link" href="#" th:text="#{previous}">Previous</a>
+                                <a th:if="${notAcceptedRequestsToUserPage <= 1}" class="page-link" href="#" th:text="#{previous}">Previous</a>
                             </li>
-                            <li class="page-item" th:each="i: ${#numbers.sequence(0, friendsOfUserTotal - 1)}"
-                                th:classappend="${i == friendsOfUserPage} ? 'active' : '' " >
-                                <a class="page-link" th:href="@{/user/users(page=${i})}" th:text="${i+1}">1</a>
+                            <li class="page-item" th:each="i: ${#numbers.sequence(1, notAcceptedRequestsToUserTotal )}"
+                                th:classappend="${i == notAcceptedRequestsToUserPage} ? 'active' : '' " >
+                                <a class="page-link" th:href="@{/user/friends(index=1,page=${i})}" th:text="${i}">1</a>
                             </li>
-                            <li class="page-item" th:classappend="${friendsOfUserTotal > friendsOfUserPage} ? '' : 'disabled'">
-                                <a th:if="${friendsOfUserTotal > friendsOfUserPage}" class="page-link"
-                                   th:href="@{/user/users(page=${friendsOfUserPage + 1})}" th:text="#{next}">
+                            <li class="page-item" th:classappend="${notAcceptedRequestsToUserTotal > notAcceptedRequestsToUserPage} ? '' : 'disabled'">
+                                <a th:if="${notAcceptedRequestsToUserTotal > notAcceptedRequestsToUserPage}" class="page-link"
+                                   th:href="@{/user/friends(index=1,page=${notAcceptedRequestsToUserPage + 1})}" th:text="#{next}">
                                     Next
                                 </a>
-                                <a th:if="${friendsOfUserTotal == friendsOfUserPage}" class="page-link" href="#" th:text="#{next}">Next</a>
+                                <a th:if="${notAcceptedRequestsToUserTotal == notAcceptedRequestsToUserPage}" class="page-link" href="#" th:text="#{next}">Next</a>
                             </li>
                         </ul>
                     </nav>
@@ -111,27 +114,27 @@
                         </a>
                         <span th:text="${user.userName}"></span>
                     <td>
-                        <a class="btn btn-danger" th:href="@{'/user/friends/' + ${user.id} + '/decline'}" th:text="#{friends.remove}">Remove</a>
+                        <a class="btn btn-danger" th:href="@{'/user/friends/delete/' + ${user.id}}" th:text="#{friends.remove}">Remove</a>
                     </td>
                 </tr>
             </table>
             <div th:if="${friendsOfUserTotal > 0 }">
                 <nav>
                     <ul class="pagination">
-                        <li class="page-item" th:classappend="${friendsOfUserTotal > friendsOfUserPage} ? '' : 'disabled'">
-                            <a th:if="${friendsOfUserTotal > friendsOfUserPage}" class="page-link"
-                               th:href="@{/user/users(page=${friendsOfUserPage - 1})}" th:text="#{previous}">
+                        <li class="page-item" th:classappend="${ friendsOfUserPage > 1} ? '' : 'disabled'">
+                            <a th:if="${friendsOfUserPage > 1}" class="page-link"
+                               th:href="@{/user/friends(index=,page=${1friendsOfUserPage - 1})}" th:text="#{previous}">
                                 Previous
                             </a>
-                            <a th:if="${friendsOfUserTotal == friendsOfUserPage}" class="page-link" href="#" th:text="#{previous}">Previous</a>
+                            <a th:if="${friendsOfUserPage <= 1}" class="page-link" href="#" th:text="#{previous}">Previous</a>
                         </li>
-                        <li class="page-item" th:each="i: ${#numbers.sequence(0, friendsOfUserTotal - 1)}"
+                        <li class="page-item" th:each="i: ${#numbers.sequence(1, friendsOfUserTotal )}"
                             th:classappend="${i == friendsOfUserPage} ? 'active' : '' " >
-                            <a class="page-link" th:href="@{/user/users(page=${i})}" th:text="${i+1}">1</a>
+                            <a class="page-link" th:href="@{/user/friends(index=1,page=${i})}" th:text="${i}">1</a>
                         </li>
                         <li class="page-item" th:classappend="${friendsOfUserTotal > friendsOfUserPage} ? '' : 'disabled'">
                             <a th:if="${friendsOfUserTotal > friendsOfUserPage}" class="page-link"
-                               th:href="@{/user/users(page=${friendsOfUserPage + 1})}" th:text="#{next}">
+                               th:href="@{/user/friends(index=1,page=${friendsOfUserPage + 1})}" th:text="#{next}">
                                 Next
                             </a>
                             <a th:if="${friendsOfUserTotal == friendsOfUserPage}" class="page-link" href="#" th:text="#{next}">Next</a>

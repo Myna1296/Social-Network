@@ -147,6 +147,82 @@ public class FriendsServiceImpl implements FriendsService {
         }
     }
 
+    @Override
+    public ResponseEntity<FriendResponse> getUsersNotAcceptedRequests(FriendRequestDTO friendRequestDTO) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
+        User user = userRepository.findOneById(friendRequestDTO.getId());
+        if (user == null) {
+            FriendResponse response = new FriendResponse();
+            response.setCode(Constants.CODE_ERROR);
+            response.setMessage(Constants.MESS_004);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } else  if (!userDetails.getUsername().equals(user.getUserName())){
+            throw(new UserNotFoundException("Authentication information does not match"));
+        }
+        Page<FriendShip> pageFriends = friendShipRepository.findUsersNotAcceptedRequestsByUserIdWithLimitOffset(
+                friendRequestDTO.getId(),
+                PageRequest.of(friendRequestDTO.getPage() - 1, LIMIT)
+        );
+
+        List<UserInfo> friendsOfUser = pageFriends.stream()
+                .flatMap(friendShip -> {
+                    if (friendShip.getUserSender().getId().equals(friendRequestDTO.getId())) {
+                        return Stream.of(convertToUserInfo(friendShip.getUserReceiver()));
+                    } else if (friendShip.getUserReceiver().getId().equals(friendRequestDTO.getId())) {
+                        return Stream.of(convertToUserInfo(friendShip.getUserSender()));
+                    } else {
+                        return Stream.empty();
+                    }
+                })
+                .collect(Collectors.toList());
+        Long total = friendShipRepository.countUsersNotAcceptedRequestsByUserId(friendRequestDTO.getId());
+        FriendResponse response = new FriendResponse();
+        response.setCode(Constants.CODE_OK);
+        response.setMessage("");
+        response.setFriendData(friendsOfUser);
+        response.setTotal(total);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<FriendResponse> getNotAcceptedRequestsToUser(FriendRequestDTO friendRequestDTO) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
+        User user = userRepository.findOneById(friendRequestDTO.getId());
+        if (user == null) {
+            FriendResponse response = new FriendResponse();
+            response.setCode(Constants.CODE_ERROR);
+            response.setMessage(Constants.MESS_004);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } else  if (!userDetails.getUsername().equals(user.getUserName())){
+            throw(new UserNotFoundException("Authentication information does not match"));
+        }
+        Page<FriendShip> pageFriends = friendShipRepository.findNotAcceptedRequestsToUserByUserIdWithLimitOffset(
+                friendRequestDTO.getId(),
+                PageRequest.of(friendRequestDTO.getPage() - 1, LIMIT)
+        );
+
+        List<UserInfo> friendsOfUser = pageFriends.stream()
+                .flatMap(friendShip -> {
+                    if (friendShip.getUserSender().getId().equals(friendRequestDTO.getId())) {
+                        return Stream.of(convertToUserInfo(friendShip.getUserReceiver()));
+                    } else if (friendShip.getUserReceiver().getId().equals(friendRequestDTO.getId())) {
+                        return Stream.of(convertToUserInfo(friendShip.getUserSender()));
+                    } else {
+                        return Stream.empty();
+                    }
+                })
+                .collect(Collectors.toList());
+        Long total = friendShipRepository.countNotAcceptedRequestsToUserByUserId(friendRequestDTO.getId());
+        FriendResponse response = new FriendResponse();
+        response.setCode(Constants.CODE_OK);
+        response.setMessage("");
+        response.setFriendData(friendsOfUser);
+        response.setTotal(total);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     private static UserInfo convertToUserInfo(User user) {
         UserInfo userInfo = new UserInfo();
         userInfo.setId(String.valueOf(user.getId()));

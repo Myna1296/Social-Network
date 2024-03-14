@@ -10,4 +10,9 @@ import lombok.Setter;
 public class FriendRequestDTO {
     private Long id;
     private int page;
+    // Constructor with parameters
+    public FriendRequestDTO(Long id, int page) {
+        this.id = id;
+        this.page = page;
+    }
 }

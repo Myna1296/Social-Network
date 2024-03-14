@@ -38,23 +38,39 @@ public class FriendsController {
     @Value("${api.path}")
     private String path;
     @GetMapping
-    public String showFriendsPage(Model model, HttpServletRequest request) {
+    public String showFriendsPage(Model model, HttpServletRequest request,
+                                  @RequestParam(value = "index", required = false) Integer index,
+                                  @RequestParam(value = "page", required = false) Integer page) {
         if (request.getSession().getAttribute("user") == null) {
             return "redirect:/";
         }
+        int pageFriendsOfUser = 1;
+        int pageUsersNotAcceptedRequests = 1;
+        int pageNotAcceptedRequestsToUser = 1;
+        if( index != null) {
+            if (index == 1) {
+                pageFriendsOfUser = page == null ? pageFriendsOfUser : page;
+            } else if (index == 2) {
+                pageUsersNotAcceptedRequests = page == null ? pageUsersNotAcceptedRequests : page;
+            } else if (index == 3) {
+                pageNotAcceptedRequestsToUser = page == null ? pageNotAcceptedRequestsToUser : page;
+            }
+        }
+
         UserInfo user = getUserFromSession(request);
-        FriendRequestDTO friendRequestDTO = new FriendRequestDTO();
-        friendRequestDTO.setId(Long.parseLong(user.getId()));
-        friendRequestDTO.setPage(1);
+        FriendRequestDTO friendsOfUserRequest = new FriendRequestDTO(Long.parseLong(user.getId()), pageFriendsOfUser );
+        FriendRequestDTO usersNotAcceptedRequests = new FriendRequestDTO(Long.parseLong(user.getId()), pageUsersNotAcceptedRequests );
+        FriendRequestDTO notAcceptedRequestsToUser = new FriendRequestDTO(Long.parseLong(user.getId()), pageNotAcceptedRequestsToUser );
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
-        HttpEntity<FriendRequestDTO> requestEntity = new HttpEntity<>(friendRequestDTO,headers);
+        HttpEntity<FriendRequestDTO> requestfriendsOfUserRequest = new HttpEntity<>(friendsOfUserRequest,headers);
         try {
             ResponseEntity<FriendResponse> responseEntity = restTemplate.exchange(
                     path + API_GET_FRIENF_OF_USER,
                     HttpMethod.POST,
-                    requestEntity,
+                    requestfriendsOfUserRequest,
                     FriendResponse.class
             );
             FriendResponse friendResponse = responseEntity.getBody();
@@ -64,7 +80,39 @@ public class FriendsController {
             }
             model.addAttribute("friendsOfUser",friendResponse.getFriendData());
             model.addAttribute("friendsOfUserTotal", calculateTotalPages(friendResponse.getTotal()));
-            model.addAttribute("friendsOfUserPage", 1);
+            model.addAttribute("friendsOfUserPage", pageFriendsOfUser);
+
+            HttpEntity<FriendRequestDTO> requestusersNotAccepted = new HttpEntity<>(usersNotAcceptedRequests,headers);
+            ResponseEntity<FriendResponse> usersNotAcceptedEntity = restTemplate.exchange(
+                    path + API_GET_REQUEST_USER_NOT_ACCEPTE,
+                    HttpMethod.POST,
+                    requestusersNotAccepted,
+                    FriendResponse.class
+            );
+            FriendResponse usersNotAcceptedResponse = usersNotAcceptedEntity.getBody();
+            if (friendResponse.getCode() == 1) {
+                model.addAttribute("message", friendResponse.getMessage());
+                return VIEW_ERR;
+            }
+            model.addAttribute("usersNotAcceptedRequests",usersNotAcceptedResponse.getFriendData());
+            model.addAttribute("usersNotAcceptedRequestsTotal", calculateTotalPages(usersNotAcceptedResponse.getTotal()));
+            model.addAttribute("usersNotAcceptedRequestsPage", pageUsersNotAcceptedRequests);
+
+            HttpEntity<FriendRequestDTO> requestNotAcceptedToUser = new HttpEntity<>(notAcceptedRequestsToUser,headers);
+            ResponseEntity<FriendResponse> notAcceptedRequestsToUserEntity = restTemplate.exchange(
+                    path + API_GET_REQUEST_USER_NOT_ACCEPTE,
+                    HttpMethod.POST,
+                    requestNotAcceptedToUser,
+                    FriendResponse.class
+            );
+            FriendResponse notAcceptedRequestsToUserResponse = notAcceptedRequestsToUserEntity.getBody();
+            if (friendResponse.getCode() == 1) {
+                model.addAttribute("message", friendResponse.getMessage());
+                return VIEW_ERR;
+            }
+            model.addAttribute("notAcceptedRequestsToUser",notAcceptedRequestsToUserResponse.getFriendData());
+            model.addAttribute("notAcceptedRequestsToUserTotal", calculateTotalPages(notAcceptedRequestsToUserResponse.getTotal()));
+            model.addAttribute("notAcceptedRequestsToUserPage", pageNotAcceptedRequestsToUser);
             return "friends";
         } catch (Exception ex) {
             model.addAttribute("message", ex);
@@ -96,6 +144,17 @@ public class FriendsController {
             model.addAttribute("message", ex);
             return VIEW_ERR;
         }
+    }
+
+    @GetMapping("/delete/{friendId}")
+    public String deleteFriendship(@PathVariable Long friendId, HttpServletRequest request) {
+        if (request.getSession().getAttribute("user") == null) {
+            return "redirect:/";
+        }
+        UserInfo user = getUserFromSession(request);
+        UserDTO user = getUserFromSession(request);
+        friendsService.deleteFriendship(user, friendId);
+        return "redirect:/user/friends";
     }
 
 }
