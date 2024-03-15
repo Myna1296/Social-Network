@@ -1,5 +1,6 @@
 package com.example.websocialnetwork.controller;
 import com.example.websocialnetwork.dto.FriendRequestDTO;
+import com.example.websocialnetwork.dto.FriendShipRequestDTO;
 import com.example.websocialnetwork.dto.PasswordChangeDTO;
 import com.example.websocialnetwork.dto.reponse.FriendResponse;
 import com.example.websocialnetwork.dto.reponse.ResponseOk;
@@ -20,6 +21,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,11 +52,12 @@ public class FriendsController {
         int pageNotAcceptedRequestsToUser = 1;
         if( index != null) {
             if (index == 1) {
+                pageUsersNotAcceptedRequests = page == null ? pageUsersNotAcceptedRequests : page;
                 pageFriendsOfUser = page == null ? pageFriendsOfUser : page;
             } else if (index == 2) {
-                pageUsersNotAcceptedRequests = page == null ? pageUsersNotAcceptedRequests : page;
-            } else if (index == 3) {
                 pageNotAcceptedRequestsToUser = page == null ? pageNotAcceptedRequestsToUser : page;
+            } else if (index == 3) {
+                pageFriendsOfUser = page == null ? pageFriendsOfUser : page;
             }
         }
 
@@ -100,7 +104,7 @@ public class FriendsController {
 
             HttpEntity<FriendRequestDTO> requestNotAcceptedToUser = new HttpEntity<>(notAcceptedRequestsToUser,headers);
             ResponseEntity<FriendResponse> notAcceptedRequestsToUserEntity = restTemplate.exchange(
-                    path + API_GET_REQUEST_USER_NOT_ACCEPTE,
+                    path + API_GET_REQUEST_NOT_ACCEPTE_TO_USER,
                     HttpMethod.POST,
                     requestNotAcceptedToUser,
                     FriendResponse.class
@@ -146,15 +150,74 @@ public class FriendsController {
         }
     }
 
-    @GetMapping("/delete/{friendId}")
-    public String deleteFriendship(@PathVariable Long friendId, HttpServletRequest request) {
+    @GetMapping("/delete")
+    public String deleteFriendship( @RequestParam(value = "index") Integer index,
+                                    @RequestParam(value = "id") Long id, HttpServletRequest request) {
         if (request.getSession().getAttribute("user") == null) {
             return "redirect:/";
         }
+        FriendShipRequestDTO friendShipRequestDTO = new FriendShipRequestDTO();
+        if( index == null || (index != 1 & index != 2 & index != 3)){
+            return "redirect:/user/friends";
+        }
         UserInfo user = getUserFromSession(request);
-        UserDTO user = getUserFromSession(request);
-        friendsService.deleteFriendship(user, friendId);
-        return "redirect:/user/friends";
+        if( index == 1){
+            friendShipRequestDTO.setIdUserSender(Long.parseLong(user.getId()));
+            friendShipRequestDTO.setIdUserReceiver(id);
+            friendShipRequestDTO.setAccepte(false);
+        } else if( index == 2){
+            friendShipRequestDTO.setIdUserSender(id);
+            friendShipRequestDTO.setIdUserReceiver(Long.parseLong(user.getId()));
+            friendShipRequestDTO.setAccepte(false);
+        } else if( index == 3){
+            friendShipRequestDTO.setIdUserSender(id);
+            friendShipRequestDTO.setIdUserReceiver(Long.parseLong(user.getId()));
+            friendShipRequestDTO.setAccepte(true);
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
+        HttpEntity<FriendShipRequestDTO> requestEntity = new HttpEntity<>(friendShipRequestDTO,headers);
+        try {
+            ResponseEntity<ResponseOk> responseEntity = restTemplate.exchange(
+                    path + API_DELETE_FRIENDSHIP,
+                    HttpMethod.POST,
+                    requestEntity,
+                    ResponseOk.class
+            );
+            ResponseOk responseOk = responseEntity.getBody();
+            redirectAttributes.addFlashAttribute("message", responseOk.getMessage());
+            return "redirect:/user/profile/"+ friendId;
+        } catch (Exception ex) {
+            model.addAttribute("message", ex);
+            return VIEW_ERR;
+        }
+    }
+
+    @GetMapping("/addToFriends/{friendId}")
+    public String accepteFriends(@PathVariable Long friendId, HttpServletRequest request, Model model, RedirectAttributes redirectAttributes) {
+        if (request.getSession().getAttribute("user") == null) {
+            return "redirect:/";
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
+        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+        try {
+            ResponseEntity<ResponseOk> responseEntity = restTemplate.exchange(
+                    path + API_ADD_FRIEND,
+                    HttpMethod.POST,
+                    requestEntity,
+                    ResponseOk.class,
+                    friendId
+            );
+            ResponseOk responseOk = responseEntity.getBody();
+            redirectAttributes.addFlashAttribute("message", responseOk.getMessage());
+            return "redirect:/user/profile/"+ friendId;
+        } catch (Exception ex) {
+            model.addAttribute("message", ex);
+            return VIEW_ERR;
+        }
     }
 
 }

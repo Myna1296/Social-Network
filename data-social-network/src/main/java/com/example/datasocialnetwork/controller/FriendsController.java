@@ -1,5 +1,6 @@
 package com.example.datasocialnetwork.controller;
 
+import com.example.datasocialnetwork.dto.request.FriendShipRequestDTO;
 import com.example.datasocialnetwork.dto.request.FriendRequestDTO;
 import com.example.datasocialnetwork.dto.response.CheckFriendShipResponse;
 import com.example.datasocialnetwork.dto.response.FriendResponse;
@@ -41,9 +42,14 @@ public class FriendsController {
       return friendsService.getNotAcceptedRequestsToUser(friendRequestDTO);
    }
 
-   @PostMapping("/delete/{id}")
-   public ResponseEntity<?> deleteFriendship(@PathVariable("id") Long  id){
-      return friendsService.getNotAcceptedRequestsToUser(friendRequestDTO);
+   @PostMapping("/delete")
+   public ResponseEntity<?> deleteFriendship(@RequestBody FriendShipRequestDTO friendShipRequestDTO){
+      return friendsService.deleteFriendship(friendShipRequestDTO);
+   }
+
+   @PostMapping("/accepte")
+   public ResponseEntity<?> accepteFriendship(@RequestBody FriendShipRequestDTO friendShipRequestDTO){
+      return friendsService.accepteFriendShip(friendShipRequestDTO);
    }
 
 
