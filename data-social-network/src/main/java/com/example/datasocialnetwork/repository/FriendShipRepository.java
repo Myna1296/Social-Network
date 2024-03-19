@@ -47,7 +47,10 @@ public interface FriendShipRepository extends JpaRepository<FriendShip,Long> {
             "OR (f.userSender = :userReceiver AND f.userReceiver = :userSender AND f.accepted = false)")
     boolean checkFriendshipRequest(@Param("userSender") User userSender, @Param("userReceiver") User userReceiver);
 
-    @Query("SELECT f FROM FriendShip f WHERE f.userSender = :userSender AND f.userReceiver = :userReceiver AND f.accepted = :accepted")
-    FriendShip checkFriendshipExists(@Param("userSender") User userSender, @Param("userReceiver") User userReceiver, @Param("accepted") boolean accepted);
+    @Query("SELECT f FROM FriendShip f WHERE (f.userSender = :userSender AND f.userReceiver = :userReceiver AND f.accepted = :accepted)" +
+            "OR (f.userSender = :userReceiver AND f.userReceiver = :userSender AND f.accepted = :accepted)")
+    List<FriendShip> checkFriendshipExists(@Param("userSender") User userSender,
+                                           @Param("userReceiver") User userReceiver,
+                                           @Param("accepted") boolean accepted);
 
 }

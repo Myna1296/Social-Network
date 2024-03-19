@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="template.html :: header('Users', false)"></head>
+<head th:replace="template.html :: header('Friends', false)"></head>
 
 <body th:with="sessionUser=${session.user}">
 
@@ -69,9 +69,7 @@
                             </a>
                             <span th:text="${user.userName}"></span>
                         <td>
-                            <a class="btn btn-danger" th:href="@{'/user/friends/accepte' + ${user.id}}" th:text="#{friends.accept}">Accepte</a>
-                        </td>
-                        <td>
+                            <a class="btn btn-success" th:href="@{/user/friends/accepte(id=${user.id})}" th:text="#{friends.accept}">Accepte</a>
                             <a class="btn btn-danger" th:href="@{/user/friends/delete(index=2,id=${user.id})}" th:text="#{friends.remove}">Remove</a>
                         </td>
                     </tr>

@@ -24,6 +24,9 @@ public class Status {
     @OneToMany(mappedBy = "status")
     private List<LikeStatus> likeStatusList;
 
+    @OneToMany(mappedBy = "status")
+    private List<Comment> comments;
+
     @Column(name = "title", nullable = false)
     private String title;
 
@@ -39,7 +42,14 @@ public class Status {
     @Transient
     private int likeCount;
 
+    @Transient
+    private int commentCount;
+
     public int getLikeCount() {
         return likeStatusList != null ? likeStatusList.size() : 0;
+    }
+
+    public int getCommentCount() {
+        return comments != null ? comments.size() : 0;
     }
 }

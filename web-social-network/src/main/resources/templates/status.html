@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="template.html :: header('Messages', false)"></head>
+<head th:replace="template.html :: header('Status', false)"></head>
 
 <body th:with="sessionUser=${session.user}">
 
@@ -10,22 +10,100 @@
 
 <div class="container">
     <div class="row">
-        <div th:replace="template.html :: menu" ></div>
+        <div th:replace="template.html :: menu('status')" ></div>
 
         <div class="col-md-9">
-            <h2 >Status</h2>
-
-            <!--<div class="panel panel-default" th:each="status : ${listStatus}">-->
-                <!--<div class="panel-heading">-->
-                    <!--<div class="card">-->
-                        <!--<a  th:href="@{'/user/profile/' + ${user.id}}">-->
-                            <!--<img class="img-circle img-thumbnail img-message" th:src="@{'/' + ${user.image}}" />-->
-                            <!--<span th:text="${user.firstName}">Tyrion</span>-->
-                        <!--</a>-->
-                    <!--</div>-->
+            <div class="friends-top">
+            </div>
+            <div class="friends-top" th:if="${id == null}">
+                <h3 >News status friends</h3>
+                <table class="table friends">
+                    <tr th:each="status : ${statusList}">
+                        <td>
+                            <a th:href="@{'/user/profile/' + ${status.userId}}">
+                                <img th:if="${status.userImage != null}" class="img-circle img-thumbnail img-message"
+                                     th:src="@{'/' + ${status.userImage}}" alt="User's image">
+                                <img th:unless="${status.userImage != null}" class="img-circle img-thumbnail img-message"
+                                     th:src="@{/images/noname.svg}" alt="User's image">
+                            </a>
+                            <span th:text="${status.userName}"></span>
+                        </td>
+                        <td>
+                            <a th:href="@{'/user/status/info/' + ${status.statusId}}"><span th:text="${status.title}"></span></a>
+                        </td>
+                        <td>
+                            <span th:text="${status.likeCount + ' Like'}"></span>
+                        </td>
+                        <td>
+                            <span th:text="${status.commentCount + ' Comment'}"></span>
+                        </td>
+                    </tr>
+                </table>
+                <!--<div th:if="${usersNotAcceptedRequestsTotal > 0 }">-->
+                    <!--<nav>-->
+                        <!--<ul class="pagination">-->
+                            <!--<li class="page-item" th:classappend="${ usersNotAcceptedRequestsPage > 1} ? '' : 'disabled'">-->
+                                <!--<a th:if="${usersNotAcceptedRequestsPage > 1}" class="page-link"-->
+                                   <!--th:href="@{/user/friends(index=1,page=${usersNotAcceptedRequestsPage - 1})}" th:text="#{previous}">-->
+                                    <!--Previous-->
+                                <!--</a>-->
+                                <!--<a th:if="${usersNotAcceptedRequestsPage <= 1}" class="page-link" href="#" th:text="#{previous}">Previous</a>-->
+                            <!--</li>-->
+                            <!--<li class="page-item" th:each="i: ${#numbers.sequence(1, usersNotAcceptedRequestsTotal )}"-->
+                                <!--th:classappend="${i == usersNotAcceptedRequestsPage} ? 'active' : '' " >-->
+                                <!--<a class="page-link" th:href="@{/user/friends(index=1,page=${i})}" th:text="${i}">1</a>-->
+                            <!--</li>-->
+                            <!--<li class="page-item" th:classappend="${usersNotAcceptedRequestsTotal > usersNotAcceptedRequestsPage} ? '' : 'disabled'">-->
+                                <!--<a th:if="${usersNotAcceptedRequestsTotal > usersNotAcceptedRequestsPage}" class="page-link"-->
+                                   <!--th:href="@{/user/friends(index=1,page=${usersNotAcceptedRequestsPage + 1})}" th:text="#{next}">-->
+                                    <!--Next-->
+                                <!--</a>-->
+                                <!--<a th:if="${usersNotAcceptedRequestsTotal == usersNotAcceptedRequestsPage}" class="page-link" href="#" th:text="#{next}">Next</a>-->
+                            <!--</li>-->
+                        <!--</ul>-->
+                    <!--</nav>-->
                 <!--</div>-->
-                <!--<div class="panel-body"><a th:href="@{'/user/conversation/' + ${m.companionId}}" th:text="${m.message}">Hello! How are you?</a></div>-->
-            <!--</div>-->
+            </div>
+            <div class="friends-top" th:if="${id != null}">
+                <h3 th:text="${userName + ' status'}"></h3>
+                <table class="table friends">
+                    <tr th:each="status : ${statusList}">
+                        <td>
+                            <a th:href="@{'/user/status/info/' + ${status.statusId}}"><span th:text="${status.title}"></span></a>
+                        </td>
+                        <td>
+                            <span th:text="${status.likeCount + ' Like'}"></span>
+                        </td>
+                        <td>
+                            <span th:text="${status.commentCount + ' Comment'}"></span>
+                        </td>
+                    </tr>
+                </table>
+                <!--<div th:if="${usersNotAcceptedRequestsTotal > 0 }">-->
+                <!--<nav>-->
+                <!--<ul class="pagination">-->
+                <!--<li class="page-item" th:classappend="${ usersNotAcceptedRequestsPage > 1} ? '' : 'disabled'">-->
+                <!--<a th:if="${usersNotAcceptedRequestsPage > 1}" class="page-link"-->
+                <!--th:href="@{/user/friends(index=1,page=${usersNotAcceptedRequestsPage - 1})}" th:text="#{previous}">-->
+                <!--Previous-->
+                <!--</a>-->
+                <!--<a th:if="${usersNotAcceptedRequestsPage <= 1}" class="page-link" href="#" th:text="#{previous}">Previous</a>-->
+                <!--</li>-->
+                <!--<li class="page-item" th:each="i: ${#numbers.sequence(1, usersNotAcceptedRequestsTotal )}"-->
+                <!--th:classappend="${i == usersNotAcceptedRequestsPage} ? 'active' : '' " >-->
+                <!--<a class="page-link" th:href="@{/user/friends(index=1,page=${i})}" th:text="${i}">1</a>-->
+                <!--</li>-->
+                <!--<li class="page-item" th:classappend="${usersNotAcceptedRequestsTotal > usersNotAcceptedRequestsPage} ? '' : 'disabled'">-->
+                <!--<a th:if="${usersNotAcceptedRequestsTotal > usersNotAcceptedRequestsPage}" class="page-link"-->
+                <!--th:href="@{/user/friends(index=1,page=${usersNotAcceptedRequestsPage + 1})}" th:text="#{next}">-->
+                <!--Next-->
+                <!--</a>-->
+                <!--<a th:if="${usersNotAcceptedRequestsTotal == usersNotAcceptedRequestsPage}" class="page-link" href="#" th:text="#{next}">Next</a>-->
+                <!--</li>-->
+                <!--</ul>-->
+                <!--</nav>-->
+                <!--</div>-->
+            </div>
         </div>
     </div>
     <hr/>

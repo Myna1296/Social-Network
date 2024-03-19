@@ -152,7 +152,7 @@ public class FriendsController {
 
     @GetMapping("/delete")
     public String deleteFriendship( @RequestParam(value = "index") Integer index,
-                                    @RequestParam(value = "id") Long id, HttpServletRequest request) {
+                                    @RequestParam(value = "id") Long id, HttpServletRequest request, Model model) {
         if (request.getSession().getAttribute("user") == null) {
             return "redirect:/";
         }
@@ -161,18 +161,11 @@ public class FriendsController {
             return "redirect:/user/friends";
         }
         UserInfo user = getUserFromSession(request);
-        if( index == 1){
-            friendShipRequestDTO.setIdUserSender(Long.parseLong(user.getId()));
-            friendShipRequestDTO.setIdUserReceiver(id);
-            friendShipRequestDTO.setAccepte(false);
-        } else if( index == 2){
-            friendShipRequestDTO.setIdUserSender(id);
-            friendShipRequestDTO.setIdUserReceiver(Long.parseLong(user.getId()));
-            friendShipRequestDTO.setAccepte(false);
-        } else if( index == 3){
-            friendShipRequestDTO.setIdUserSender(id);
-            friendShipRequestDTO.setIdUserReceiver(Long.parseLong(user.getId()));
+        friendShipRequestDTO.setId(id);
+        if( index == 3){
             friendShipRequestDTO.setAccepte(true);
+        } else{
+            friendShipRequestDTO.setAccepte(false);
         }
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -186,34 +179,42 @@ public class FriendsController {
                     ResponseOk.class
             );
             ResponseOk responseOk = responseEntity.getBody();
-            redirectAttributes.addFlashAttribute("message", responseOk.getMessage());
-            return "redirect:/user/profile/"+ friendId;
+            if(responseOk.getCode() != 0){
+                model.addAttribute("message", responseOk.getMessage());
+                return VIEW_ERR;
+            }
+            return "redirect:/user/friends";
         } catch (Exception ex) {
             model.addAttribute("message", ex);
             return VIEW_ERR;
         }
     }
 
-    @GetMapping("/addToFriends/{friendId}")
-    public String accepteFriends(@PathVariable Long friendId, HttpServletRequest request, Model model, RedirectAttributes redirectAttributes) {
+    @GetMapping("/accepte")
+    public String accepteFriends(@RequestParam(value = "id") Long id, HttpServletRequest request, Model model, RedirectAttributes redirectAttributes) {
         if (request.getSession().getAttribute("user") == null) {
             return "redirect:/";
         }
+        FriendShipRequestDTO friendShipRequestDTO = new FriendShipRequestDTO();
+        friendShipRequestDTO.setId(id);
+        friendShipRequestDTO.setAccepte(false);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
-        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+        HttpEntity<FriendShipRequestDTO> requestEntity = new HttpEntity<>(friendShipRequestDTO,headers);
         try {
             ResponseEntity<ResponseOk> responseEntity = restTemplate.exchange(
-                    path + API_ADD_FRIEND,
+                    path + API_ACCEPTE_FRIENDSHIP,
                     HttpMethod.POST,
                     requestEntity,
-                    ResponseOk.class,
-                    friendId
+                    ResponseOk.class
             );
             ResponseOk responseOk = responseEntity.getBody();
-            redirectAttributes.addFlashAttribute("message", responseOk.getMessage());
-            return "redirect:/user/profile/"+ friendId;
+            if(responseOk.getCode() != 0){
+                model.addAttribute("message", responseOk.getMessage());
+                return VIEW_ERR;
+            }
+            return "redirect:/user/friends";
         } catch (Exception ex) {
             model.addAttribute("message", ex);
             return VIEW_ERR;

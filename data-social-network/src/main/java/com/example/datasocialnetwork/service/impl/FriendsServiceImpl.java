@@ -233,21 +233,21 @@ public class FriendsServiceImpl implements FriendsService {
             ResponseOk response = new ResponseOk(Constants.CODE_ERROR,"User does not exist");
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
-        User userSender = userRepository.findOneById(friendShipRequestDTO.getIdUserSender());
-        User userReceiver = userRepository.findOneById(friendShipRequestDTO.getIdUserReceiver());
-        if (userSender == null || userReceiver == null) {
+        User userFriend = userRepository.findOneById(friendShipRequestDTO.getId());
+        if (userFriend == null) {
             ResponseOk response = new ResponseOk(Constants.CODE_ERROR,"Friend does not exist");
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
-        if (userSender.getEmail().equals(userReceiver.getEmail())){
+        if (user.getId() == userFriend.getId()){
             ResponseOk response = new ResponseOk(Constants.CODE_ERROR,"This friend request does not exist");
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
-        FriendShip friendShip = friendShipRepository.checkFriendshipExists(userSender, userReceiver, friendShipRequestDTO.isAccepte());
-        if(friendShip == null) {
+        List<FriendShip> friendShipList = friendShipRepository.checkFriendshipExists(user, userFriend, friendShipRequestDTO.isAccepte());
+        if(friendShipList.isEmpty()) {
             ResponseOk response = new ResponseOk(Constants.CODE_ERROR, "Friend request does not exist");
             return new ResponseEntity<>(response, HttpStatus.OK);
         } else {
+                FriendShip friendShip = friendShipList.get(0);
                 friendShipRepository.delete(friendShip);
                 ResponseOk response = new ResponseOk(Constants.CODE_OK, "Delete friend request successfully");
                 return new ResponseEntity<>(response, HttpStatus.OK);
@@ -263,21 +263,21 @@ public class FriendsServiceImpl implements FriendsService {
             ResponseOk response = new ResponseOk(Constants.CODE_ERROR,"User does not exist");
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
-        User userSender = userRepository.findOneById(friendShipRequestDTO.getIdUserSender());
-        User userReceiver = userRepository.findOneById(friendShipRequestDTO.getIdUserReceiver());
-        if (userSender == null || userReceiver == null) {
+        User userFriend = userRepository.findOneById(friendShipRequestDTO.getId());
+        if (userFriend == null) {
             ResponseOk response = new ResponseOk(Constants.CODE_ERROR,"Friend does not exist");
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
-        if (userSender.getEmail().equals(userReceiver.getEmail())){
+        if (user.getId() == userFriend.getId()){
             ResponseOk response = new ResponseOk(Constants.CODE_ERROR,"This friend request does not exist");
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
-        FriendShip friendShip = friendShipRepository.checkFriendshipExists(userSender, userReceiver, friendShipRequestDTO.isAccepte());
-        if(friendShip == null) {
+        List<FriendShip> friendShipList = friendShipRepository.checkFriendshipExists(user, userFriend, friendShipRequestDTO.isAccepte());
+        if(friendShipList.isEmpty()) {
             ResponseOk response = new ResponseOk(Constants.CODE_ERROR, "Friend request does not exist");
             return new ResponseEntity<>(response, HttpStatus.OK);
         } else {
+            FriendShip friendShip = friendShipList.get(0);
             friendShip.setAccepted(true);
             friendShipRepository.save(friendShip);
             ResponseOk response = new ResponseOk(Constants.CODE_OK, "Accepte friend request successfully");

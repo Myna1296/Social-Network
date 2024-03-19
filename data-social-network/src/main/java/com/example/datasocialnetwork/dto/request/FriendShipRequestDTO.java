@@ -8,7 +8,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class FriendShipRequestDTO {
-    private Long idUserSender;
-    private Long idUserReceiver;
+    private Long id;
     private boolean accepte;
 }
