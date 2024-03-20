@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head th:replace="template.html :: header('Status', true)"></head>
+
+<body>
+
+<div th:replace="template.html :: navbar" ></div>
+<hr/>
+
+<div class="container">
+    <div class="row">
+        <div th:replace="template.html :: menu('status')" ></div>
+
+        <div class="col-md-9">
+            <div class="profile-block">
+                <h2 th:text="${isEdit == 'true'} ? 'Edit Status':'New Status'">New Status</h2>
+                <!-- Check for registration error -->
+                <div th:if="${error}" style="color:red">
+                    <p th:text="${error}"></p>
+                </div>
+                <form th:action="${isEdit == 'true'} ? @{/user/status/edit}:@{/user/status/add}" th:object="${status}" method="post">
+                    <div class="panel panel-default">
+                        <div class="list-group">
+                            <div class="list-group-item">
+                                <label for="title"><span >Title</span>: <input type="text" name="title" class="form-control"
+                                                                                                 th:value="${status.title}"
+                                                                                                 id="title" />
+                                </label>
+                            </div>
+                            <div class="list-group-item">
+                                <label for="content"><span >Content</span>: <textarea name="content" class="form-control"
+                                                                                      id="content" th:text="${status.content}"></textarea>
+                                </label>
+                            </div>
+
+
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-lg btn-success"><span th:text="${isEdit == 'true'} ? 'Edit Submit':'Add Status'"></span></button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="template.html :: footer"></div>
+
+<script src="../static/js/jquery-ui.min.js" th:src="@{/js/jquery-ui.min.js}"></script>
+<script src="../static/js/profile.js" th:src="@{/js/profile.js}"></script>
+
+</body>
+</html>

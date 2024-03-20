@@ -1,6 +1,7 @@
 package com.example.websocialnetwork.controller;
 
 import com.example.websocialnetwork.dto.FriendRequestDTO;
+import com.example.websocialnetwork.dto.StatusDTO;
 import com.example.websocialnetwork.dto.reponse.CommentResponse;
 import com.example.websocialnetwork.dto.reponse.FriendResponse;
 import com.example.websocialnetwork.dto.reponse.StatusResponse;
@@ -12,10 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
@@ -101,5 +99,13 @@ public class StatusController {
         model.addAttribute("id", id);
         model.addAttribute("userName", "Test");
         return "status-info";
+    }
+
+    @GetMapping("/add")
+    public String addStatusPage(@ModelAttribute("status") StatusDTO statusDTO, Model model, HttpServletRequest request) {
+//        if (request.getSession().getAttribute("user") == null) {
+//            return "redirect:/";
+//        }
+        return "status-edit";
     }
 }
