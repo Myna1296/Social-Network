@@ -13,16 +13,23 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static com.example.websocialnetwork.common.Const.*;
 import static com.example.websocialnetwork.common.Const.VIEW_ERR;
+import static com.example.websocialnetwork.util.ServerUtils.getProfileImagesPath;
 import static com.example.websocialnetwork.util.ServerUtils.getUserFromSession;
 import static com.example.websocialnetwork.util.Validation.calculateTotalPages;
 
@@ -35,6 +42,9 @@ public class StatusController {
     private static final Logger logger = LoggerFactory.getLogger(ProfileController.class);
     @Value("${api.path}")
     private String path;
+
+    @Value("#{'${allowed.file.types}'.split(',')}")
+    private Set<String> allowedExtensions;
 
     @GetMapping
     public String showStatusPage(Model model, HttpServletRequest request) {
@@ -102,10 +112,45 @@ public class StatusController {
     }
 
     @GetMapping("/add")
-    public String addStatusPage(@ModelAttribute("status") StatusDTO statusDTO, Model model, HttpServletRequest request) {
+    public String addStatusPage(Model model, HttpServletRequest request) {
 //        if (request.getSession().getAttribute("user") == null) {
 //            return "redirect:/";
 //        }
+        StatusDTO statusDTO = new StatusDTO();
+        model.addAttribute("status", statusDTO);
+        model.addAttribute("isEdit", "false");;
         return "status-edit";
+    }
+
+    @PostMapping("/add")
+    public String addNewStatus(@RequestParam("statusImage") MultipartFile imageFile,
+                               @Valid @ModelAttribute("status") StatusDTO statusDTO,
+                               BindingResult bindingResult, Model model,
+                               HttpServletRequest request) throws IOException {
+        if (bindingResult.hasErrors()) {
+            return "status-edit";
+        }
+        String contentType = imageFile.getContentType();
+//        if(!allowedExtensions.contains(contentType)) {
+//            model.addAttribute("error","File extension is not supported");
+//            return "status-edit";
+//        }
+        UserInfo user = getUserFromSession(request);
+        byte[] bytes = imageFile.getBytes();
+        Path pathImages = getProfileImagesPath();
+
+        // Xử lý logic khi không có lỗi
+
+        return "redirect:/path/to/success/page";
+    }
+
+    private String saveImage(MultipartFile imageFile) throws IOException {
+        // Xử lý lưu trữ tệp ảnh vào thư mục và trả về đường dẫn
+        // Ví dụ:
+        // Path pathImages = getProfileImagesPath();
+        // byte[] bytes = imageFile.getBytes();
+        // Files.write(Paths.get(pathImages.toString(), imageFile.getOriginalFilename()), bytes);
+        // return pathImages.toString() + "/" + imageFile.getOriginalFilename();
+        return ""; // Trả về đường dẫn của tệp ảnh sau khi lưu trữ
     }
 }

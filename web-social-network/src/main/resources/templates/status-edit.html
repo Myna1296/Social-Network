@@ -19,25 +19,49 @@
                 <div th:if="${error}" style="color:red">
                     <p th:text="${error}"></p>
                 </div>
-                <form th:action="${isEdit == 'true'} ? @{/user/status/edit}:@{/user/status/add}" th:object="${status}" method="post">
+                <form th:action="${isEdit == 'true' ? '/user/status/edit' : '/user/status/add'}"
+                      th:object="${status}" method="POST" enctype="multipart/form-data">
                     <div class="panel panel-default">
                         <div class="list-group">
                             <div class="list-group-item">
-                                <label for="title"><span >Title</span>: <input type="text" name="title" class="form-control"
-                                                                                                 th:value="${status.title}"
-                                                                                                 id="title" />
+                                <label for="title">
+                                    <span>Title</span>:
+                                    <input type="text" th:field="*{title}" class="form-control" id="title" required />
                                 </label>
+                                <div th:if="${#fields.hasErrors('title')}" style="margin-bottom: 25px" class="text-danger">
+                                    <ul>
+                                        <li th:each="err : ${#fields.errors('title')}" th:text="${err}"></li>
+                                    </ul>
+                                </div>
                             </div>
                             <div class="list-group-item">
-                                <label for="content"><span >Content</span>: <textarea name="content" class="form-control"
-                                                                                      id="content" th:text="${status.content}"></textarea>
+                                <label for="content">
+                                    <span>Content</span>:
+                                    <textarea name="content" th:field="*{content}" class="form-control" rows="6" cols="22" id="content" required></textarea>
                                 </label>
+                                <div th:if="${#fields.hasErrors('content')}" style="margin-bottom: 25px" class="text-danger">
+                                    <ul>
+                                        <li th:each="err : ${#fields.errors('content')}" th:text="${err}"></li>
+                                    </ul>
+                                </div>
                             </div>
-
-
+                            <div class="list-group-item">
+                                <label>
+                                    <span>Status image   : </span><br/><input type="file" id="statusImage" name="statusImage" accept="image/*">
+                                </label>
+                                <br/>
+                                <div>
+                                    <div class="card">
+                                        <img th:if="${status.image != null}" class="img-circle img-thumbnail social-img" id="selectedImage"
+                                             th:src="@{'/' + ${status.image}}" alt="Your profile image">
+                                        <img th:unless="${status.image != null}" class="img-circle img-thumbnail social-img" id="selectedImage"
+                                             th:src="@{/images/noname.svg}" alt="Your profile image">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-lg btn-success"><span th:text="${isEdit == 'true'} ? 'Edit Submit':'Add Status'"></span></button>
+                    <button type="submit" class="btn btn-lg btn-success"><span th:text="${isEdit == 'true' ? 'Edit Submit' : 'Add Status'}"></span></button>
                 </form>
             </div>
         </div>
@@ -47,7 +71,13 @@
 <div th:replace="template.html :: footer"></div>
 
 <script src="../static/js/jquery-ui.min.js" th:src="@{/js/jquery-ui.min.js}"></script>
-<script src="../static/js/profile.js" th:src="@{/js/profile.js}"></script>
+<script>
+    document.getElementById('statusImage').addEventListener('change', function(event) {
+        var selectedFile = event.target.files[0];
+        var selectedFilePath = URL.createObjectURL(selectedFile);
 
+        document.getElementById('selectedImage').src = selectedFilePath;
+    });
+</script>
 </body>
 </html>
