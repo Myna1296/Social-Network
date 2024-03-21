@@ -24,17 +24,22 @@
                                 <img th:unless="${user.avata != null}" class="img-circle img-thumbnail social-img"
                                      th:src="@{/images/noname.svg}" alt="Your profile image">
                                 <h3 th:text="${user.userName}">User Name</h3>
-                                &nbsp;&nbsp;<a th:href="@{'/user/status/' + ${user.id}}" class="btn btn-success">Status</a>
+                                &nbsp;&nbsp;<a th:href="@{'/user/status/' + ${user.id}}" class="btn btn-success"><span>    Status    </span></a>
                             </div>
                             <table class="table">
                                 <tr th:if="${sessionUser != null and user != null and sessionUser.id != user.id}">
                                     <td th:if="${usersHaveFriendship}">
-                                        <a th:href="@{'/user/profile/' + ${user.id}}" class="btn btn-success">Friends <span class="glyphicon glyphicon-ok"></span></a>
+                                        <a th:href="@{'/user/profile/' + ${user.id}}" class="btn btn-success"><span>   Friends    </span></a>
                                     </td>
                                     <td th:unless="${usersHaveFriendship}">
                                         <a th:href="@{'/user/friends/addToFriends/' + ${user.id}}" class="btn btn-success" id="addToFriendsBtn">Add to friends</a>
                                         <br/><br/>
                                         <span th:text="${message}" style="color:#ac2925"></span>
+                                    </td>
+                                </tr>
+                                <tr th:unless="${sessionUser != null and user != null and sessionUser.id != user.id}">
+                                    <td>
+                                        <a th:href="@{'/user/export-file'}" class="btn btn-success">&nbsp;Export file&nbsp;&nbsp;</a>
                                     </td>
                                 </tr>
                             </table>

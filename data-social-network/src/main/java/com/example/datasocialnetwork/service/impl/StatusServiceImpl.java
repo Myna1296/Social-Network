@@ -13,6 +13,7 @@ import com.example.datasocialnetwork.entity.FriendShip;
 import com.example.datasocialnetwork.entity.Status;
 import com.example.datasocialnetwork.entity.User;
 import com.example.datasocialnetwork.exceptions.UserNotFoundException;
+import com.example.datasocialnetwork.repository.LikeRepository;
 import com.example.datasocialnetwork.repository.StatusRepository;
 import com.example.datasocialnetwork.repository.UserRepository;
 import com.example.datasocialnetwork.service.StatusService;
@@ -38,6 +39,9 @@ public class StatusServiceImpl implements StatusService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private LikeRepository likeRepository;
 
 
     @Override
@@ -199,10 +203,12 @@ public class StatusServiceImpl implements StatusService {
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
         Status status = statusRepository.findStatusById(id);
+        long count = likeRepository.countByStatusIdAndUserId(id, user.getId());
         StatusDTO statusDTO = convertStatusToDTO(status);
         response.setCode(Constants.CODE_OK);
         response.setMessage("");
         response.setStatus(statusDTO);
+        response.setLike( count!= 0);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

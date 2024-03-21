@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+
 @Repository
 public interface StatusRepository extends JpaRepository<Status,Long > {
 
@@ -27,4 +29,7 @@ public interface StatusRepository extends JpaRepository<Status,Long > {
 
     @Query("SELECT s FROM Status s WHERE s.id = :id")
     Status findStatusById(@Param("id") Long id);
+
+    @Query("SELECT COUNT(s) FROM Status s WHERE s.id = :id and s.createdDate > :startDate")
+    long countStatusTAndCreatedDateAfter(@Param("id") Long id, @Param("startDate") LocalDateTime startDate);
 }

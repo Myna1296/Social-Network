@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS `social-network`.`like_status` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `user_id` INT NOT NULL,
   `status_id` INT NOT NULL,
+  `created_date` DATETIME NULL,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`user_id`) REFERENCES `user`(`id`),
   FOREIGN KEY (`status_id`) REFERENCES `status`(`id`)

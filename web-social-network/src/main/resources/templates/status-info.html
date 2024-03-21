@@ -27,7 +27,8 @@
                             <table class="table">
                                 <tr>
                                     <td>
-                                        <a th:href="@{'/user/status/like' }" class="btn btn-success" id="addToFriendsBtn">Like</a>
+                                        <a th:if="${isLike}" th:href="@{'/user/like/delete/'+${status.id} }" class="btn btn-danger" >Unlike</a>
+                                        <a th:unless="${isLike}" th:href="@{'/user/like/add/' +${status.id}}" class="btn btn-success" >Like</a>
                                         <br/><br/>
                                         <!--<span th:text="${message}" style="color:#ac2925"></span>-->
                                     </td>

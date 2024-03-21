@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 @Repository
 public interface FriendShipRepository extends JpaRepository<FriendShip,Long> {
@@ -52,5 +53,8 @@ public interface FriendShipRepository extends JpaRepository<FriendShip,Long> {
     List<FriendShip> checkFriendshipExists(@Param("userSender") User userSender,
                                            @Param("userReceiver") User userReceiver,
                                            @Param("accepted") boolean accepted);
+
+    @Query("SELECT COUNT(f) FROM FriendShip f WHERE (f.userSender.id = :userId OR f.userReceiver.id = :userId) AND f.accepted = true AND f.createdDate > :startDate")
+    long countAcceptedFriendshipsAndCreatedDateAfter(@Param("userId") Long userId, @Param("startDate") LocalDateTime startDate);
 
 }

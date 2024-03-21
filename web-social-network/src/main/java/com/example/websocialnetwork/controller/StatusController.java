@@ -194,6 +194,7 @@ public class StatusController {
             }
             StatusDTO statusDTO = response.getStatus();
             model.addAttribute("status", statusDTO);
+            model.addAttribute("isLike", response.isLike());
             CommentRequest commentRequest = new CommentRequest();
             commentRequest.setStatusId(id);
             commentRequest.setPage(page);

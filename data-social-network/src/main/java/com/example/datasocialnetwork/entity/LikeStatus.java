@@ -5,6 +5,7 @@ import lombok.Setter;
 
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -23,5 +24,8 @@ public class LikeStatus {
     @ManyToOne
     @JoinColumn(name = "status_id", nullable = false)
     private Status status;
+
+    @Column(name = "created_date")
+    private LocalDateTime createdDate;
 
 }

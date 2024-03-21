@@ -1,6 +1,7 @@
 package com.example.websocialnetwork.controller;
 
 import com.example.websocialnetwork.dto.reponse.CheckFriendShipResponse;
+import com.example.websocialnetwork.dto.reponse.ResponseOk;
 import com.example.websocialnetwork.dto.reponse.UserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,6 +119,35 @@ public class ProfileController {
             model.addAttribute("usersHaveFriendship", checkFriendShipResponse.isCheckFriendShip());
             model.addAttribute("user", userInfo);
             return "E007";
+        } catch (Exception ex) {
+            model.addAttribute("message", ex);
+            return VIEW_ERR;
+        }
+    }
+
+    @GetMapping("/export-file")
+    public String exportFile (Model model, HttpServletRequest request) {
+        if (request.getSession().getAttribute("user") == null) {
+            return "redirect:/";
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
+        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+        try {
+            ResponseEntity<ResponseOk> responseEntity = restTemplate.exchange(
+                    path + API_EXPORT_FILE,
+                    HttpMethod.GET,
+                    requestEntity,
+                    ResponseOk.class
+            );
+            ResponseOk responseOk = responseEntity.getBody();
+            assert responseOk != null;
+            if (responseOk.getCode() == 1) {
+                model.addAttribute("message", responseOk.getMessage());
+                return VIEW_ERR;
+            }
+            return "redirect:/user/profile";
         } catch (Exception ex) {
             model.addAttribute("message", ex);
             return VIEW_ERR;

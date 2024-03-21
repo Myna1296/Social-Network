@@ -33,6 +33,9 @@ public class Const {
     public static final String API_SEARCH_COMMENT = "/comment/search";
     public static final String API_ADD_COMMENT = "/comment/add";
     public static final String API_DELETE_COMMENT = "/comment/delete/{id}";
+    public static final String API_EXPORT_FILE = "/export/export-file";
+    public static final String API_ADD_LIKE = "/like/add/{id}";
+    public static final String API_DELETE_LIKE = "/like/delete/{id}";
 
     public static final String PROFILE_IMAGES = "profileImages";
     public static final String MESS_001 = "This account does not exist";
