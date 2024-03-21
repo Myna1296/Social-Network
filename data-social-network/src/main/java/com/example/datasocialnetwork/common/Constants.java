@@ -13,7 +13,7 @@ public class Constants {
     public static final String MESS_010 = "Account has been deleted";
     public static final String MESS_011 = "The file is not in the format image/jpeg,image/png";
     public static final String MESS_012 = "File extension is not supported";
-
+    public static final int LIMIT = 3;
     public static final int CODE_OK = 0;
     public static final int CODE_ERROR = 1;
     public static final String[] ENDPOINTS_PUBLIC = new String[] {

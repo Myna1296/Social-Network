@@ -24,6 +24,15 @@ public class Const {
     public static final String API_ADD_FRIEND = "/friends/add-to-friends/{id}";
     public static final String API_DELETE_FRIENDSHIP = "/friends/delete";
     public static final String API_ACCEPTE_FRIENDSHIP = "/friends/accepte";
+    public static final String API_GET_ALL_STATUS_USER = "/status/all";
+    public static final String API_GET_ALL_STATUS_FRIEND = "/status/all/friend";
+    public static final String API_DELETE_STATUS = "/status/delete/{postId}";
+    public static final String API_ADD_STATUS = "/status/add";
+    public static final String API_SEARCH_STATUS = "/status/search/{id}";
+    public static final String API_UPDATE_STATUS = "/status/update";
+    public static final String API_SEARCH_COMMENT = "/comment/search";
+    public static final String API_ADD_COMMENT = "/comment/add";
+    public static final String API_DELETE_COMMENT = "/comment/delete/{id}";
 
     public static final String PROFILE_IMAGES = "profileImages";
     public static final String MESS_001 = "This account does not exist";

@@ -49,16 +49,16 @@
                                         <span th:text="${status.title}"></span>
                                     </p>
                                     <p class="list-group-item">
-                                        <span >Text</span>:
-                                        <span th:text="${status.text}"></span>
+                                        <span >Content</span>:
+                                        <span th:text="${status.content}"></span>
                                     </p>
                                     <p class="list-group-item">
                                         <span >Like</span>:
-                                        <span th:text="${status.likeCount}"></span>
+                                        <span th:text="${status.countLike}"></span>
                                     </p>
                                     <p class="list-group-item">
                                         <span >Comment</span>:
-                                        <span th:text="${status.commentCount}"></span>
+                                        <span th:text="${status.countComment}"></span>
                                     </p>
                                     <p class="list-group-item">
                                         <span >Create date</span>:
@@ -76,42 +76,65 @@
                     <tr th:each="comment : ${listComment}">
                         <td>
                             <a th:href="@{'/user/profile/' + ${comment.userId}}">
-                                <img th:if="${comment.userImage != null}" class="img-circle img-thumbnail img-message"
-                                     th:src="@{'/' + ${comment.userImage}}" alt="User's image">
-                                <img th:unless="${comment.userImage != null}" class="img-circle img-thumbnail img-message"
+                                <img th:if="${comment.userAvata != null}" class="img-circle img-thumbnail img-message"
+                                     th:src="@{'/' + ${comment.userAvata}}" alt="User's image">
+                                <img th:unless="${comment.userAvata != null}" class="img-circle img-thumbnail img-message"
                                      th:src="@{/images/noname.svg}" alt="User's image">
                             </a>
                             <span th:text="${comment.userName}"></span><br/>
                             <span th:text="${comment.createDate}"></span>
                         <td>
-                            <span th:text="${comment.text}"></span>
+                            <span th:text="${comment.content}"></span>
+                        </td>
+                        <td th:if="${idUser == comment.userId}">
+                            <a class="btn btn-danger" th:href="@{'/user/comment/delete/' + ${comment.statusId}(com= ${comment.id})}" >Delete</a>
                         </td>
                     </tr>
                 </table>
-                <!--<div th:if="${usersNotAcceptedRequestsTotal > 0 }">-->
-                    <!--<nav>-->
-                        <!--<ul class="pagination">-->
-                            <!--<li class="page-item" th:classappend="${ usersNotAcceptedRequestsPage > 1} ? '' : 'disabled'">-->
-                                <!--<a th:if="${usersNotAcceptedRequestsPage > 1}" class="page-link"-->
-                                   <!--th:href="@{/user/friends(index=1,page=${usersNotAcceptedRequestsPage - 1})}" th:text="#{previous}">-->
-                                    <!--Previous-->
-                                <!--</a>-->
-                                <!--<a th:if="${usersNotAcceptedRequestsPage <= 1}" class="page-link" href="#" th:text="#{previous}">Previous</a>-->
-                            <!--</li>-->
-                            <!--<li class="page-item" th:each="i: ${#numbers.sequence(1, usersNotAcceptedRequestsTotal )}"-->
-                                <!--th:classappend="${i == usersNotAcceptedRequestsPage} ? 'active' : '' " >-->
-                                <!--<a class="page-link" th:href="@{/user/friends(index=1,page=${i})}" th:text="${i}">1</a>-->
-                            <!--</li>-->
-                            <!--<li class="page-item" th:classappend="${usersNotAcceptedRequestsTotal > usersNotAcceptedRequestsPage} ? '' : 'disabled'">-->
-                                <!--<a th:if="${usersNotAcceptedRequestsTotal > usersNotAcceptedRequestsPage}" class="page-link"-->
-                                   <!--th:href="@{/user/friends(index=1,page=${usersNotAcceptedRequestsPage + 1})}" th:text="#{next}">-->
-                                    <!--Next-->
-                                <!--</a>-->
-                                <!--<a th:if="${usersNotAcceptedRequestsTotal == usersNotAcceptedRequestsPage}" class="page-link" href="#" th:text="#{next}">Next</a>-->
-                            <!--</li>-->
-                        <!--</ul>-->
-                    <!--</nav>-->
-                <!--</div>-->
+                <div th:if="${totalPage > 0 }">
+                    <nav>
+                        <ul class="pagination">
+                            <li class="page-item" th:classappend="${ page > 1} ? '' : 'disabled'">
+                                <a th:if="${page > 1}" class="page-link"
+                                   th:href="@{'/user/status/info/'+ ${status.id}(page=${page - 1})}" th:text="#{previous}">
+                                    Previous
+                                </a>
+                                <a th:if="${page <= 1}" class="page-link" href="#" th:text="#{previous}">Previous</a>
+                            </li>
+                            <li class="page-item" th:each="i: ${#numbers.sequence(1, totalPage )}"
+                                th:classappend="${i == page} ? 'active' : '' " >
+                                <a class="page-link" th:href="@{'/user/status/info/'+ ${status.id}(page=${i})}" th:text="${i}">1</a>
+                            </li>
+                            <li class="page-item" th:classappend="${totalPage > page} ? '' : 'disabled'">
+                                <a th:if="${totalPage > page}" class="page-link"
+                                   th:href="@{'/user/status/info/'+ ${status.id}(page=${page + 1})}" th:text="#{next}">
+                                    Next
+                                </a>
+                                <a th:if="${totalPage == page}" class="page-link" href="#" th:text="#{next}">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            <div class="friends-top">
+                <a class="btn  btn-success"  id="newCommentButton" >New comment</a><br/><br/>
+                <form th:action="${'/user/comment/add'}"  method="POST" style="display: none;" id="commentForm">
+                    <div th:if="${error1}" style="color:red">
+                        <p th:text="${error1}"></p>
+                    </div>
+                    <input type="hidden"  class="form-control"  name="statusId" th:value="${status.id}" />
+                    <div class="panel panel-default">
+                        <div class="list-group">
+                            <div class="list-group-item">
+                                <label for="comment">
+                                    <span>Comment</span>:
+                                    <input type="text"  class="form-control" id="comment"  name="content" required />
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success"><span>Add comment</span></button>
+                </form>
             </div>
         </div>
     </div>
@@ -119,5 +142,10 @@
 </div>
 
 <div th:replace="template.html :: footer"></div>
+<script>
+    document.getElementById("newCommentButton").addEventListener("click", function() {
+        document.getElementById("commentForm").style.display = "block";
+    });
+</script>
 </body>
 </html>

@@ -1,21 +1,18 @@
-package com.example.websocialnetwork.dto;
+package com.example.datasocialnetwork.dto.request;
 
-import lombok.*;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 
+@Data
 @Getter
 @Setter
-@ToString
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class StatusDTO {
     private Long id;
-
     @NotEmpty(message = "Title cannot be empty")
     @NotBlank(message = "Title cannot be blank")
     @Length(min = 10, max = 50, message = "Title must be between 10 and 50 words in length")
@@ -33,5 +30,4 @@ public class StatusDTO {
     private Long userId;
     private String userName;
     private String userAvata;
-
 }

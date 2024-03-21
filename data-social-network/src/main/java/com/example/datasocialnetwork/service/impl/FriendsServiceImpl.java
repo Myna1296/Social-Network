@@ -50,8 +50,6 @@ public class FriendsServiceImpl implements FriendsService {
     @Autowired
     private FriendShipRepository friendShipRepository;
 
-    private int LIMIT = 3;
-
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<FriendResponse> getFriendsOfUser(FriendRequestDTO friendRequestDTO) {
@@ -68,7 +66,7 @@ public class FriendsServiceImpl implements FriendsService {
         }
         Page<FriendShip> pageFriends = friendShipRepository.findAcceptedFriendshipsByUserIdWithLimitOffset(
                 friendRequestDTO.getId(),
-                PageRequest.of(friendRequestDTO.getPage() - 1, LIMIT)
+                PageRequest.of(friendRequestDTO.getPage() - 1, Constants.LIMIT)
         );
 
         List<UserInfo> friendsOfUser = pageFriends.stream()
@@ -163,7 +161,7 @@ public class FriendsServiceImpl implements FriendsService {
         }
         Page<FriendShip> pageFriends = friendShipRepository.findUsersNotAcceptedRequestsByUserIdWithLimitOffset(
                 friendRequestDTO.getId(),
-                PageRequest.of(friendRequestDTO.getPage() - 1, LIMIT)
+                PageRequest.of(friendRequestDTO.getPage() - 1, Constants.LIMIT)
         );
 
         List<UserInfo> friendsOfUser = pageFriends.stream()
@@ -201,7 +199,7 @@ public class FriendsServiceImpl implements FriendsService {
         }
         Page<FriendShip> pageFriends = friendShipRepository.findNotAcceptedRequestsToUserByUserIdWithLimitOffset(
                 friendRequestDTO.getId(),
-                PageRequest.of(friendRequestDTO.getPage() - 1, LIMIT)
+                PageRequest.of(friendRequestDTO.getPage() - 1, Constants.LIMIT)
         );
 
         List<UserInfo> friendsOfUser = pageFriends.stream()

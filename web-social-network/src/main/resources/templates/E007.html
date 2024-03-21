@@ -24,7 +24,7 @@
                                 <img th:unless="${user.avata != null}" class="img-circle img-thumbnail social-img"
                                      th:src="@{/images/noname.svg}" alt="Your profile image">
                                 <h3 th:text="${user.userName}">User Name</h3>
-                                <a th:href="@{'/user/status/' + ${user.id}}" class="btn btn-success">Status</a>
+                                &nbsp;&nbsp;<a th:href="@{'/user/status/' + ${user.id}}" class="btn btn-success">Status</a>
                             </div>
                             <table class="table">
                                 <tr th:if="${sessionUser != null and user != null and sessionUser.id != user.id}">

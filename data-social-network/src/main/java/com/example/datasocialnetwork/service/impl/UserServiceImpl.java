@@ -65,8 +65,6 @@ public class UserServiceImpl implements UserService {
         this.passwordEncoder = new StandardPasswordEncoder();
     }
 
-    private int LIMIT = 3;
-
     /*
     Handles user registration
     Create by NgaPLT 2024/03/06
@@ -271,7 +269,7 @@ public class UserServiceImpl implements UserService {
             sreachResponse.setMessage(Constants.MESS_010);
             return new ResponseEntity<>(sreachResponse, HttpStatus.OK);
         }
-        Pageable pageable = PageRequest.of(searchUserRequestDTO.getPage() - 1 , LIMIT);
+        Pageable pageable = PageRequest.of(searchUserRequestDTO.getPage() - 1 , Constants.LIMIT);
         Page<User> users;
         if ( searchUserRequestDTO.getSearch().isEmpty()){
             users = userRepository.findAll(pageable);

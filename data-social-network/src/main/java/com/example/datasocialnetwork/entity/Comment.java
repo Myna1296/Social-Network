@@ -25,9 +25,6 @@ public class Comment {
     @JoinColumn(name = "status_id", nullable = false)
     private Status status;
 
-    @Column(name = "comment_images")
-    private String commentImages;
-
     @Column(name = "comment_text", nullable = false, columnDefinition = "TEXT")
     private String commentText;
 
