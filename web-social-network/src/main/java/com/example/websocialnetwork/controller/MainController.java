@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.util.Map;
 
 import static com.example.websocialnetwork.common.Const.*;
 import org.slf4j.Logger;
@@ -164,5 +165,35 @@ public class MainController {
         } catch (Exception e) {
             return VIEW_ERROR;
         }
+    }
+
+    @GetMapping("/forgot-password")
+    public String forgotPassword(@RequestParam("email") String email, Model model) {
+        try {
+            LoginDTO userLogin = new LoginDTO();
+            userLogin.setEmail(email);
+            HttpHeaders headers = new HttpHeaders();
+            HttpEntity<LoginDTO> requestEntity = new HttpEntity<>(userLogin, headers);
+            //call API
+            ResponseEntity<ResponseOk> response = restTemplate.exchange(
+                    path + API_FORGOT_PASSWORD,
+                    HttpMethod.POST,
+                    requestEntity,
+                    ResponseOk.class
+            );
+            ResponseOk responseBody = response.getBody();
+            if ( responseBody == null){
+                return VIEW_ERROR;
+            }
+            if (responseBody.getCode() == 1) {
+                model.addAttribute("message", responseBody.getMessage());
+                return VIEW_ERR;
+            }
+            return "redirect:/";
+
+        }catch (Exception e) {
+            return VIEW_ERROR;
+        }
+
     }
 }

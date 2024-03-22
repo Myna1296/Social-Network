@@ -1,7 +1,7 @@
 package com.example.datasocialnetwork.common;
 
 public enum SendCodeType {
-    RECOVERY("OTP ForgotPassword"),
+    RECOVERY("ForgotPassword"),
     LOGIN("OTP Login");
     private String name;
 

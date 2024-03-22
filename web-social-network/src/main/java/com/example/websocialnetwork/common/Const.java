@@ -8,9 +8,10 @@ public class Const {
     public static final String VIEW_ERR = "E005";
     public static final String VIEW_ERR_2 = "E006";
 
-    public static final String API_REGISTER ="/auth/register";
-    public static final String API_LOGIN ="/auth/login";
-    public static final String API_COMFIRM_OTP_LOGIN ="/auth/comfirm-otp-login";
+    public static final String API_REGISTER ="/api/auth/register";
+    public static final String API_LOGIN ="/api/auth/login";
+    public static final String API_COMFIRM_OTP_LOGIN ="/api/auth/comfirm-otp-login";
+    public static final String API_FORGOT_PASSWORD ="/api/auth/forgot-password";
     public static final String API_USER_INFO = "/user/user-info/{email}";
     public static final String API_USER_INFO_BY_ID = "/user/profile-user/{id}";
     public static final String API_UPDATE_IMAGE = "/user/update-image";
@@ -33,7 +34,7 @@ public class Const {
     public static final String API_SEARCH_COMMENT = "/comment/search";
     public static final String API_ADD_COMMENT = "/comment/add";
     public static final String API_DELETE_COMMENT = "/comment/delete/{id}";
-    public static final String API_EXPORT_FILE = "/export/export-file";
+    public static final String API_EXPORT_FILE = "/api/export/export-file";
     public static final String API_ADD_LIKE = "/like/add/{id}";
     public static final String API_DELETE_LIKE = "/like/delete/{id}";
 

@@ -17,4 +17,5 @@ public interface UserService {
     ResponseEntity<?> updateProfileUser(UserInfo userInfo);
     ResponseEntity<SearchResponse> searchUserByUserName(SearchUserRequestDTO sreachUserRequestDTO);
     ResponseEntity<?> updatePassword(PasswordChangeDTO passwordChangeDTO);
+    ResponseEntity<?> forgotPassword(String email);
 }

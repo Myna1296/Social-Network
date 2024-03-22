@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
     @Autowired
@@ -58,9 +58,26 @@ public class AuthController {
         return userService.loginUser(userLogin);
     }
 
+    /*
+    Handles user login comfirm otp
+    Create by NgaPLT 2024/03/06
+    <param>LoginDTO</param>
+    <returns></returns>
+    */
     @PostMapping("/comfirm-otp-login")
     public ResponseEntity<?> comfirmOTPLogin(@RequestBody OTPComfirmDTO otpComfirm){
         return userService.comfirmOTPLogin(otpComfirm);
+    }
+
+    /*
+    Handles user forgot password
+    Create by NgaPLT 2024/03/06
+    <param>LoginDTO</param>
+    <returns></returns>
+     */
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody LoginDTO userLogin) {
+        return userService.forgotPassword(userLogin.getEmail());
     }
 
 }

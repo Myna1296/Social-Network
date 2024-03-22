@@ -42,6 +42,26 @@
             </form>
         </div>
     </div>
+    <script>
+        function forgotPassword() {
+            var emailValue = document.getElementById("email_login").value;
+            if (emailValue === "") {
+                alert("Please enter your email first.");
+                return;
+            }
+            var form = document.createElement('form');
+            form.setAttribute('method', 'GET');
+            form.setAttribute('action', '/forgot-password');
+
+            var emailInput = document.createElement('input');
+            emailInput.setAttribute('type', 'text');
+            emailInput.setAttribute('name', 'email');
+            emailInput.setAttribute('value', document.getElementById('email_login').value);
+            form.appendChild(emailInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
 </div>
 <hr/>
 
@@ -85,6 +105,7 @@
     <script src="../static/js/bootstrap.min.js" th:src="@{/js/bootstrap.min.js}"></script>
     <script src="../static/js/validation.js" th:src="@{/js/validation.js}"></script>
 </div>
+
 
 </body>
 </html>

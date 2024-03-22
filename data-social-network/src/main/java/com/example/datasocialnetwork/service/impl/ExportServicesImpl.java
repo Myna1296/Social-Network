@@ -52,7 +52,7 @@ public class ExportServicesImpl implements ExportService {
             if (user == null) {
                 ResponseOk response = new ResponseOk();
                 response.setCode(Constants.CODE_ERROR);
-                response.setMessage(Constants.MESS_004);
+                response.setMessage(Constants.MESS_013);
                 return new ResponseEntity<>(response, HttpStatus.OK);
             }
             // Lấy ngày 7 ngày trước đó
@@ -120,7 +120,7 @@ public class ExportServicesImpl implements ExportService {
         }catch (Exception e) {
             ResponseOk response = new ResponseOk();
             response.setCode(Constants.CODE_ERROR);
-            response.setMessage("System error");
+            response.setMessage("Error while exporting report file");
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
     }

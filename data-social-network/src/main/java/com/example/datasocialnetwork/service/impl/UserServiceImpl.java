@@ -14,6 +14,7 @@ import com.example.datasocialnetwork.repository.OtpRepository;
 import com.example.datasocialnetwork.repository.UserRepository;
 import com.example.datasocialnetwork.service.MailService;
 import com.example.datasocialnetwork.service.UserService;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -299,6 +300,25 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(passwordChangeDTO.getPassword()));
         userRepository.save(user);
         ResponseOk response = new ResponseOk(Constants.CODE_OK, "");
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<?> forgotPassword(String email) {
+        User user = userRepository.findOneByEmail(email);
+        if (user == null){
+            ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_004);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        String newPassword = RandomStringUtils.random(8, true, true);
+        if ( mailService.sendNewPassword(user.getEmail(), user.getUserName(), newPassword,SendCodeType.RECOVERY)){
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+            ResponseOk response = new ResponseOk(Constants.CODE_OK, "An email has been sent to reset your password.");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        ResponseOk response = new ResponseOk(Constants.CODE_ERROR, "An error occurred while sending email");
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

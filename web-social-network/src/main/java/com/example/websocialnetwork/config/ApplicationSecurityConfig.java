@@ -15,13 +15,13 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-
         http.authorizeRequests()
-                .antMatchers(new String[]{"/", "/login", "/comfirmOTP", "/register"}).permitAll()
+                .antMatchers(new String[]{ "/forgot-password", "/", "/login", "/comfirmOTP", "/register"}).permitAll()
                 .and()
                 .logout().permitAll()
                 .and()
                 .exceptionHandling().accessDeniedPage("/access-denied");
+
     }
 
 }

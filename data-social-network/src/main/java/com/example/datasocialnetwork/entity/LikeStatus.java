@@ -25,7 +25,7 @@ public class LikeStatus {
     @JoinColumn(name = "status_id", nullable = false)
     private Status status;
 
-    @Column(name = "created_date")
+    @Column(name = "createdate", nullable = false)
     private LocalDateTime createdDate;
 
 }

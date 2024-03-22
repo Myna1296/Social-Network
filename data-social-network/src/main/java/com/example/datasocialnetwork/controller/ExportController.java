@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/export")
+@RequestMapping("/api/export")
 public class ExportController {
     @Autowired
     ExportServicesImpl exportServices;

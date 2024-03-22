@@ -86,4 +86,24 @@ public class MailServiceImpl implements MailService {
             return false;
         }
     }
+
+    @Override
+    @Transactional
+    public boolean sendNewPassword (String email, String username,String code, SendCodeType sendCodeType) {
+        String title = "Confirm %s";
+        String content = "<h1>Hello "+username+"!</h1>\n" +
+                "<p>Your new password is: <i><b><u>%s</u></b></i></p>"+
+                "<p>Not give this password to others.</p>" +
+                "<p>Please change your password after logging in</p>"+
+                "<p>Sincerely thank you!</p>";
+        String type;
+        if (sendCodeType == SendCodeType.RECOVERY) {
+            type = SendCodeType.RECOVERY.getName();
+        } else {
+            type = SendCodeType.LOGIN.getName();
+        }
+        title= String.format(title,type);
+        content = String.format(content,code,type);
+        return sendSimpleMessage(email, title, content);
+    }
 }
