@@ -88,7 +88,7 @@ public class CommentController {
         try {
             ResponseEntity<ResponseOk> responseEntity = restTemplate.exchange(
                     path + API_DELETE_COMMENT,
-                    HttpMethod.GET,
+                    HttpMethod.DELETE,
                     requestEntity,
                     ResponseOk.class,
                     comId

@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/comment")
+@RequestMapping("/api/comment")
 public class CommentController {
     @Autowired
     private CommentServiceImpl commentService;
@@ -46,7 +46,7 @@ public class CommentController {
         return commentService.addNewCommen(commentDTO);
     }
 
-    @GetMapping("/delete/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteComment(@PathVariable("id") Long id){
         return commentService.deleteCommnet(id);
     }

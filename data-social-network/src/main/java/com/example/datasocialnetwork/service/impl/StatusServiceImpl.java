@@ -4,15 +4,12 @@ import com.example.datasocialnetwork.common.Constants;
 import com.example.datasocialnetwork.config.UserAuthDetails;
 import com.example.datasocialnetwork.dto.request.StatusDTO;
 import com.example.datasocialnetwork.dto.request.StatusRequest;
-import com.example.datasocialnetwork.dto.request.UserInfo;
-import com.example.datasocialnetwork.dto.response.FriendResponse;
 import com.example.datasocialnetwork.dto.response.ResponseOk;
 import com.example.datasocialnetwork.dto.response.StatusAllResponse;
 import com.example.datasocialnetwork.dto.response.StatusInfoResponse;
-import com.example.datasocialnetwork.entity.FriendShip;
 import com.example.datasocialnetwork.entity.Status;
 import com.example.datasocialnetwork.entity.User;
-import com.example.datasocialnetwork.exceptions.UserNotFoundException;
+import com.example.datasocialnetwork.repository.CommentRepository;
 import com.example.datasocialnetwork.repository.LikeRepository;
 import com.example.datasocialnetwork.repository.StatusRepository;
 import com.example.datasocialnetwork.repository.UserRepository;
@@ -25,12 +22,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class StatusServiceImpl implements StatusService {
@@ -43,29 +39,11 @@ public class StatusServiceImpl implements StatusService {
     @Autowired
     private LikeRepository likeRepository;
 
+    @Autowired
+    private CommentRepository commentRepository;
 
     @Override
-    public ResponseEntity<?> getStatusByUserId(StatusRequest statusRequest) {
-        User user = userRepository.findOneById(statusRequest.getUserId());
-        if (user == null) {
-            StatusAllResponse response = new StatusAllResponse();
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage(Constants.MESS_010);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }
-        Page<Status> pageStatus = statusRepository.findStatusByUserIdWithLimitOffset(
-                statusRequest.getUserId(),
-                PageRequest.of(statusRequest.getPage() - 1, Constants.LIMIT)
-        );
-
-        StatusAllResponse response = convertPageToResponse(pageStatus);
-        response.setUserName(user.getUserName());
-        response.setPage(statusRequest.getPage());
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    @Override
-    public ResponseEntity<?> getStatusFriendUser(StatusRequest statusRequest) {
+    public ResponseEntity<?> getStatusByUserId(Long pageId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
         User user = userRepository.findOneByUserName(userDetails.getUsername());
@@ -74,24 +52,42 @@ public class StatusServiceImpl implements StatusService {
             response.setCode(Constants.CODE_ERROR);
             response.setMessage(Constants.MESS_010);
             return new ResponseEntity<>(response, HttpStatus.OK);
-        }else  if (user.getId() != statusRequest.getUserId()){
-            StatusAllResponse response = new StatusAllResponse();
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage("Authentication information does not match");
-            return new ResponseEntity<>(response, HttpStatus.OK);
         }
-        Page<Status> pageStatus = statusRepository.findStatusOfAllFriends(
-                statusRequest.getUserId(),
-                PageRequest.of(statusRequest.getPage() - 1, Constants.LIMIT)
+        Page<Status> pageStatus = statusRepository.findStatusByUserIdWithLimitOffset(
+                user.getId(),
+                PageRequest.of(pageId.intValue() - 1, Constants.LIMIT)
         );
 
         StatusAllResponse response = convertPageToResponse(pageStatus);
         response.setUserName(user.getUserName());
-        response.setPage(statusRequest.getPage());
+        response.setPage(pageId.intValue());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @Override
+    public ResponseEntity<?> getStatusFriendUser(Long pageId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
+        User user = userRepository.findOneByUserName(userDetails.getUsername());
+        if (user == null) {
+            StatusAllResponse response = new StatusAllResponse();
+            response.setCode(Constants.CODE_ERROR);
+            response.setMessage(Constants.MESS_010);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        Page<Status> pageStatus = statusRepository.findStatusOfAllFriends(
+                user.getId(),
+                PageRequest.of(pageId.intValue() - 1, Constants.LIMIT)
+        );
+
+        StatusAllResponse response = convertPageToResponse(pageStatus);
+        response.setUserName(user.getUserName());
+        response.setPage(pageId.intValue());
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @Override
+    @Transactional
     public ResponseEntity<?> deleteStatus(Long id) {
         ResponseOk response = new ResponseOk();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -113,6 +109,8 @@ public class StatusServiceImpl implements StatusService {
             response.setMessage("Cannot delete other people's status");
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
+        likeRepository.deleteLikeStatusByStatusId(id);
+        commentRepository.deleteCommentByStatusId(id);
         statusRepository.delete(status);
         response.setCode(Constants.CODE_OK);
         response.setMessage("");
@@ -181,6 +179,11 @@ public class StatusServiceImpl implements StatusService {
             response.setMessage("Status does not exist");
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
+        if (status.getUser().getId() != user.getId()){
+            response.setCode(Constants.CODE_ERROR);
+            response.setMessage("Cannot update other people's status");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
         status.setTitle(statusDTO.getTitle());
         status.setStatusText(statusDTO.getContent());
         status.setCreatedDate(LocalDateTime.now());
@@ -203,6 +206,11 @@ public class StatusServiceImpl implements StatusService {
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
         Status status = statusRepository.findStatusById(id);
+        if(status == null){
+            response.setCode(Constants.CODE_ERROR);
+            response.setMessage("Status does not exist");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
         long count = likeRepository.countByStatusIdAndUserId(id, user.getId());
         StatusDTO statusDTO = convertStatusToDTO(status);
         response.setCode(Constants.CODE_OK);

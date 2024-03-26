@@ -178,14 +178,18 @@ public class UserServiceImpl implements UserService {
             userInfo.setError(Constants.MESS_010);
         } else {
             User usersById = userRepository.findOneById(id);
-            userInfo.setId(usersById.getId().toString());
-            userInfo.setUserName(usersById.getUserName());
-            userInfo.setBirthday(usersById.getBirthday() == null ? "": DateTimeFormatter.ISO_LOCAL_DATE.format(usersById.getBirthday()));
-            userInfo.setAddress(usersById.getAddress());
-            userInfo.setJob(usersById.getJob());
-            userInfo.setPhone(usersById.getPhone());
-            userInfo.setAvata(usersById.getImage());
-            userInfo.setSex(getGenderById(usersById.getSex()).name());
+            if(usersById == null){
+                userInfo.setError(Constants.MESS_013);
+            } else {
+                userInfo.setId(usersById.getId().toString());
+                userInfo.setUserName(usersById.getUserName());
+                userInfo.setBirthday(usersById.getBirthday() == null ? "" : DateTimeFormatter.ISO_LOCAL_DATE.format(usersById.getBirthday()));
+                userInfo.setAddress(usersById.getAddress());
+                userInfo.setJob(usersById.getJob());
+                userInfo.setPhone(usersById.getPhone());
+                userInfo.setAvata(usersById.getImage());
+                userInfo.setSex(getGenderById(usersById.getSex()).name());
+            }
         }
         return userInfo;
     }

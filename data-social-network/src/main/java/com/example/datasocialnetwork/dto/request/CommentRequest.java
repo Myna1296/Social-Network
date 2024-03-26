@@ -9,7 +9,5 @@ import lombok.Setter;
 @Setter
 public class CommentRequest {
     private int page;
-    private Long id;
     private Long statusId;
-    private Long userId;
 }

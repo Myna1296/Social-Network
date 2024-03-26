@@ -7,13 +7,7 @@ import com.example.datasocialnetwork.entity.LikeStatus;
 import com.example.datasocialnetwork.entity.Status;
 import com.example.datasocialnetwork.entity.User;
 import com.example.datasocialnetwork.repository.*;
-import com.example.datasocialnetwork.service.ExportService;
 import com.example.datasocialnetwork.service.LikeService;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,10 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.io.FileOutputStream;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 @Service
 public class LikeServicesImpl implements LikeService {
@@ -45,7 +36,7 @@ public class LikeServicesImpl implements LikeService {
         User user = userRepository.findOneByUserName(userDetails.getUsername());
         if (user == null) {
             response.setCode(Constants.CODE_ERROR);
-            response.setMessage(Constants.MESS_004);
+            response.setMessage(Constants.MESS_013);
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
         Status status = statusRepository.findStatusById(id);
@@ -79,7 +70,7 @@ public class LikeServicesImpl implements LikeService {
         User user = userRepository.findOneByUserName(userDetails.getUsername());
         if (user == null) {
             response.setCode(Constants.CODE_ERROR);
-            response.setMessage(Constants.MESS_004);
+            response.setMessage(Constants.MESS_013);
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
         Status status = statusRepository.findStatusById(id);

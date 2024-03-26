@@ -61,13 +61,14 @@ public class StatusController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
-        HttpEntity<StatusRequest> requestEntity = new HttpEntity<>(statusRequest,headers);
+        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
         try {
             ResponseEntity<StatusAllResponse> responseEntity = restTemplate.exchange(
                     path + API_GET_ALL_STATUS_FRIEND,
-                    HttpMethod.POST,
+                    HttpMethod.GET,
                     requestEntity,
-                    StatusAllResponse.class
+                    StatusAllResponse.class,
+                    page
             );
             StatusAllResponse statusAllResponse = responseEntity.getBody();
             if (statusAllResponse.getCode() == 1) {
@@ -102,13 +103,14 @@ public class StatusController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
-        HttpEntity<StatusRequest> requestEntity = new HttpEntity<>(statusRequest,headers);
+        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
         try {
             ResponseEntity<StatusAllResponse> responseEntity = restTemplate.exchange(
                     path + API_GET_ALL_STATUS_USER,
-                    HttpMethod.POST,
+                    HttpMethod.GET,
                     requestEntity,
-                    StatusAllResponse.class
+                    StatusAllResponse.class,
+                    page
             );
             StatusAllResponse statusAllResponse = responseEntity.getBody();
             if (statusAllResponse.getCode() == 1) {
@@ -143,7 +145,7 @@ public class StatusController {
         try {
             ResponseEntity<ResponseOk> responseEntity = restTemplate.exchange(
                     path + API_DELETE_STATUS,
-                    HttpMethod.POST,
+                    HttpMethod.DELETE,
                     requestEntity,
                     ResponseOk.class,
                     id

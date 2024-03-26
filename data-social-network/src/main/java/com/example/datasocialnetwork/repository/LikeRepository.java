@@ -22,4 +22,6 @@ public interface LikeRepository extends JpaRepository<LikeStatus, Long> {
 
     @Query("SELECT l FROM LikeStatus l WHERE l.status.id = :statusId AND l.status.user.id = :userId")
     LikeStatus findLikesByStatusIdAndUserId(@Param("statusId") Long statusId, @Param("userId") Long userId);
+
+    void deleteLikeStatusByStatusId(long statusId);
 }

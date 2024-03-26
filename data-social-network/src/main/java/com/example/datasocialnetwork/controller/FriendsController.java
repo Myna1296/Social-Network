@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("/friends")
+@RequestMapping("/api/friends")
 public class FriendsController {
 
    @Autowired
@@ -42,7 +42,7 @@ public class FriendsController {
       return friendsService.getNotAcceptedRequestsToUser(friendRequestDTO);
    }
 
-   @PostMapping("/delete")
+   @DeleteMapping("/delete")
    public ResponseEntity<?> deleteFriendship(@RequestBody FriendShipRequestDTO friendShipRequestDTO){
       return friendsService.deleteFriendship(friendShipRequestDTO);
    }

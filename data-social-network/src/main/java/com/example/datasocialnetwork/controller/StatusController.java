@@ -1,15 +1,10 @@
 package com.example.datasocialnetwork.controller;
 
 import com.example.datasocialnetwork.dto.request.StatusDTO;
-import com.example.datasocialnetwork.dto.request.StatusRequest;
-import com.example.datasocialnetwork.dto.request.UserDTO;
 import com.example.datasocialnetwork.dto.response.ErrorResponse;
-import com.example.datasocialnetwork.service.StatusService;
 import com.example.datasocialnetwork.service.impl.StatusServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -21,7 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/status")
+@RequestMapping("/api/status")
 @AllArgsConstructor
 public class StatusController {
 
@@ -55,36 +50,24 @@ public class StatusController {
             errorResponse.setMessage("Invalid data submitted");
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
-        return statusService.addNewStatus(statusDTO);
+        return statusService.updateStatus(statusDTO);
     }
 
-    @PostMapping("/delete/{postId}")
+    @DeleteMapping("/delete/{postId}")
     public ResponseEntity deleteStatus(@PathVariable("postId") Long postId){
     return statusService.deleteStatus(postId);
 }
 
-    @PostMapping("/all/friend")
-    public ResponseEntity<?> getStatusFriendUser(@RequestBody StatusRequest statusRequest){
-        return statusService.getStatusFriendUser(statusRequest);
+    @GetMapping("/all/friend/{pageId}")
+    public ResponseEntity<?> getStatusFriendUser(@PathVariable("pageId") Long pageId){
+        return statusService.getStatusFriendUser(pageId);
     }
 
-    @PostMapping("/all")
-    public ResponseEntity<?> getPostByUserId (@RequestBody StatusRequest statusRequest){
-        return statusService.getStatusByUserId(statusRequest);
+    @GetMapping("/all/{pageId}")
+    public ResponseEntity<?> getPostByUserId (@PathVariable("pageId") Long pageId){
+        return statusService.getStatusByUserId(pageId);
     }
-//
-//    @PostMapping("/all/{userId}")
-//    public Page<PostResponse> getAllByUser(@PathVariable("userId") Long userId, @RequestBody PageInfo pageInfo){
-//        PageRequest pageRequest = PageRequest.of(pageInfo.getIndex(), pageInfo.getSize());
-//        return postService.findAllByUserId(userId,pageRequest);
-//    }
-//
-//    @PostMapping("/all/me")
-//    public Page<PostResponse> getAllByMe(@RequestBody PageInfo pageInfo){
-//        PageRequest pageRequest = PageRequest.of(pageInfo.getIndex(), pageInfo.getSize());
-//        return postService.findAllByUserId(profile.getId(),pageRequest);
-//    }
-//
+
     @GetMapping("/search/{id}")
     public ResponseEntity<?> search(@PathVariable("id") Long id){
         return statusService.searchStatus(id);

@@ -73,7 +73,7 @@ public class LikeController {
         try {
             ResponseEntity<ResponseOk> responseEntity = restTemplate.exchange(
                     path + API_DELETE_LIKE,
-                    HttpMethod.GET,
+                    HttpMethod.DELETE,
                     requestEntity,
                     ResponseOk.class,
                     id

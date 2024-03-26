@@ -23,4 +23,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     long countCommentsByUserIdAndCreatedDateAfter(@Param("userId") Long userId, @Param("startDate") LocalDateTime startDate);
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.status.user.id = :userId AND c.createdDate > :startDate")
     long countCommentsByStatusUserIdAndCreatedDateAfter(@Param("userId") Long userId, @Param("startDate") LocalDateTime startDate);
+
+    void deleteCommentByStatusId(long statusId);
 }

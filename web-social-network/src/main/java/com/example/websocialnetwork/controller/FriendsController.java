@@ -174,7 +174,7 @@ public class FriendsController {
         try {
             ResponseEntity<ResponseOk> responseEntity = restTemplate.exchange(
                     path + API_DELETE_FRIENDSHIP,
-                    HttpMethod.POST,
+                    HttpMethod.DELETE,
                     requestEntity,
                     ResponseOk.class
             );
