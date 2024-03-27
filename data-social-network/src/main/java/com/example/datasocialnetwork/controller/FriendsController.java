@@ -17,9 +17,9 @@ public class FriendsController {
    @Autowired
    private FriendsServiceImpl friendsService;
 
-   @PostMapping("/get-all")
-   public ResponseEntity<FriendResponse> getFriendsOfUser(@RequestBody FriendRequestDTO friendRequestDTO ){
-      return friendsService.getFriendsOfUser(friendRequestDTO);
+   @GetMapping("/get-friend/{pageId}")
+   public ResponseEntity<FriendResponse> getFriendsOfUser(@PathVariable("pageId")  Long id  ){
+      return friendsService.getFriendsOfUser(id);
    }
 
    @PostMapping("/check-friend-ship/{id}")
@@ -32,14 +32,14 @@ public class FriendsController {
       return friendsService.addFriendRequest(idTarget);
    }
 
-   @PostMapping("/get-request-user-notaccepte")
-   public ResponseEntity<FriendResponse> getRequestUserNotAccepte(@RequestBody FriendRequestDTO friendRequestDTO ){
-      return friendsService.getUsersNotAcceptedRequests(friendRequestDTO);
+   @GetMapping("/get-request-user-notaccepte/{pageId}")
+   public ResponseEntity<FriendResponse> getRequestUserNotAccepte(@PathVariable("pageId")  Long id ){
+      return friendsService.getUsersNotAcceptedRequests(id);
    }
 
-   @PostMapping("/get-request-notaccepte-touser")
-   public ResponseEntity<FriendResponse> getRequestNotAccepteToUser(@RequestBody FriendRequestDTO friendRequestDTO ){
-      return friendsService.getNotAcceptedRequestsToUser(friendRequestDTO);
+   @GetMapping("/get-request-notaccepte-touser/{pageId}")
+   public ResponseEntity<FriendResponse> getRequestNotAccepteToUser(@PathVariable("pageId")  Long id ){
+      return friendsService.getNotAcceptedRequestsToUser(id);
    }
 
    @DeleteMapping("/delete")

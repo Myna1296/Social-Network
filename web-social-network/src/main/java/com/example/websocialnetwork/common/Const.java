@@ -17,9 +17,9 @@ public class Const {
     public static final String API_UPDATE_IMAGE = "/api/user/update-image";
     public static final String API_UPDATE_PROFILE = "/api/user/update-profile-user";
     public static final String API_UPDATE_PASSWORD = "/api/user/update-password";
-    public static final String API_GET_FRIENF_OF_USER = "/api/friends/get-all";
-    public static final String API_GET_REQUEST_USER_NOT_ACCEPTE = "/api/friends/get-request-user-notaccepte";
-    public static final String API_GET_REQUEST_NOT_ACCEPTE_TO_USER = "/api/friends/get-request-notaccepte-touser";
+    public static final String API_GET_FRIENF_OF_USER = "/api/friends/get-friend/{pageId}";
+    public static final String API_GET_REQUEST_USER_NOT_ACCEPTE = "/api/friends/get-request-user-notaccepte/{pageId}";
+    public static final String API_GET_REQUEST_NOT_ACCEPTE_TO_USER = "/api/friends/get-request-notaccepte-touser/{pageId}";
     public static final String API_CHECK_FRIEND_SHIP = "/api/friends/check-friend-ship/{id}";
     public static final String API_SEARCH_USER = "/api/api/user/search-user";
     public static final String API_ADD_FRIEND = "/api/friends/add-to-friends/{id}";

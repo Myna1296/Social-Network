@@ -236,7 +236,7 @@ public class UserServiceImpl implements UserService {
         }
         String checkBirthday = checkBirthday(userInfo.getBirthday());
         if(checkBirthday != null){
-            ResponseOk response = new ResponseOk(Constants.CODE_ERROR, "date không hợp ệ");
+            ResponseOk response = new ResponseOk(Constants.CODE_ERROR, "date is not valid");
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
         if(userInfo.getJob() != null) {
@@ -251,12 +251,12 @@ public class UserServiceImpl implements UserService {
         if(userInfo.getSex() !=null){
             user.setSex(getGenderByName(userInfo.getSex()));
         }
-        if(userInfo.getBirthday() !=null & !userInfo.getBirthday().equals("") ){
+        if(userInfo.getBirthday() ==null || userInfo.getBirthday().equals("") ){
+            user.setBirthday(null);
+        } else {
             DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate date = LocalDate.parse(userInfo.getBirthday(),dateFormatter);
             user.setBirthday(date);
-        } else {
-            user.setBirthday(null);
         }
         userRepository.save(user);
         ResponseOk response = new ResponseOk(Constants.CODE_OK, "");

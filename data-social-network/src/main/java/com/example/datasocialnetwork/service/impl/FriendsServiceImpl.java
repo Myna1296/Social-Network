@@ -31,10 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -51,36 +48,31 @@ public class FriendsServiceImpl implements FriendsService {
     private FriendShipRepository friendShipRepository;
 
     @Override
-    @Transactional(readOnly = true)
-    public ResponseEntity<FriendResponse> getFriendsOfUser(FriendRequestDTO friendRequestDTO) {
+    public ResponseEntity<FriendResponse> getFriendsOfUser(Long pageId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        User user = userRepository.findOneById(friendRequestDTO.getId());
+        User user = userRepository.findOneByUserName(userDetails.getUsername());
         if (user == null) {
             FriendResponse response = new FriendResponse();
             response.setCode(Constants.CODE_ERROR);
-            response.setMessage(Constants.MESS_004);
+            response.setMessage(Constants.MESS_010);
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } else  if (!userDetails.getUsername().equals(user.getUserName())){
-            throw(new UserNotFoundException("Authentication information does not match"));
         }
         Page<FriendShip> pageFriends = friendShipRepository.findAcceptedFriendshipsByUserIdWithLimitOffset(
-                friendRequestDTO.getId(),
-                PageRequest.of(friendRequestDTO.getPage() - 1, Constants.LIMIT)
+                user.getId(),
+                PageRequest.of(pageId.intValue() - 1, Constants.LIMIT)
         );
 
         List<UserInfo> friendsOfUser = pageFriends.stream()
                 .flatMap(friendShip -> {
-                    if (friendShip.getUserSender().getId().equals(friendRequestDTO.getId())) {
+                    if (friendShip.getUserSender().getId().equals(user.getId())) {
                         return Stream.of(convertToUserInfo(friendShip.getUserReceiver()));
-                    } else if (friendShip.getUserReceiver().getId().equals(friendRequestDTO.getId())) {
-                        return Stream.of(convertToUserInfo(friendShip.getUserSender()));
                     } else {
-                        return Stream.empty();
+                        return Stream.of(convertToUserInfo(friendShip.getUserSender()));
                     }
                 })
                 .collect(Collectors.toList());
-        Long total = friendShipRepository.countAcceptedFriendshipsByUserId(friendRequestDTO.getId());
+        Long total = friendShipRepository.countAcceptedFriendshipsByUserId(user.getId());
         FriendResponse response = new FriendResponse();
         response.setCode(Constants.CODE_OK);
         response.setMessage("");
@@ -90,7 +82,6 @@ public class FriendsServiceImpl implements FriendsService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public ResponseEntity<CheckFriendShipResponse> checkFriendship(Long id) {
         CheckFriendShipResponse response = new CheckFriendShipResponse();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -98,10 +89,20 @@ public class FriendsServiceImpl implements FriendsService {
         User user = userRepository.findOneByUserName(userDetails.getUsername());
         if (user == null) {
             response.setCode(Constants.CODE_ERROR);
-            response.setMessage(Constants.MESS_004);
+            response.setMessage(Constants.MESS_010);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        if (user.getId() == id){
+            response.setCode(Constants.CODE_ERROR);
+            response.setMessage("Do not check friends ships with yourself");
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
         User userFriend = userRepository.findOneById(id);
+        if (userFriend == null) {
+            response.setCode(Constants.CODE_ERROR);
+            response.setMessage("Friend does not exist");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
         Boolean checkFriendShip = friendShipRepository.checkFriendshipExists(user, userFriend);
         response.setCode(Constants.CODE_OK);
         response.setCheckFriendShip(checkFriendShip);
@@ -117,13 +118,13 @@ public class FriendsServiceImpl implements FriendsService {
             ResponseOk response = new ResponseOk(Constants.CODE_ERROR,"User does not exist");
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
+        if (user.getId() == idTarget){
+            ResponseOk response = new ResponseOk(Constants.CODE_ERROR,"Can't send friend requests to myself");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
         User userTarget = userRepository.findOneById(idTarget);
         if (userTarget == null) {
             ResponseOk response = new ResponseOk(Constants.CODE_ERROR,"Friend does not exist");
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }
-        if (user.getEmail().equals(userTarget.getEmail())){
-            ResponseOk response = new ResponseOk(Constants.CODE_ERROR,"Can't send friend requests to myself");
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
         if(friendShipRepository.checkFriendshipExists(user, userTarget)) {
@@ -147,35 +148,30 @@ public class FriendsServiceImpl implements FriendsService {
     }
 
     @Override
-    public ResponseEntity<FriendResponse> getUsersNotAcceptedRequests(FriendRequestDTO friendRequestDTO) {
+    public ResponseEntity<FriendResponse> getUsersNotAcceptedRequests(Long pageId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        User user = userRepository.findOneById(friendRequestDTO.getId());
+        User user = userRepository.findOneByUserName(userDetails.getUsername());
         if (user == null) {
             FriendResponse response = new FriendResponse();
             response.setCode(Constants.CODE_ERROR);
-            response.setMessage(Constants.MESS_004);
+            response.setMessage(Constants.MESS_010);
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } else  if (!userDetails.getUsername().equals(user.getUserName())){
-            throw(new UserNotFoundException("Authentication information does not match"));
         }
         Page<FriendShip> pageFriends = friendShipRepository.findUsersNotAcceptedRequestsByUserIdWithLimitOffset(
-                friendRequestDTO.getId(),
-                PageRequest.of(friendRequestDTO.getPage() - 1, Constants.LIMIT)
-        );
+                user.getId(),
+                PageRequest.of(pageId.intValue() - 1, Constants.LIMIT));
 
         List<UserInfo> friendsOfUser = pageFriends.stream()
                 .flatMap(friendShip -> {
-                    if (friendShip.getUserSender().getId().equals(friendRequestDTO.getId())) {
+                    if (friendShip.getUserSender().getId().equals(user.getId())) {
                         return Stream.of(convertToUserInfo(friendShip.getUserReceiver()));
-                    } else if (friendShip.getUserReceiver().getId().equals(friendRequestDTO.getId())) {
-                        return Stream.of(convertToUserInfo(friendShip.getUserSender()));
                     } else {
                         return Stream.empty();
                     }
                 })
                 .collect(Collectors.toList());
-        Long total = friendShipRepository.countUsersNotAcceptedRequestsByUserId(friendRequestDTO.getId());
+        Long total = friendShipRepository.countUsersNotAcceptedRequestsByUserId(user.getId());
         FriendResponse response = new FriendResponse();
         response.setCode(Constants.CODE_OK);
         response.setMessage("");
@@ -185,35 +181,31 @@ public class FriendsServiceImpl implements FriendsService {
     }
 
     @Override
-    public ResponseEntity<FriendResponse> getNotAcceptedRequestsToUser(FriendRequestDTO friendRequestDTO) {
+    public ResponseEntity<FriendResponse> getNotAcceptedRequestsToUser(Long pageId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        User user = userRepository.findOneById(friendRequestDTO.getId());
+        User user = userRepository.findOneByUserName(userDetails.getUsername());
         if (user == null) {
             FriendResponse response = new FriendResponse();
             response.setCode(Constants.CODE_ERROR);
-            response.setMessage(Constants.MESS_004);
+            response.setMessage(Constants.MESS_010);
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } else  if (!userDetails.getUsername().equals(user.getUserName())){
-            throw(new UserNotFoundException("Authentication information does not match"));
         }
         Page<FriendShip> pageFriends = friendShipRepository.findNotAcceptedRequestsToUserByUserIdWithLimitOffset(
-                friendRequestDTO.getId(),
-                PageRequest.of(friendRequestDTO.getPage() - 1, Constants.LIMIT)
+                user.getId(),
+                PageRequest.of(pageId.intValue() - 1, Constants.LIMIT)
         );
 
         List<UserInfo> friendsOfUser = pageFriends.stream()
                 .flatMap(friendShip -> {
-                    if (friendShip.getUserSender().getId().equals(friendRequestDTO.getId())) {
-                        return Stream.of(convertToUserInfo(friendShip.getUserReceiver()));
-                    } else if (friendShip.getUserReceiver().getId().equals(friendRequestDTO.getId())) {
+                    if (friendShip.getUserReceiver().getId().equals(user.getId())) {
                         return Stream.of(convertToUserInfo(friendShip.getUserSender()));
                     } else {
                         return Stream.empty();
                     }
                 })
                 .collect(Collectors.toList());
-        Long total = friendShipRepository.countNotAcceptedRequestsToUserByUserId(friendRequestDTO.getId());
+        Long total = friendShipRepository.countNotAcceptedRequestsToUserByUserId(user.getId());
         FriendResponse response = new FriendResponse();
         response.setCode(Constants.CODE_OK);
         response.setMessage("");
@@ -231,13 +223,13 @@ public class FriendsServiceImpl implements FriendsService {
             ResponseOk response = new ResponseOk(Constants.CODE_ERROR,"User does not exist");
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
+        if (user.getId() == friendShipRequestDTO.getId()){
+            ResponseOk response = new ResponseOk(Constants.CODE_ERROR,"This friend request does not exist");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
         User userFriend = userRepository.findOneById(friendShipRequestDTO.getId());
         if (userFriend == null) {
             ResponseOk response = new ResponseOk(Constants.CODE_ERROR,"Friend does not exist");
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }
-        if (user.getId() == userFriend.getId()){
-            ResponseOk response = new ResponseOk(Constants.CODE_ERROR,"This friend request does not exist");
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
         List<FriendShip> friendShipList = friendShipRepository.checkFriendshipExists(user, userFriend, friendShipRequestDTO.isAccepte());
@@ -261,15 +253,16 @@ public class FriendsServiceImpl implements FriendsService {
             ResponseOk response = new ResponseOk(Constants.CODE_ERROR,"User does not exist");
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
+        if (user.getId() == friendShipRequestDTO.getId()){
+            ResponseOk response = new ResponseOk(Constants.CODE_ERROR,"This friend request does not exist");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
         User userFriend = userRepository.findOneById(friendShipRequestDTO.getId());
         if (userFriend == null) {
             ResponseOk response = new ResponseOk(Constants.CODE_ERROR,"Friend does not exist");
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
-        if (user.getId() == userFriend.getId()){
-            ResponseOk response = new ResponseOk(Constants.CODE_ERROR,"This friend request does not exist");
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }
+
         List<FriendShip> friendShipList = friendShipRepository.checkFriendshipExists(user, userFriend, friendShipRequestDTO.isAccepte());
         if(friendShipList.isEmpty()) {
             ResponseOk response = new ResponseOk(Constants.CODE_ERROR, "Friend request does not exist");
@@ -289,17 +282,5 @@ public class FriendsServiceImpl implements FriendsService {
         userInfo.setUserName(user.getUserName());
         userInfo.setAvata(user.getImage());
         return userInfo;
-    }
-
-    private static User convertToUser(UserInfo userInfo) {
-        User user = new User();
-        user.setId(Long.parseLong(userInfo.getId()));
-        user.setUserName(userInfo.getUserName());
-        user.setImage(userInfo.getAvata());
-        user.setSex(Gender.getGenderByName(userInfo.getSex()));
-        user.setPhone(userInfo.getPhone());
-        user.setAddress(userInfo.getAddress());
-        user.setJob(userInfo.getJob());
-        return user;
     }
 }
