@@ -7,15 +7,12 @@ import com.example.datasocialnetwork.dto.request.CommentRequest;
 import com.example.datasocialnetwork.dto.response.CommentListResponse;
 import com.example.datasocialnetwork.dto.response.ResponseOk;
 import com.example.datasocialnetwork.entity.Comment;
-import com.example.datasocialnetwork.entity.LikeStatus;
 import com.example.datasocialnetwork.entity.Status;
 import com.example.datasocialnetwork.entity.User;
 import com.example.datasocialnetwork.repository.CommentRepository;
-import com.example.datasocialnetwork.repository.LikeRepository;
 import com.example.datasocialnetwork.repository.StatusRepository;
 import com.example.datasocialnetwork.repository.UserRepository;
 import com.example.datasocialnetwork.service.impl.CommentServiceImpl;
-import com.example.datasocialnetwork.service.impl.LikeServicesImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,14 +30,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)

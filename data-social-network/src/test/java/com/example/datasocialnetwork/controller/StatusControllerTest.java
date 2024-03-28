@@ -2,7 +2,6 @@ package com.example.datasocialnetwork.controller;
 
 import com.example.datasocialnetwork.dto.request.StatusDTO;
 import com.example.datasocialnetwork.dto.response.ResponseOk;
-import com.example.datasocialnetwork.service.impl.LikeServicesImpl;
 import com.example.datasocialnetwork.service.impl.StatusServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,7 +1,6 @@
 package com.example.datasocialnetwork.controller;
 
 import com.example.datasocialnetwork.dto.request.FriendShipRequestDTO;
-import com.example.datasocialnetwork.dto.request.FriendRequestDTO;
 import com.example.datasocialnetwork.dto.response.CheckFriendShipResponse;
 import com.example.datasocialnetwork.dto.response.FriendResponse;
 import com.example.datasocialnetwork.service.impl.FriendsServiceImpl;

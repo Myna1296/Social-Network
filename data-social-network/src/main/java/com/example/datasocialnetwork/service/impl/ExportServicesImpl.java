@@ -2,7 +2,6 @@ package com.example.datasocialnetwork.service.impl;
 
 import com.example.datasocialnetwork.common.Constants;
 import com.example.datasocialnetwork.config.UserAuthDetails;
-import com.example.datasocialnetwork.dto.response.FriendResponse;
 import com.example.datasocialnetwork.dto.response.ResponseOk;
 import com.example.datasocialnetwork.entity.User;
 import com.example.datasocialnetwork.repository.*;

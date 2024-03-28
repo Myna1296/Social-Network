@@ -7,8 +7,6 @@ import com.example.datasocialnetwork.dto.response.ErrorResponse;
 import com.example.datasocialnetwork.service.impl.CommentServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;

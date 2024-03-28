@@ -1,11 +1,7 @@
 package com.example.datasocialnetwork.controller;
 
-import com.example.datasocialnetwork.dto.request.LoginDTO;
-import com.example.datasocialnetwork.dto.request.OTPComfirmDTO;
-import com.example.datasocialnetwork.dto.request.UserDTO;
 import com.example.datasocialnetwork.dto.response.ResponseOk;
 import com.example.datasocialnetwork.service.impl.ExportServicesImpl;
-import com.example.datasocialnetwork.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +11,6 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;

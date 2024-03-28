@@ -1,9 +1,7 @@
 package com.example.datasocialnetwork.service.impl;
 
 import com.example.datasocialnetwork.common.Constants;
-import com.example.datasocialnetwork.common.Gender;
 import com.example.datasocialnetwork.config.UserAuthDetails;
-import com.example.datasocialnetwork.dto.request.FriendRequestDTO;
 import com.example.datasocialnetwork.dto.request.FriendShipRequestDTO;
 import com.example.datasocialnetwork.dto.request.UserInfo;
 import com.example.datasocialnetwork.dto.response.CheckFriendShipResponse;
@@ -11,14 +9,10 @@ import com.example.datasocialnetwork.dto.response.FriendResponse;
 import com.example.datasocialnetwork.dto.response.ResponseOk;
 import com.example.datasocialnetwork.entity.FriendShip;
 import com.example.datasocialnetwork.entity.User;
-import com.example.datasocialnetwork.exceptions.BadRequestException;
-import com.example.datasocialnetwork.exceptions.UserNotFoundException;
 import com.example.datasocialnetwork.repository.FriendShipRepository;
 import com.example.datasocialnetwork.repository.UserRepository;
 import com.example.datasocialnetwork.service.FriendsService;
-import com.example.datasocialnetwork.service.MailService;
 import com.example.datasocialnetwork.service.UserService;
-import javafx.scene.input.KeyCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,12 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

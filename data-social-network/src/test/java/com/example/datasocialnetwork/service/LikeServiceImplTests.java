@@ -7,7 +7,6 @@ import com.example.datasocialnetwork.entity.LikeStatus;
 import com.example.datasocialnetwork.entity.Status;
 import com.example.datasocialnetwork.entity.User;
 import com.example.datasocialnetwork.repository.*;
-import com.example.datasocialnetwork.service.impl.ExportServicesImpl;
 import com.example.datasocialnetwork.service.impl.LikeServicesImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,8 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
