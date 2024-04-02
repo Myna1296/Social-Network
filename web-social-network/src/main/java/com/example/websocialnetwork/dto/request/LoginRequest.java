@@ -1,4 +1,4 @@
-package com.example.datasocialnetwork.dto.request;
+package com.example.websocialnetwork.dto.request;
 
 import lombok.Data;
 import lombok.Getter;
@@ -7,7 +7,7 @@ import lombok.Setter;
 @Data
 @Getter
 @Setter
-public class LoginDTO {
+public class LoginRequest {
     private String email;
     private String password;
 }

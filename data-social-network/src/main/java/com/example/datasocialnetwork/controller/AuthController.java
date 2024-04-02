@@ -1,18 +1,13 @@
 package com.example.datasocialnetwork.controller;
 
-import com.example.datasocialnetwork.dto.request.LoginDTO;
-import com.example.datasocialnetwork.dto.request.OTPComfirmDTO;
-import com.example.datasocialnetwork.dto.request.UserDTO;
+import com.example.datasocialnetwork.dto.request.*;
 import com.example.datasocialnetwork.dto.response.ErrorResponse;
 import com.example.datasocialnetwork.service.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.ObjectError;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.validation.BindingResult;
 
 import javax.validation.Valid;
@@ -33,7 +28,7 @@ public class AuthController {
     <returns></returns>
      */
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody UserDTO user, BindingResult bindingResult){
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterUserRequest user, BindingResult bindingResult){
         if (bindingResult.hasErrors()) {
             List<String> errors = bindingResult.getAllErrors()
                     .stream()
@@ -50,34 +45,34 @@ public class AuthController {
     /*
     Handles user login
     Create by NgaPLT 2024/03/06
-    <param>LoginDTO</param>
+    <param>LoginRequest</param>
     <returns></returns>
      */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginDTO userLogin){
+    public ResponseEntity<?> login(@RequestBody LoginRequest userLogin){
         return userService.loginUser(userLogin);
     }
 
     /*
     Handles user login comfirm otp
     Create by NgaPLT 2024/03/06
-    <param>LoginDTO</param>
+    <param>ComfirmOTPRequest</param>
     <returns></returns>
     */
     @PostMapping("/comfirm-otp-login")
-    public ResponseEntity<?> comfirmOTPLogin(@RequestBody OTPComfirmDTO otpComfirm){
+    public ResponseEntity<?> comfirmOTPLogin(@RequestBody ComfirmOTPRequest otpComfirm){
         return userService.comfirmOTPLogin(otpComfirm);
     }
 
     /*
     Handles user forgot password
     Create by NgaPLT 2024/03/06
-    <param>LoginDTO</param>
+    <param>email</param>
     <returns></returns>
      */
-    @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody LoginDTO userLogin) {
-        return userService.forgotPassword(userLogin.getEmail());
+    @PutMapping("/forgot-password/{email}")
+    public ResponseEntity<?> forgotPassword(@PathVariable("email")  String email) {
+        return userService.forgotPassword(email);
     }
 
 }

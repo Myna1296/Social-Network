@@ -77,7 +77,7 @@ public class UserServiceImplTests {
         String email = "test@example.com";
         String password = "password";
 
-        LoginDTO userLogin = new LoginDTO();
+        LoginRequest userLogin = new LoginRequest();
         userLogin.setEmail(email);
         userLogin.setPassword(password);
 
@@ -93,10 +93,7 @@ public class UserServiceImplTests {
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
         // Check data  ResponseEntity
-        ResponseOk response = (ResponseOk) responseEntity.getBody();
-        assertNotNull(response);
-        assertEquals(Constants.CODE_OK, response.getCode());
-        assertEquals("", response.getMessage());
+        assertEquals(Constants.LOGIN_SUCCESS, responseEntity.getBody());
     }
 
     @Test
@@ -104,17 +101,15 @@ public class UserServiceImplTests {
         String email = "test@example.com";
         String password = "password";
 
-        LoginDTO userLogin = new LoginDTO();
+        LoginRequest userLogin = new LoginRequest();
         userLogin.setEmail(email);
         userLogin.setPassword(password);
 
         when(userRepository.findOneByEmail(email)).thenReturn(null);
 
         ResponseEntity<?> responseEntity = userService.loginUser(userLogin);
-        ResponseOk response = (ResponseOk) responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, response.getCode());
-        assertEquals(Constants.MESS_004, response.getMessage());
+        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        assertEquals(Constants.LOGIN_USER_NOT_FOUND, responseEntity.getBody());
     }
 
     @Test
@@ -122,7 +117,7 @@ public class UserServiceImplTests {
         String email = "test@example.com";
         String password = "password1";
 
-        LoginDTO userLogin = new LoginDTO();
+        LoginRequest userLogin = new LoginRequest();
         userLogin.setEmail(email);
         userLogin.setPassword(password);
 
@@ -133,10 +128,8 @@ public class UserServiceImplTests {
         when(userRepository.findOneByEmail(email)).thenReturn(user);
 
         ResponseEntity<?> responseEntity = userService.loginUser(userLogin);
-        ResponseOk response = (ResponseOk) responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, response.getCode());
-        assertEquals(Constants.MESS_005, response.getMessage());
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        assertEquals(Constants.LOGIN_PASSWORD_WRONG, responseEntity.getBody());
     }
 
     @Test
@@ -144,7 +137,7 @@ public class UserServiceImplTests {
         String email = "test@example.com";
         String password = "password";
 
-        LoginDTO userLogin = new LoginDTO();
+        LoginRequest userLogin = new LoginRequest();
         userLogin.setEmail(email);
         userLogin.setPassword(password);
 
@@ -156,10 +149,8 @@ public class UserServiceImplTests {
         when(mailService.sendCode(email, user.getUserName(), SendCodeType.LOGIN)).thenReturn(false);
 
         ResponseEntity<?> responseEntity = userService.loginUser(userLogin);
-        ResponseOk response = (ResponseOk) responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, response.getCode());
-        assertEquals(Constants.MESS_006, response.getMessage());
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        assertEquals(Constants.SEND_EMAIL_FAILE, responseEntity.getBody());
     }
 
     @Test
@@ -168,7 +159,7 @@ public class UserServiceImplTests {
         String email = "test@example.com";
         String otpCode = "123456";
 
-        OTPComfirmDTO otpComfirm = new OTPComfirmDTO();
+        ComfirmOTPRequest otpComfirm = new ComfirmOTPRequest();
         otpComfirm.setEmail(email);
         otpComfirm.setOtp(otpCode);
 
@@ -192,10 +183,7 @@ public class UserServiceImplTests {
 
         // Assert the response
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        ResponseOk response = (ResponseOk) responseEntity.getBody();
-        assertNotNull(response);
-        assertEquals(Constants.CODE_OK, response.getCode());
-        assertTrue(response.getMessage().isEmpty());
+        assertEquals(Constants.OTP_COMFIRM_SUCCESS, responseEntity.getBody());
 
     }
 
@@ -206,7 +194,7 @@ public class UserServiceImplTests {
         String otpCode = "123456";
         String invalidOtp = "654321";
 
-        OTPComfirmDTO otpComfirm = new OTPComfirmDTO();
+        ComfirmOTPRequest otpComfirm = new ComfirmOTPRequest();
         otpComfirm.setEmail(email);
         otpComfirm.setOtp(invalidOtp);
 
@@ -217,11 +205,8 @@ public class UserServiceImplTests {
         ResponseEntity<?> responseEntity = userService.comfirmOTPLogin(otpComfirm);
 
         // Assert the response
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        ResponseOk response = (ResponseOk) responseEntity.getBody();
-        assertNotNull(response);
-        assertEquals(Constants.CODE_ERROR, response.getCode());
-        assertEquals(Constants.MESS_007, response.getMessage());
+        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        assertEquals(Constants.LOGIN_USER_NOT_FOUND, responseEntity.getBody());
     }
 
     @Test
@@ -231,7 +216,7 @@ public class UserServiceImplTests {
         String otpCode = "123456";
         String invalidOtp = "654321";
 
-        OTPComfirmDTO otpComfirm = new OTPComfirmDTO();
+        ComfirmOTPRequest otpComfirm = new ComfirmOTPRequest();
         otpComfirm.setEmail(email);
         otpComfirm.setOtp(invalidOtp);
 
@@ -247,11 +232,8 @@ public class UserServiceImplTests {
         ResponseEntity<?> responseEntity = userService.comfirmOTPLogin(otpComfirm);
 
         // Assert the response
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        ResponseOk response = (ResponseOk) responseEntity.getBody();
-        assertNotNull(response);
-        assertEquals(Constants.CODE_ERROR, response.getCode());
-        assertEquals(Constants.MESS_008, response.getMessage());
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        assertEquals(Constants.OTP_NOT_CORRECT, responseEntity.getBody());
     }
 
     @Test
@@ -259,7 +241,7 @@ public class UserServiceImplTests {
         // Mocking data
         String email = "test@example.com";
         String otpCode = "123456";
-        OTPComfirmDTO otpComfirm = new OTPComfirmDTO();
+        ComfirmOTPRequest otpComfirm = new ComfirmOTPRequest();
         otpComfirm.setEmail(email);
         otpComfirm.setOtp(otpCode);
 
@@ -275,23 +257,18 @@ public class UserServiceImplTests {
         ResponseEntity<?> responseEntity = userService.comfirmOTPLogin(otpComfirm);
 
         // Assert the response
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        ResponseOk response = (ResponseOk) responseEntity.getBody();
-        assertNotNull(response);
-        assertEquals(Constants.CODE_ERROR, response.getCode());
-        assertEquals(Constants.MESS_009, response.getMessage());
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        assertEquals(Constants.OTP_IS_EXPIRED, responseEntity.getBody());
     }
 
     @Test
     public void testCreateUser_Success() {
         // Tạo một đối tượng UserDTO hợp lệ
-        UserDTO userDTO = new UserDTO();
+        RegisterUserRequest userDTO = new RegisterUserRequest();
         userDTO.setEmail("test@example.com");
         userDTO.setPassword("password");
         userDTO.setUserName("testUser");
 
-        // Giả mạo phương thức existsByUsername và existsByEmail trả về false (không tồn tại)
-        when(userRepository.existsByUserName(anyString())).thenReturn(false);
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
         when(userRepository.save(any(User.class))).thenReturn(new User());
 
@@ -300,49 +277,26 @@ public class UserServiceImplTests {
 
         // Kiểm tra kết quả trả về
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_OK, ((ResponseOk) responseEntity.getBody()).getCode());
-        assertEquals(Constants.MESS_003, ((ResponseOk) responseEntity.getBody()).getMessage());
+        assertEquals(Constants.REGISTER_USER_SUCCESS,responseEntity.getBody());
     }
 
-    @Test
-    public void testCreateUser_ExistUserName() {
-        // Tạo một đối tượng UserDTO hợp lệ
-        UserDTO userDTO = new UserDTO();
-        userDTO.setEmail("test@example.com");
-        userDTO.setPassword("password");
-        userDTO.setUserName("testUser");
-
-        // Giả mạo phương thức existsByUsername và existsByEmail trả về false (không tồn tại)
-        when(userRepository.existsByUserName(anyString())).thenReturn(true);
-
-        // Khi gọi phương thức createUser
-        ResponseEntity<?> responseEntity = userService.createUser(userDTO);
-
-        // Kiểm tra kết quả trả về
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, ((ResponseOk) responseEntity.getBody()).getCode());
-        assertEquals(Constants.MESS_001, ((ResponseOk) responseEntity.getBody()).getMessage());
-    }
 
     @Test
     public void testCreateUser_ExistEmail() {
         // Tạo một đối tượng UserDTO hợp lệ
-        UserDTO userDTO = new UserDTO();
+        RegisterUserRequest userDTO = new RegisterUserRequest();
         userDTO.setEmail("test@example.com");
         userDTO.setPassword("password");
         userDTO.setUserName("testUser");
 
-        // Giả mạo phương thức existsByUsername và existsByEmail trả về false (không tồn tại)
-        when(userRepository.existsByUserName(anyString())).thenReturn(false);
         when(userRepository.existsByEmail(anyString())).thenReturn(true);
 
         // Khi gọi phương thức createUser
         ResponseEntity<?> responseEntity = userService.createUser(userDTO);
 
         // Kiểm tra kết quả trả về
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, ((ResponseOk) responseEntity.getBody()).getCode());
-        assertEquals(Constants.MESS_002, ((ResponseOk) responseEntity.getBody()).getMessage());
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        assertEquals(Constants.EMAIL_IS_EXISTS, responseEntity.getBody());
     }
 
     @Test
@@ -354,9 +308,8 @@ public class UserServiceImplTests {
         ResponseEntity<?> responseEntity = userService.forgotPassword("nonexistent@example.com");
 
         // Verify that the correct error response is returned
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, ((ResponseOk) responseEntity.getBody()).getCode());
-        assertEquals(Constants.MESS_004, ((ResponseOk) responseEntity.getBody()).getMessage());
+        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        assertEquals(Constants.LOGIN_USER_NOT_FOUND, responseEntity.getBody());
 
         // Ensure that userRepository.findOneByEmail() is called once
         verify(userRepository, times(1)).findOneByEmail(anyString());
@@ -376,9 +329,8 @@ public class UserServiceImplTests {
         ResponseEntity<?> responseEntity = userService.forgotPassword("test@example.com");
 
         // Verify that the correct error response is returned
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, ((ResponseOk) responseEntity.getBody()).getCode());
-        assertEquals("An error occurred while sending email", ((ResponseOk) responseEntity.getBody()).getMessage());
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        assertEquals(Constants.SEND_EMAIL_FAILE,responseEntity.getBody());
 
         // Ensure that userRepository.findOneByEmail() is called once
         verify(userRepository, times(1)).findOneByEmail(anyString());
@@ -402,8 +354,7 @@ public class UserServiceImplTests {
 
         // Verify that the correct success response is returned
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_OK, ((ResponseOk) responseEntity.getBody()).getCode());
-        assertEquals("An email has been sent to reset your password.", ((ResponseOk) responseEntity.getBody()).getMessage());
+        assertEquals(Constants.FORGOT_PASSWORD_SUCCESS, responseEntity.getBody());
 
         // Ensure that userRepository.findOneByEmail() is called once
         verify(userRepository, times(1)).findOneByEmail(anyString());

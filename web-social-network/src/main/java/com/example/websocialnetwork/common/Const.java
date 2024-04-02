@@ -11,7 +11,7 @@ public class Const {
     public static final String API_REGISTER ="/api/auth/register";
     public static final String API_LOGIN ="/api/auth/login";
     public static final String API_COMFIRM_OTP_LOGIN ="/api/auth/comfirm-otp-login";
-    public static final String API_FORGOT_PASSWORD ="/api/auth/forgot-password";
+    public static final String API_FORGOT_PASSWORD ="/api/auth/forgot-password/{email}";
     public static final String API_USER_INFO = "/api/user/user-info/{email}";
     public static final String API_USER_INFO_BY_ID = "/api/user/profile-user/{id}";
     public static final String API_UPDATE_IMAGE = "/api/user/update-image";
@@ -21,7 +21,7 @@ public class Const {
     public static final String API_GET_REQUEST_USER_NOT_ACCEPTE = "/api/friends/get-request-user-notaccepte/{pageId}";
     public static final String API_GET_REQUEST_NOT_ACCEPTE_TO_USER = "/api/friends/get-request-notaccepte-touser/{pageId}";
     public static final String API_CHECK_FRIEND_SHIP = "/api/friends/check-friend-ship/{id}";
-    public static final String API_SEARCH_USER = "/api/api/user/search-user";
+    public static final String API_SEARCH_USER = "/api/user/search-user";
     public static final String API_ADD_FRIEND = "/api/friends/add-to-friends/{id}";
     public static final String API_DELETE_FRIENDSHIP = "/api/friends/delete";
     public static final String API_ACCEPTE_FRIENDSHIP = "/api/friends/accepte";

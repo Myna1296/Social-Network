@@ -74,17 +74,15 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public ResponseEntity<?> createUser(UserDTO userDto) {
+    public ResponseEntity<?> createUser(RegisterUserRequest userDto) {
         //Check if user name and email exist or not
         User user = convertUserDtoToUser(userDto);
         String result = validateInfo(user);
         if(result != null){
-            ResponseOk response = new ResponseOk(Constants.CODE_ERROR,result);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
         }
         userRepository.save(user);
-        ResponseOk response = new ResponseOk(Constants.CODE_OK,Constants.MESS_003);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK).body(Constants.REGISTER_USER_SUCCESS);
     }
 
     @Override
@@ -98,37 +96,31 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<?> loginUser(LoginDTO userLogin) {
+    public ResponseEntity<?> loginUser(LoginRequest userLogin) {
         User user = userRepository.findOneByEmail(userLogin.getEmail());
         if (user == null){
-            ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_004);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Constants.LOGIN_USER_NOT_FOUND);
         }
         if ( !passwordEncoder.matches(userLogin.getPassword(),user.getPassword())){
-            ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_005);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.LOGIN_PASSWORD_WRONG);
         }
         boolean sednMail = mailService.sendCode(user.getEmail(), user.getUserName(), SendCodeType.LOGIN);
         if( sednMail){
-            ResponseOk response = new ResponseOk(Constants.CODE_OK, "");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.OK).body(Constants.LOGIN_SUCCESS);
         }
-        ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_006);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.SEND_EMAIL_FAILE);
     }
 
     @Override
-    public ResponseEntity<?> comfirmOTPLogin(OTPComfirmDTO otpComfirm) {
+    public ResponseEntity<?> comfirmOTPLogin(ComfirmOTPRequest otpComfirm) {
         Otp otp = otpRepository.findOneByEmail(otpComfirm.getEmail());
         if(otp == null){
-            ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_007);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Constants.LOGIN_USER_NOT_FOUND);
         }
         if(otp.getCode().equals(otpComfirm.getOtp())){
             LocalDateTime otpDate = LocalDateTime.now().minusMinutes(5);
             if( otpDate.compareTo(otp.getCreatedDate()) > 0 ) {
-                ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_009);
-                return new ResponseEntity<>(response, HttpStatus.OK);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.OTP_IS_EXPIRED);
             }
             User user = userRepository.findOneByEmail(otp.getEmail());
             String token = jwtTokenUtil.generateToken(user.getUserName());
@@ -136,11 +128,9 @@ public class UserServiceImpl implements UserService {
             userRepository.save(user);
             HttpHeaders headers = new HttpHeaders();
             headers.add("Authorization", "Bearer " + token);
-            ResponseOk response = new ResponseOk(Constants.CODE_OK, "");
-            return new ResponseEntity<>(response,headers, HttpStatus.OK);
+            return  new ResponseEntity<>(Constants.OTP_COMFIRM_SUCCESS, headers, HttpStatus.OK);
         }
-        ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_008);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.OTP_NOT_CORRECT);
     }
 
     @Override
@@ -312,18 +302,15 @@ public class UserServiceImpl implements UserService {
     public ResponseEntity<?> forgotPassword(String email) {
         User user = userRepository.findOneByEmail(email);
         if (user == null){
-            ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_004);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Constants.LOGIN_USER_NOT_FOUND);
         }
         String newPassword = RandomStringUtils.random(8, true, true);
         if ( mailService.sendNewPassword(user.getEmail(), user.getUserName(), newPassword,SendCodeType.RECOVERY)){
             user.setPassword(passwordEncoder.encode(newPassword));
             userRepository.save(user);
-            ResponseOk response = new ResponseOk(Constants.CODE_OK, "An email has been sent to reset your password.");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.OK).body(Constants.FORGOT_PASSWORD_SUCCESS);
         }
-        ResponseOk response = new ResponseOk(Constants.CODE_ERROR, "An error occurred while sending email");
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.SEND_EMAIL_FAILE);
     }
 
     public User findOneById(Long id) {
@@ -336,26 +323,16 @@ public class UserServiceImpl implements UserService {
     }
 
     private String validateInfo(User user){
-        if(existsByUsername(user.getUserName())) {
-            return Constants.MESS_001;
-        }
         if(existsByEmail(user.getEmail())){
-            return Constants.MESS_002;
+            return Constants.EMAIL_IS_EXISTS;
         }
         return null;
     }
 
-    private User convertUserDtoToUser(UserDTO userDTO){
+    private User convertUserDtoToUser(RegisterUserRequest userDTO){
         User user = new User();
-        user.setId(userDTO.getId());
         user.setEmail(userDTO.getEmail());
         user.setUserName(userDTO.getUserName());
-        user.setAddress(userDTO.getAddress());
-        user.setPhone(userDTO.getPhone());
-        user.setSex(getGenderByName(userDTO.getSex()));
-        user.setImage(userDTO.getImage());
-        user.setBirthday(userDTO.getBirthday());
-        user.setJob(userDTO.getJob());
         if(userDTO.getPassword() != null){
             user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         }

@@ -1,8 +1,6 @@
 package com.example.datasocialnetwork.controller;
 
-import com.example.datasocialnetwork.dto.request.LoginDTO;
-import com.example.datasocialnetwork.dto.request.OTPComfirmDTO;
-import com.example.datasocialnetwork.dto.request.UserDTO;
+import com.example.datasocialnetwork.dto.request.*;
 import com.example.datasocialnetwork.dto.response.ResponseOk;
 import com.example.datasocialnetwork.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,7 +37,7 @@ public class AuthControllerTest {
 
     @Test
     public void testLogin() {
-        LoginDTO loginDTO = new LoginDTO();
+        LoginRequest loginDTO = new LoginRequest();
         // Set loginDTO properties
         ResponseEntity<ResponseOk> expectedResponse = new ResponseEntity<>(new ResponseOk(HttpStatus.OK.value(), ""), HttpStatus.OK);
         when(userService.loginUser(loginDTO)).thenAnswer(invocation -> ResponseEntity.ok(new ResponseOk(HttpStatus.OK.value(), "")));
@@ -50,7 +48,7 @@ public class AuthControllerTest {
 
     @Test
     public void testComfirmOTPLogin() {
-        OTPComfirmDTO otpComfirmDTO = new OTPComfirmDTO();
+        ComfirmOTPRequest otpComfirmDTO = new ComfirmOTPRequest();
         // Set loginDTO properties
         ResponseEntity<ResponseOk> expectedResponse = new ResponseEntity<>(new ResponseOk(HttpStatus.OK.value(), ""), HttpStatus.OK);
         when(userService.comfirmOTPLogin(otpComfirmDTO)).thenAnswer(invocation -> ResponseEntity.ok(new ResponseOk(HttpStatus.OK.value(), "")));
@@ -62,7 +60,7 @@ public class AuthControllerTest {
     @Test
     public void testRegister_InvalidUser() {
         // Tạo một đối tượng UserDTO không hợp lệ (ví dụ: email rỗng)
-        UserDTO userDTO = new UserDTO();
+        RegisterUserRequest userDTO = new RegisterUserRequest();
         userDTO.setEmail("");
         userDTO.setPassword("password");
         userDTO.setUserName("testUser");
@@ -77,13 +75,13 @@ public class AuthControllerTest {
     @Test
     public void testRegister_Success() {
         // Tạo một đối tượng UserDTO hợp lệ
-        UserDTO userDTO = new UserDTO();
+        RegisterUserRequest userDTO = new RegisterUserRequest();
         userDTO.setEmail("test@example.com");
         userDTO.setPassword("password");
         userDTO.setUserName("testUser");
         when(bindingResult.hasErrors()).thenReturn(false);
 
-        when(userService.createUser(any(UserDTO.class))).thenReturn(new ResponseEntity<>(HttpStatus.OK));
+        when(userService.createUser(any(RegisterUserRequest.class))).thenReturn(new ResponseEntity<>(HttpStatus.OK));
 
         ResponseEntity<?> responseEntity = authController.register(userDTO, bindingResult);
 
@@ -92,12 +90,11 @@ public class AuthControllerTest {
 
     @Test
     public void testForgotPassword() {
-        LoginDTO loginDTO = new LoginDTO();
         // Set loginDTO properties
         ResponseEntity<ResponseOk> expectedResponse = new ResponseEntity<>(new ResponseOk(HttpStatus.OK.value(), ""), HttpStatus.OK);
-        when(userService.forgotPassword(loginDTO.getEmail())).thenAnswer(invocation -> ResponseEntity.ok(new ResponseOk(HttpStatus.OK.value(), "")));
-        ResponseEntity<?> actualResponse = authController.forgotPassword(loginDTO);
+        when(userService.forgotPassword("test")).thenAnswer(invocation -> ResponseEntity.ok(new ResponseOk(HttpStatus.OK.value(), "")));
+        ResponseEntity<?> actualResponse = authController.forgotPassword("test");
         assertEquals(expectedResponse, actualResponse);
-        verify(userService, times(1)).forgotPassword(loginDTO.getEmail());
+        verify(userService, times(1)).forgotPassword("test");
     }
 }

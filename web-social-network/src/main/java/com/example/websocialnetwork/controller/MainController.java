@@ -1,9 +1,9 @@
 package com.example.websocialnetwork.controller;
 
-import com.example.websocialnetwork.dto.LoginDTO;
-import com.example.websocialnetwork.dto.OTPComfirmDTO;
-import com.example.websocialnetwork.dto.UserDTO;
-import com.example.websocialnetwork.dto.reponse.ResponseOk;
+import com.example.websocialnetwork.dto.request.ComfirmOTPRequest;
+import com.example.websocialnetwork.dto.request.LoginRequest;
+import com.example.websocialnetwork.dto.request.RegisterUserRequest;
+import com.example.websocialnetwork.dto.request.RegisterUserRequestView;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -18,7 +18,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.Map;
 
 import static com.example.websocialnetwork.common.Const.*;
 import org.slf4j.Logger;
@@ -40,7 +39,7 @@ public class MainController {
             response.sendRedirect(request.getContextPath() + "/user/profile");
             return null;
         }
-        model.addAttribute("user", new UserDTO());
+        model.addAttribute("user", new RegisterUserRequestView());
         return VIEW_LOGIN;
     }
     /*
@@ -50,38 +49,33 @@ public class MainController {
     <returns></returns>
      */
     @PostMapping("/register")
-    public String registerUser(@Valid @ModelAttribute("user") UserDTO userDTO, BindingResult bindingResult,
+    public String registerUser(@Valid @ModelAttribute("user") RegisterUserRequestView user, BindingResult bindingResult,
                                Model model) {
         //userDTO validator
         //Check if there are any errors during the validator process.
         if (bindingResult.hasErrors()) {
             return VIEW_LOGIN;
         }
+        RegisterUserRequest userRequest = new RegisterUserRequest();
+        userRequest.setEmail(user.getEmail());
+        userRequest.setPassword(user.getPassword());
+        userRequest.setUserName(user.getUserName());
         HttpHeaders headers = new HttpHeaders();
-        HttpEntity<UserDTO> requestEntity = new HttpEntity<>(userDTO, headers);
+        HttpEntity<RegisterUserRequest> requestEntity = new HttpEntity<>(userRequest, headers);
         try {
             //call API
-            ResponseEntity<ResponseOk> response = restTemplate.exchange(
+            restTemplate.exchange(
                     path + API_REGISTER,
                     HttpMethod.POST,
                     requestEntity,
-                    ResponseOk.class
+                    String.class
             );
-            ResponseOk responseBody = response.getBody();
-            if ( responseBody == null){
-                return VIEW_ERROR;
-            }else if (responseBody.getCode() == 1) {
-                model.addAttribute("registrationError", true);
-                model.addAttribute("error", responseBody.getMessage());
-                model.addAttribute("user", userDTO);
-                return VIEW_LOGIN;
-            }
             return VIEW_COMFIRM_REGISTER;
         }catch (HttpClientErrorException e) {
             if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
                 model.addAttribute("registrationError", true);
-                model.addAttribute("error", "Invalid data submitted");
-                model.addAttribute("user", userDTO);
+                model.addAttribute("error", e.getResponseBodyAsString());
+                model.addAttribute("user", user);
                 return VIEW_LOGIN;
             } else {
                 return VIEW_ERROR;
@@ -100,61 +94,53 @@ public class MainController {
     @PostMapping("/login")
     public String loginUser(@RequestParam("email") String email,@RequestParam("password") String password, Model model) {
         try {
-            LoginDTO userLogin = new LoginDTO();
+            LoginRequest userLogin = new LoginRequest();
             userLogin.setEmail(email);
             userLogin.setPassword(password);
             HttpHeaders headers = new HttpHeaders();
-            HttpEntity<LoginDTO> requestEntity = new HttpEntity<>(userLogin, headers);
+            HttpEntity<LoginRequest> requestEntity = new HttpEntity<>(userLogin, headers);
             //call API
-            ResponseEntity<ResponseOk> response = restTemplate.exchange(
+            restTemplate.exchange(
                     path + API_LOGIN,
                     HttpMethod.POST,
                     requestEntity,
-                    ResponseOk.class
+                    String.class
             );
-            ResponseOk responseBody = response.getBody();
-            if ( responseBody == null){
-                return VIEW_ERROR;
-            }else if (responseBody.getCode() == 1) {
-                model.addAttribute("loginError", true);
-                model.addAttribute("error", responseBody.getMessage());
-                model.addAttribute("user", new UserDTO());
-                return VIEW_LOGIN;
-            }
             model.addAttribute("email", email);
             return VIEW_COMFIRM_OTP;
 
-        }catch (Exception e) {
-        return VIEW_ERROR;
-        }
+        } catch (HttpClientErrorException e) {
 
+            HttpStatus statusCode = e.getStatusCode();
+            if( statusCode == HttpStatus.BAD_REQUEST || statusCode == HttpStatus.NOT_FOUND){
+                model.addAttribute("loginError", true);
+                model.addAttribute("error", e.getResponseBodyAsString());
+                model.addAttribute("user", new RegisterUserRequestView());
+                return VIEW_LOGIN;
+            }
+            return VIEW_ERROR;
+        }catch (Exception e) {
+                return VIEW_ERROR;
+        }
     }
 
     @PostMapping("/comfirmOTP")
     public String comfirmOTPLogin(@RequestParam("email") String email,@RequestParam("otp") String otp, Model model,
                                   HttpServletRequest request, HttpServletResponse responseHttp) {
         try {
-            OTPComfirmDTO otpComfirm = new OTPComfirmDTO();
+            ComfirmOTPRequest otpComfirm = new ComfirmOTPRequest();
             otpComfirm.setEmail(email);
             otpComfirm.setOtp(otp);
             HttpHeaders headers = new HttpHeaders();
-            HttpEntity<OTPComfirmDTO> requestEntity = new HttpEntity<>(otpComfirm, headers);
+            HttpEntity<ComfirmOTPRequest> requestEntity = new HttpEntity<>(otpComfirm, headers);
             //call API
-            ResponseEntity<ResponseOk> response = restTemplate.exchange(
+            ResponseEntity<?> response = restTemplate.exchange(
                     path + API_COMFIRM_OTP_LOGIN,
                     HttpMethod.POST,
                     requestEntity,
-                    ResponseOk.class
+                    String.class
             );
-            ResponseOk responseBody = response.getBody();
-            if (responseBody == null) {
-                return VIEW_ERROR;
-            } else if (responseBody.getCode() == 1) {
-                model.addAttribute("comfirmOTPError", true);
-                model.addAttribute("error", responseBody.getMessage());
-                model.addAttribute("email", email);
-                return VIEW_COMFIRM_OTP;
-            }
+
             HttpHeaders headersResponse = response.getHeaders();
             String token = headersResponse.getFirst("Authorization");
             request.getSession().setAttribute("token", token.substring(7));
@@ -162,7 +148,17 @@ public class MainController {
             responseHttp.sendRedirect(request.getContextPath() + "/user/profile");
             return null;
 
-        } catch (Exception e) {
+        }  catch (HttpClientErrorException e) {
+
+            HttpStatus statusCode = e.getStatusCode();
+            if( statusCode == HttpStatus.BAD_REQUEST || statusCode == HttpStatus.NOT_FOUND){
+                model.addAttribute("comfirmOTPError", true);
+                model.addAttribute("error", e.getResponseBodyAsString());
+                model.addAttribute("email", email);
+                return VIEW_COMFIRM_OTP;
+            }
+            return VIEW_ERROR;
+        }catch (Exception e) {
             return VIEW_ERROR;
         }
     }
@@ -170,27 +166,30 @@ public class MainController {
     @GetMapping("/forgot-password")
     public String forgotPassword(@RequestParam("email") String email, Model model) {
         try {
-            LoginDTO userLogin = new LoginDTO();
-            userLogin.setEmail(email);
             HttpHeaders headers = new HttpHeaders();
-            HttpEntity<LoginDTO> requestEntity = new HttpEntity<>(userLogin, headers);
+            HttpEntity<String> requestEntity = new HttpEntity<>(headers);
             //call API
-            ResponseEntity<ResponseOk> response = restTemplate.exchange(
+            ResponseEntity<?> response = restTemplate.exchange(
                     path + API_FORGOT_PASSWORD,
-                    HttpMethod.POST,
+                    HttpMethod.PUT,
                     requestEntity,
-                    ResponseOk.class
+                    String.class
             );
-            ResponseOk responseBody = response.getBody();
-            if ( responseBody == null){
-                return VIEW_ERROR;
-            }
-            if (responseBody.getCode() == 1) {
-                model.addAttribute("message", responseBody.getMessage());
-                return VIEW_ERR;
-            }
-            return "redirect:/";
+            model.addAttribute("loginError", true);
+            model.addAttribute("error", response.getBody());
+            model.addAttribute("user", new RegisterUserRequestView());
+            return VIEW_LOGIN;
 
+        }catch (HttpClientErrorException e) {
+
+            HttpStatus statusCode = e.getStatusCode();
+            if( statusCode == HttpStatus.BAD_REQUEST || statusCode == HttpStatus.NOT_FOUND){
+                model.addAttribute("loginError", true);
+                model.addAttribute("error", e.getResponseBodyAsString());
+                model.addAttribute("user", new RegisterUserRequestView());
+                return VIEW_LOGIN;
+            }
+            return VIEW_ERROR;
         }catch (Exception e) {
             return VIEW_ERROR;
         }

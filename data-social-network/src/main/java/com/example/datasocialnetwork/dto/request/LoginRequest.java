@@ -7,7 +7,7 @@ import lombok.Setter;
 @Data
 @Getter
 @Setter
-public class OTPComfirmDTO {
+public class LoginRequest {
     private String email;
-    private String otp;
+    private String password;
 }

@@ -6,11 +6,11 @@ import com.example.datasocialnetwork.dto.response.UserInfoResponse;
 import org.springframework.http.ResponseEntity;
 
 public interface UserService {
-    ResponseEntity<?> createUser(UserDTO userDto);
+    ResponseEntity<?> createUser(RegisterUserRequest userDto);
     Boolean existsByUsername(String username);
     Boolean existsByEmail(String email);
-    ResponseEntity<?> loginUser(LoginDTO userLogin);
-    ResponseEntity<?> comfirmOTPLogin(OTPComfirmDTO otpComfirm);
+    ResponseEntity<?> loginUser(LoginRequest userLogin);
+    ResponseEntity<?> comfirmOTPLogin(ComfirmOTPRequest otpComfirm);
     UserInfoResponse findByEmail(String email);
     UserInfoResponse findById(Long id);
     ResponseEntity<?> updateImageUser(UserInfo userInfo);
