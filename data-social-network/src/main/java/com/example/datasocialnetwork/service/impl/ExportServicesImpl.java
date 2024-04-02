@@ -2,7 +2,6 @@ package com.example.datasocialnetwork.service.impl;
 
 import com.example.datasocialnetwork.common.Constants;
 import com.example.datasocialnetwork.config.UserAuthDetails;
-import com.example.datasocialnetwork.dto.response.ResponseOk;
 import com.example.datasocialnetwork.entity.User;
 import com.example.datasocialnetwork.repository.*;
 import com.example.datasocialnetwork.service.ExportService;
@@ -47,12 +46,9 @@ public class ExportServicesImpl implements ExportService {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-            User user = userRepository.findOneByUserName(userDetails.getUsername());
+            User user = userRepository.findOneById(Long.parseLong(userDetails.getUserID()));
             if (user == null) {
-                ResponseOk response = new ResponseOk();
-                response.setCode(Constants.CODE_ERROR);
-                response.setMessage(Constants.MESS_013);
-                return new ResponseEntity<>(response, HttpStatus.OK);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Constants.LOGIN_USER_NOT_FOUND);
             }
             // Lấy ngày 7 ngày trước đó
 
@@ -112,15 +108,9 @@ public class ExportServicesImpl implements ExportService {
             workbook.write(fileOut);
             workbook.close();
 
-            ResponseOk response = new ResponseOk();
-            response.setCode(Constants.CODE_OK);
-            response.setMessage("");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.OK).body(Constants.EXPORT_FILE_SUCCESS+ filePath);
         }catch (Exception e) {
-            ResponseOk response = new ResponseOk();
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage("Error while exporting report file");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.EXPORT_FILE_ERR);
         }
     }
 }

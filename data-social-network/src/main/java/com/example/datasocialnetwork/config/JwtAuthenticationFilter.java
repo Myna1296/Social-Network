@@ -1,9 +1,11 @@
 package com.example.datasocialnetwork.config;
 
+import com.example.datasocialnetwork.common.Constants;
+import com.example.datasocialnetwork.entity.User;
 import com.example.datasocialnetwork.service.impl.UserServiceImpl;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,15 +33,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String jwtToken = getJwtFromRequest(request);
         if (jwtToken != null) {
-            UserDetails userDetails = userService.findUserByToken(jwtToken);
-            if (userDetails != null & jwtTokenUtil.validateToken(jwtToken, userDetails)) {
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                usernamePasswordAuthenticationToken
-                        .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            User user = userService.findUserByToken(jwtToken);
+            if (user != null ) {
+                if(jwtTokenUtil.validateToken(jwtToken, user)) {
+                    UserAuthDetails userDetails = new UserAuthDetails(user);
+                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    usernamePasswordAuthenticationToken
+                            .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                    SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                } else {
+                    ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Constants.TOKEN_INVALID);
+                }
+            } else {
+                ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Constants.TOKEN_INVALID);
             }
+        }else {
+            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Constants.TOKEN_IS_NULL);
         }
 
         filterChain.doFilter(request, response);

@@ -1,5 +1,6 @@
 package com.example.datasocialnetwork.config;
 
+import com.example.datasocialnetwork.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -29,7 +30,7 @@ public class JwtTokenUtil implements Serializable {
     private String secret;
 
     //retrieve username from jwt token
-    public String getUsernameFromToken(String token) {
+    public String getUserIdFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
     }
 
@@ -56,9 +57,9 @@ public class JwtTokenUtil implements Serializable {
     }
 
     //generate token for user
-    public String generateToken(String userName) {
+    public String generateToken(String userId) {
         Map<String, Object> claims = new HashMap<>();
-        return doGenerateToken(claims, userName);
+        return doGenerateToken(claims, userId);
     }
 
     //while creating the token -
@@ -74,9 +75,9 @@ public class JwtTokenUtil implements Serializable {
     }
 
     //validate token
-    public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = getUsernameFromToken(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    public Boolean validateToken(String token, User user) {
+        final String userId = getUserIdFromToken(token);
+        return ((Long.parseLong(userId) == user.getId()) && !isTokenExpired(token));
     }
 
 }

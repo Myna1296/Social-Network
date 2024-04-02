@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -25,9 +26,9 @@ public class UserController {
     @Autowired
     private UserServiceImpl userService;
 
-    @GetMapping("/user-info/{email}")
-    public UserInfoResponse getUserInfo( @PathVariable("email") String email){
-          return userService.findByEmail(email);
+    @GetMapping("/profile")
+    public ResponseEntity<?> getUserInfo(){
+          return userService.getProfileUser();
     }
 
     @GetMapping("/profile-user/{id}")
@@ -35,16 +36,16 @@ public class UserController {
         return userService.findById(id);
     }
 
-    @PostMapping("/update-image")
-    public ResponseEntity<?> updateImage(@RequestBody UserInfo user){
-        return userService.updateImageUser(user);
+    @PutMapping("/update-avata")
+    public ResponseEntity<?> updateImage(@RequestParam("image") MultipartFile file){
+        return userService.updateImageUser(file);
     }
 
-    @PostMapping("/update-profile-user")
+    @PutMapping("/update-profile")
     public ResponseEntity<?> updateInfo(@RequestBody UserInfo userInfo){
         return  userService.updateProfileUser(userInfo);
     }
-    @PostMapping("/update-password")
+    @PutMapping("/update-password")
     public ResponseEntity<?> updatePassword(@Valid @RequestBody PasswordChangeDTO passwordChangeDTO, BindingResult bindingResult){
         if (bindingResult.hasErrors()) {
             List<String> errors = bindingResult.getAllErrors()

@@ -12,10 +12,10 @@ public class Const {
     public static final String API_LOGIN ="/api/auth/login";
     public static final String API_COMFIRM_OTP_LOGIN ="/api/auth/comfirm-otp-login";
     public static final String API_FORGOT_PASSWORD ="/api/auth/forgot-password/{email}";
-    public static final String API_USER_INFO = "/api/user/user-info/{email}";
+    public static final String API_USER_INFO = "/api/user/profile";
     public static final String API_USER_INFO_BY_ID = "/api/user/profile-user/{id}";
-    public static final String API_UPDATE_IMAGE = "/api/user/update-image";
-    public static final String API_UPDATE_PROFILE = "/api/user/update-profile-user";
+    public static final String API_UPDATE_IMAGE = "/api/user/update-avata";
+    public static final String API_UPDATE_PROFILE = "/api/user/update-profile";
     public static final String API_UPDATE_PASSWORD = "/api/user/update-password";
     public static final String API_GET_FRIENF_OF_USER = "/api/friends/get-friend/{pageId}";
     public static final String API_GET_REQUEST_USER_NOT_ACCEPTE = "/api/friends/get-request-user-notaccepte/{pageId}";
@@ -34,7 +34,7 @@ public class Const {
     public static final String API_SEARCH_COMMENT = "/api/comment/search";
     public static final String API_ADD_COMMENT = "/api/comment/add";
     public static final String API_DELETE_COMMENT = "/api/comment/delete/{id}";
-    public static final String API_EXPORT_FILE = "/api/export/export-file";
+    public static final String API_EXPORT_FILE = "/api/export-file";
     public static final String API_ADD_LIKE = "/api/like/add/{id}";
     public static final String API_DELETE_LIKE = "/api/like/delete/{id}";
 

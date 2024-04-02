@@ -27,7 +27,7 @@
                     <div class="image-right">
                         <div class="card">
                             <img th:if="${user.avata != null}" class="img-circle img-thumbnail social-img"
-                                 th:src="@{'/' + ${user.avata}}" alt="Your profile image">
+                                 th:src="${user.avata}" alt="Your profile image">
                             <img th:unless="${user.avata != null}" class="img-circle img-thumbnail social-img"
                                  th:src="@{/images/noname.svg}" alt="Your profile image">
                         </div>
@@ -41,18 +41,13 @@
                     <p th:text="${error}"></p>
                 </div>
                 <form th:action="@{/user/settings}" th:object="${user}" action="/user/settings" method="post">
+                    <input type="hidden" name="id" th:value="${user.id}"/>
                     <div class="panel panel-default">
                         <div class="list-group">
                             <div class="list-group-item">
-                                <label for="email"><span th:text="#{email}">Email</span>: <input type="text" name="email" class="form-control"
-                                                                 th:value="${user.email}"
-                                                                 id="email" readonly />
-                                </label>
-                            </div>
-                            <div class="list-group-item">
                                 <label for="firstName"><span >User name</span>: <input type="text" name="userName" class="form-control"
                                                                           th:value="${user.userName}"
-                                                                          id="firstName" readonly/>
+                                                                          id="firstName"/>
                                 </label>
                             </div>
                             <div class="list-group-item">
@@ -159,6 +154,18 @@
 
 <script src="../static/js/jquery-ui.min.js" th:src="@{/js/jquery-ui.min.js}"></script>
 <script src="../static/js/profile.js" th:src="@{/js/profile.js}"></script>
+<script th:inline="javascript">
+    /* <![CDATA[ */
+    // Kiểm tra nếu giá trị exportMess được truyền từ controller
+    var mess = /*[[${updateSuccess}]]*/ null;
 
+    console.log("Giá trị của mess:", mess);
+
+    if (mess !== null && mess !== undefined && mess != "") {
+        // Hiển thị cảnh báo
+        alert(mess);
+    }
+    /* ]]> */
+</script>
 </body>
 </html>

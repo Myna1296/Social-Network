@@ -118,6 +118,7 @@ public class MainController {
                 model.addAttribute("loginError", true);
                 model.addAttribute("error", e.getResponseBodyAsString());
                 model.addAttribute("user", new RegisterUserRequestView());
+                model.addAttribute("email", email);
                 return VIEW_LOGIN;
             }
             return VIEW_ERROR;

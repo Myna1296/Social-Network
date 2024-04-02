@@ -29,7 +29,7 @@
         <div class="navbar-collapse collapse">
             <form th:if="${session.user == null}" id="loginForm" class="navbar-form navbar-right" th:action="@{/login}" method="POST" >
                 <div class="form-group">
-                    <input id="email_login" name="email" type="text" placeholder="Email" class="form-control login_email" required>
+                    <input id="email_login" name="email" type="text" placeholder="Email" class="form-control login_email"  th:value="${email}" required>
                 </div>
                 <div class="form-group">
                     <input id="password_login" name="password" type="password" placeholder="Password" class="form-control login_password" required>

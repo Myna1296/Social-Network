@@ -8,12 +8,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/export")
+@RequestMapping("/api/export-file")
 public class ExportController {
     @Autowired
     ExportServicesImpl exportServices;
 
-    @GetMapping("/export-file")
+    @GetMapping
     public ResponseEntity<?> exportFile() {
         return exportServices.exportFile();
     }

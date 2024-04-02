@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="template.html :: header('Profile', false)"></head>
+<head th:replace="template.html :: header('Profile', false)"></script>
+</head>
 
 <body>
 
@@ -20,7 +21,7 @@
                         <td>
                             <div class="card">
                                 <img th:if="${user.avata != null}" class="img-circle img-thumbnail social-img"
-                                     th:src="@{'/' + ${user.avata}}" alt="Your profile image">
+                                     th:src="${user.avata}" alt="Your profile image">
                                 <img th:unless="${user.avata != null}" class="img-circle img-thumbnail social-img"
                                      th:src="@{/images/noname.svg}" alt="Your profile image">
                                 <h3 th:text="${user.userName}">User Name</h3>
@@ -87,5 +88,18 @@
 </div>
 
 <div th:replace="template.html :: footer"></div>
+<script th:inline="javascript">
+    /* <![CDATA[ */
+    // Kiểm tra nếu giá trị exportMess được truyền từ controller
+    var exportMess = /*[[${exportMess}]]*/ null;
+
+    console.log("Giá trị của exportMess:", exportMess);
+
+    if (exportMess !== null && exportMess !== undefined && exportMess != "") {
+        // Hiển thị cảnh báo
+        alert(exportMess);
+    }
+    /* ]]> */
+</script>
 </body>
 </html>

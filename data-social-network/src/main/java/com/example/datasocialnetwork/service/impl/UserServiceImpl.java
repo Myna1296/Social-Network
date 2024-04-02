@@ -1,5 +1,7 @@
 package com.example.datasocialnetwork.service.impl;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.example.datasocialnetwork.common.SendCodeType;
 import com.example.datasocialnetwork.config.JwtTokenUtil;
 import com.example.datasocialnetwork.config.UserAuthDetails;
@@ -24,21 +26,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.StandardPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.datasocialnetwork.common.Constants;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.example.datasocialnetwork.common.Gender.getGenderById;
@@ -56,6 +56,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private MailService mailService;
+
+    @Autowired
+    private  Cloudinary cloudinary;
 
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
@@ -83,6 +86,18 @@ public class UserServiceImpl implements UserService {
         }
         userRepository.save(user);
         return ResponseEntity.status(HttpStatus.OK).body(Constants.REGISTER_USER_SUCCESS);
+    }
+
+    @Override
+    public ResponseEntity<?> getProfileUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
+        User user = userRepository.findOneById(Long.parseLong(userDetails.getUserID()));
+        if(user == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Constants.LOGIN_USER_NOT_FOUND);
+        }
+        UserInfo userInfo = convertUserToUserInfo(user);
+        return ResponseEntity.status(HttpStatus.OK).body(userInfo);
     }
 
     @Override
@@ -123,7 +138,7 @@ public class UserServiceImpl implements UserService {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.OTP_IS_EXPIRED);
             }
             User user = userRepository.findOneByEmail(otp.getEmail());
-            String token = jwtTokenUtil.generateToken(user.getUserName());
+            String token = jwtTokenUtil.generateToken(user.getId().toString());
             user.setToken(token);
             userRepository.save(user);
             UserInfo userInfo = convertUserToUserInfo(user);
@@ -186,30 +201,25 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<?> updateImageUser(UserInfo userInfo) {
+    public ResponseEntity<?> updateImageUser(MultipartFile file) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        User user = userRepository.findOneByEmail("test");
+        User user = userRepository.findOneById(Long.parseLong(userDetails.getUserID()));
         if (user == null){
-            ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_010);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } else if (!userDetails.getUsername().equals(user.getUserName())){
-            throw(new UserNotFoundException("Authentication information does not match"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Constants.LOGIN_USER_NOT_FOUND);
         }
         try {
-            if (!isImageFile(userInfo.getAvata())){
-                ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_011);
-                return new ResponseEntity<>(response, HttpStatus.OK);
+            if (!isImageFile(file.getContentType())){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.FILE_IS_NOT_FORMAT);
             }
-        }catch (IOException ex){
-            ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_012);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            Map data = this.cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("resource_type","auto"));
+            String url = (String) data.get("secure_url");
+            user.setImage(url);
+            userRepository.save(user);
+            return ResponseEntity.status(HttpStatus.OK).body(Constants.UPDATE_AVATA_SUCCESS);
+        }catch (Exception ex){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
         }
-
-        user.setImage(userInfo.getAvata());
-        userRepository.save(user);
-        ResponseOk response = new ResponseOk(Constants.CODE_OK, "");
-        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @Override
@@ -217,18 +227,21 @@ public class UserServiceImpl implements UserService {
     public ResponseEntity<?> updateProfileUser(UserInfo userInfo) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        User user = findOneById(Long.parseLong(userInfo.getId()));
+        User user = findOneById(Long.parseLong(userDetails.getUserID()));
         if (user == null){
-            ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_010);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Constants.LOGIN_USER_NOT_FOUND);
         }
-        if (!userDetails.getUsername().equals(user.getUserName())){
-            throw(new UserNotFoundException("Authentication information does not match"));
+        if (Long.parseLong(userDetails.getUserID()) != user.getId()){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Constants.UPDATE_USER_FORBIDDEN);
         }
         String checkBirthday = checkBirthday(userInfo.getBirthday());
         if(checkBirthday != null){
-            ResponseOk response = new ResponseOk(Constants.CODE_ERROR, "date is not valid");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.BRITHDAY_INVALID);
+        }
+        if (userInfo.getUserName() == null || userInfo.getUserName().isEmpty()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.UPDATE_USER_ERR);
+        } else {
+            user.setUserName(userInfo.getUserName());
         }
         if(userInfo.getJob() != null) {
             user.setJob(userInfo.getJob());
@@ -250,8 +263,7 @@ public class UserServiceImpl implements UserService {
             user.setBirthday(date);
         }
         userRepository.save(user);
-        ResponseOk response = new ResponseOk(Constants.CODE_OK, "");
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK).body(Constants.UPDATE_USER_SUCCESS);
     }
 
     @Override
@@ -287,15 +299,16 @@ public class UserServiceImpl implements UserService {
     public ResponseEntity<?> updatePassword(PasswordChangeDTO passwordChangeDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        if (!passwordEncoder.matches(passwordChangeDTO.getOldPassword(),userDetails.getPassword())){
-            ResponseOk response = new ResponseOk(Constants.CODE_ERROR, "Passwords doesn't match");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+        User user = findOneById(Long.parseLong(userDetails.getUserID()));
+        if (user == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Constants.LOGIN_USER_NOT_FOUND);
         }
-        User user = userRepository.findOneByUserName(userDetails.getUsername());
+        if (!passwordEncoder.matches(passwordChangeDTO.getOldPassword(),user.getPassword())){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.UPDATE_PASSWORD_ERR);
+        }
         user.setPassword(passwordEncoder.encode(passwordChangeDTO.getPassword()));
         userRepository.save(user);
-        ResponseOk response = new ResponseOk(Constants.CODE_OK, "");
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK).body(Constants.UPDATE_PASSWORD_SUCCESS);
     }
 
     @Override
@@ -318,9 +331,8 @@ public class UserServiceImpl implements UserService {
         return userRepository.findOneById(id);
     }
 
-    public UserDetails findUserByToken(String token){
-        User user = userRepository.findOneByToken(token);
-        return  new UserAuthDetails(user);
+    public User findUserByToken(String token){
+        return  userRepository.findOneByToken(token);
     }
 
     private String validateInfo(User user){
@@ -339,11 +351,7 @@ public class UserServiceImpl implements UserService {
         }
         return user;
     }
-    private static boolean isImageFile(String filePath) throws IOException {
-        Path path = Paths.get(filePath);
-
-        // Check if the file is of type image/jpeg or image/png
-        String contentType = Files.probeContentType(path);
+    private static boolean isImageFile(String contentType) throws IOException {;
         return contentType != null &&
                 (contentType.equals("image/jpeg") || contentType.equals("image/png"));
     }

@@ -33,6 +33,10 @@ public class UserAuthDetails implements UserDetails {
         return user.getUserName();
     }
 
+    public String getUserID() {
+        return user.getId().toString();
+    }
+
     @Override
     public boolean isAccountNonExpired() {
         return true;

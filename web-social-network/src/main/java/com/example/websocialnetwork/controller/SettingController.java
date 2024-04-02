@@ -1,15 +1,16 @@
 package com.example.websocialnetwork.controller;
 
 import com.example.websocialnetwork.dto.PasswordChangeDTO;
-import com.example.websocialnetwork.dto.UserDTO;
-import com.example.websocialnetwork.dto.reponse.ResponseOk;
 import com.example.websocialnetwork.dto.reponse.UserInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -19,26 +20,16 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 
 import static com.example.websocialnetwork.common.Const.*;
 import static com.example.websocialnetwork.common.Const.VIEW_ERR;
-import static com.example.websocialnetwork.util.ServerUtils.*;
 import static com.example.websocialnetwork.util.Validation.checkBirthday;
-import static com.example.websocialnetwork.util.Validation.checkUserName;
 
 @Controller
 @RequestMapping("/user")
@@ -53,7 +44,7 @@ public class SettingController {
     private static final Logger logger = LoggerFactory.getLogger(ProfileController.class);
 
     @GetMapping("/settings")
-    public String getSettingsPage(Model model, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public String getSettingsPage(Model model, HttpServletRequest request, @ModelAttribute(value = "updateSuccess") String mess){
         if (request.getSession().getAttribute("user") == null) {
             return "redirect:/";
         }
@@ -62,28 +53,30 @@ public class SettingController {
         headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
         try {
-            ResponseEntity<UserInfo> responseEntity = restTemplate.exchange(
+            ResponseEntity<?> response = restTemplate.exchange(
                     path + API_USER_INFO,
                     HttpMethod.GET,
                     requestEntity,
-                    UserInfo.class,
-                    request.getSession().getAttribute("email")
+                    String.class
             );
-            UserInfo userInfo = responseEntity.getBody();
-            if (userInfo == null) {
-                model.addAttribute("message", MESS_001);
-                return VIEW_ERR;
-            }
-//            if (userInfo.getError() != null) {
-//                model.addAttribute("message", userInfo.getError());
-//                return VIEW_ERR;
-//            }
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            UserInfo userInfo = objectMapper.readValue((String) response.getBody(), UserInfo.class);
             request.getSession().setAttribute("user", userInfo);
             model.addAttribute("passwordChangeDTO", new PasswordChangeDTO());
+            model.addAttribute("updateSuccess", mess );
             return "settings";
-        } catch (Exception ex) {
-            model.addAttribute("message", ex);
+        }catch (HttpClientErrorException e) {
+            HttpStatus statusCode = e.getStatusCode();
+            if( statusCode == HttpStatus.BAD_REQUEST || statusCode == HttpStatus.NOT_FOUND) {
+                model.addAttribute("message", e.getResponseBodyAsString());
+                return VIEW_ERR;
+            }
+            model.addAttribute("message", e.getResponseBodyAsString());
             return VIEW_ERR;
+
+        }catch (Exception e) {
+            return VIEW_ERROR;
         }
     }
 
@@ -98,40 +91,36 @@ public class SettingController {
             model.addAttribute("imageError","File extension is not supported");
             return "settings";
         }
-        UserInfo user = getUserFromSession(request);
-        byte[] bytes = multipartFile.getBytes();
-        Path pathImages = getProfileImagesPath();
         try {
-            if(user.getAvata() !=null) {
-                if (Files.exists(pathImages.resolve(user.getAvata()))) {
-                    Files.delete(pathImages.resolve(user.getAvata()));
-                }
-            }
-            String newFileName = getNewFileName(user.getUserName(), multipartFile);
-            Files.write(pathImages.resolve(newFileName), bytes);
-            user.setAvata(newFileName);
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            // Thêm tệp vào MultiValueMap
+            body.add("image", multipartFile.getResource());
+
+            // Thiết lập các header cho yêu cầu
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
             headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
-            HttpEntity<UserInfo> requestEntity = new HttpEntity<>(user,headers);
-            ResponseEntity<ResponseOk> response = restTemplate.exchange(
+
+            // Tạo một HttpEntity với body và headers
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+            restTemplate.exchange(
                     path + API_UPDATE_IMAGE,
-                    HttpMethod.POST,
+                    HttpMethod.PUT,
                     requestEntity,
-                    ResponseOk.class
+                    String.class
             );
-            ResponseOk responseBody = response.getBody();
-            if (responseBody == null) {
-                return VIEW_ERROR;
-            } else if (responseBody.getCode() == 1) {
-                Files.delete(pathImages.resolve(user.getAvata()));
-                model.addAttribute("imageError", responseBody.getMessage());
+            return "redirect:/user/settings";
+        } catch (HttpClientErrorException ex) {
+            HttpStatus statusCode = ex.getStatusCode();
+            if( statusCode == HttpStatus.BAD_REQUEST || statusCode == HttpStatus.NOT_FOUND) {
+                model.addAttribute("passwordChangeDTO", new PasswordChangeDTO());
+                model.addAttribute("passwordError", false);
+                model.addAttribute("updateError", true);
+                model.addAttribute("error", ex.getResponseBodyAsString());
                 return "settings";
             }
-            return "redirect:/user/settings";
-        } catch (IOException ex) {
-            model.addAttribute("imageError", "Error copying the image");
-            return "settings";
+            model.addAttribute("message", ex.getResponseBodyAsString());
+            return VIEW_ERR;
         } catch (Exception e) {
             model.addAttribute("message", e);
             return VIEW_ERR;
@@ -140,14 +129,14 @@ public class SettingController {
 
     @PostMapping("/settings")
     public String updateProfileUser(@ModelAttribute("user") UserInfo userInfo,
-                                    Model model,HttpServletRequest request )  {
+                                    Model model,HttpServletRequest request,  RedirectAttributes attributes )  {
         if (request.getSession().getAttribute("user") == null) {
             return "redirect:/";
         }
         String checkBirthDay = checkBirthday(userInfo.getBirthday());
         if(checkBirthDay != null) {
             model.addAttribute("passwordChangeDTO", new PasswordChangeDTO());
-            model.addAttribute("passwordError", "");
+            model.addAttribute("passwordError", false);
             model.addAttribute("updateError", true);
             model.addAttribute("error", checkBirthDay);
             return "settings";
@@ -157,22 +146,25 @@ public class SettingController {
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
             HttpEntity<UserInfo> requestEntity = new HttpEntity<>(userInfo,headers);
-            ResponseEntity<ResponseOk> response = restTemplate.exchange(
+            ResponseEntity<?> response =  restTemplate.exchange(
                     path + API_UPDATE_PROFILE,
-                    HttpMethod.POST,
+                    HttpMethod.PUT,
                     requestEntity,
-                    ResponseOk.class
+                    String.class
             );
-            ResponseOk responseBody = response.getBody();
-            if (responseBody == null) {
-                return VIEW_ERROR;
-            } else if (responseBody.getCode() == 1) {
-                model.addAttribute("updateError", true);
-                model.addAttribute("error", responseBody.getMessage());
+            attributes.addFlashAttribute("updateSuccess",  response.getBody());
+            return "redirect:/user/settings";
+        }  catch (HttpClientErrorException ex) {
+            HttpStatus statusCode = ex.getStatusCode();
+            if( statusCode == HttpStatus.BAD_REQUEST || statusCode == HttpStatus.NOT_FOUND) {
                 model.addAttribute("passwordChangeDTO", new PasswordChangeDTO());
+                model.addAttribute("passwordError", false);
+                model.addAttribute("updateError", true);
+                model.addAttribute("error", ex.getResponseBodyAsString());
                 return "settings";
             }
-            return "redirect:/user/settings";
+            model.addAttribute("message", ex.getResponseBodyAsString());
+            return VIEW_ERR;
         } catch (Exception e) {
             model.addAttribute("message", e);
             return VIEW_ERR;
@@ -181,7 +173,8 @@ public class SettingController {
 
     @PostMapping("/updatePassword")
     public String updatePassword(@Valid @ModelAttribute("passwordChangeDTO") PasswordChangeDTO passwordChangeDTO,
-                                 BindingResult bindingResult, HttpServletRequest request, Model model) {
+                                 BindingResult bindingResult, HttpServletRequest request, Model model,
+                                 RedirectAttributes attributes) {
         if(bindingResult.hasErrors()) {
             return "settings";
         }
@@ -191,33 +184,28 @@ public class SettingController {
         HttpEntity<PasswordChangeDTO> requestEntity = new HttpEntity<>(passwordChangeDTO,headers);
         try {
             //call API
-            ResponseEntity<ResponseOk> response = restTemplate.exchange(
+            ResponseEntity<?> response = restTemplate.exchange(
                     path + API_UPDATE_PASSWORD,
-                    HttpMethod.POST,
+                    HttpMethod.PUT,
                     requestEntity,
-                    ResponseOk.class
+                    String.class
             );
-            ResponseOk responseBody = response.getBody();
-            if ( responseBody == null){
-                return VIEW_ERROR;
-            }else if (responseBody.getCode() == 1) {
-                model.addAttribute("passwordError", true);
-                model.addAttribute("error", responseBody.getMessage());
+            attributes.addFlashAttribute("updateSuccess",  response.getBody());
+            return "redirect:/user/settings";
+        } catch (HttpClientErrorException ex) {
+            HttpStatus statusCode = ex.getStatusCode();
+            if( statusCode == HttpStatus.BAD_REQUEST || statusCode == HttpStatus.NOT_FOUND) {
                 model.addAttribute("passwordChangeDTO", passwordChangeDTO);
+                model.addAttribute("passwordError",  true);
+                model.addAttribute("updateError", false);
+                model.addAttribute("error",ex.getResponseBodyAsString());
                 return "settings";
             }
-            return "settings";
-        }catch (HttpClientErrorException e) {
-            if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
-                model.addAttribute("passwordError", true);
-                model.addAttribute("error", "Invalid data submitted");
-                model.addAttribute("passwordChangeDTO", passwordChangeDTO);
-                return "settings";
-            } else {
-                return VIEW_ERROR;
-            }
-        }catch (Exception e) {
-            return VIEW_ERROR;
+            model.addAttribute("message", ex.getResponseBodyAsString());
+            return VIEW_ERR;
+        } catch (Exception e) {
+            model.addAttribute("message", e);
+            return VIEW_ERR;
         }
     }
 }
