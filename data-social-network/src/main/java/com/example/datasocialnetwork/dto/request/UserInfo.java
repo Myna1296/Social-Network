@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDate;
-
 @Data
 @Getter
 @Setter
@@ -18,9 +16,6 @@ public class UserInfo {
 
     @JsonProperty("user_name")
     private String userName;
-
-    @JsonProperty("email")
-    private String email;
 
     @JsonProperty("birthday")
     @DateTimeFormat(pattern="yyyyMMdd")
@@ -40,7 +35,4 @@ public class UserInfo {
 
     @JsonProperty("avata")
     private String avata;
-
-    @JsonProperty("error")
-    private String error;
 }

@@ -32,39 +32,12 @@ public class ProfileController {
     private String path;
 
     @GetMapping("/profile")
-    public String showProfilePage(Model model, HttpServletRequest request, HttpServletResponse response) throws IOException{
-        if (request.getSession().getAttribute("email") == null) {
+    public String showProfilePage(Model model, HttpServletRequest request, HttpServletResponse response){
+        if (request.getSession().getAttribute("user") == null) {
             return "redirect:/";
         }
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
-        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
-        try {
-            ResponseEntity<UserInfo> responseEntity = restTemplate.exchange(
-                    path + API_USER_INFO,
-                    HttpMethod.GET,
-                    requestEntity,
-                    UserInfo.class,
-                    request.getSession().getAttribute("email")
-            );
-            UserInfo userInfo = responseEntity.getBody();
-            if (userInfo == null) {
-                model.addAttribute("message", MESS_001);
-                return VIEW_ERR;
-            }
-            if (userInfo.getError() != null) {
-                model.addAttribute("message", userInfo.getError());
-                return VIEW_ERR;
-            }
-            request.getSession().setAttribute("user", userInfo);
-            model.addAttribute("user", userInfo);
-            return "E007";
-        } catch (Exception ex) {
-        model.addAttribute("message", ex);
-            return VIEW_ERR;
-        }
+        model.addAttribute("user",  request.getSession().getAttribute("user"));
+        return "E007";
     }
 
     @GetMapping("/profile/{id}")
@@ -94,10 +67,10 @@ public class ProfileController {
                 model.addAttribute("message", MESS_001);
                 return VIEW_ERR;
             }
-            if (userInfo.getError() != null) {
-                model.addAttribute("message", userInfo.getError());
-                return VIEW_ERR;
-            }
+//            if (userInfo.getError() != null) {
+//                model.addAttribute("message", userInfo.getError());
+//                return VIEW_ERR;
+//            }
 
             ResponseEntity<CheckFriendShipResponse> responseCheckFriendShip = restTemplate.exchange(
                     path + API_CHECK_FRIEND_SHIP,
@@ -111,10 +84,10 @@ public class ProfileController {
                 model.addAttribute("message", MESS_001);
                 return VIEW_ERR;
             }
-            if (checkFriendShipResponse.getCode() != 0) {
-                model.addAttribute("message", userInfo.getError());
-                return VIEW_ERR;
-            }
+//            if (checkFriendShipResponse.getCode() != 0) {
+//                model.addAttribute("message", userInfo.getError());
+//                return VIEW_ERR;
+//            }
             model.addAttribute("sessionUser", sessionUser);
             model.addAttribute("usersHaveFriendship", checkFriendShipResponse.isCheckFriendShip());
             model.addAttribute("user", userInfo);

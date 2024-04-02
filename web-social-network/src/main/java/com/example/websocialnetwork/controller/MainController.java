@@ -1,9 +1,11 @@
 package com.example.websocialnetwork.controller;
 
+import com.example.websocialnetwork.dto.reponse.UserInfo;
 import com.example.websocialnetwork.dto.request.ComfirmOTPRequest;
 import com.example.websocialnetwork.dto.request.LoginRequest;
 import com.example.websocialnetwork.dto.request.RegisterUserRequest;
 import com.example.websocialnetwork.dto.request.RegisterUserRequestView;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -142,9 +144,11 @@ public class MainController {
             );
 
             HttpHeaders headersResponse = response.getHeaders();
+            ObjectMapper objectMapper = new ObjectMapper();
+            UserInfo userInfo = objectMapper.readValue((String) response.getBody(), UserInfo.class);
             String token = headersResponse.getFirst("Authorization");
             request.getSession().setAttribute("token", token.substring(7));
-            request.getSession().setAttribute("email", email);
+            request.getSession().setAttribute("user", userInfo);
             responseHttp.sendRedirect(request.getContextPath() + "/user/profile");
             return null;
 
@@ -173,7 +177,8 @@ public class MainController {
                     path + API_FORGOT_PASSWORD,
                     HttpMethod.PUT,
                     requestEntity,
-                    String.class
+                    String.class,
+                    email
             );
             model.addAttribute("loginError", true);
             model.addAttribute("error", response.getBody());

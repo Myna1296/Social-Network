@@ -74,10 +74,10 @@ public class SettingController {
                 model.addAttribute("message", MESS_001);
                 return VIEW_ERR;
             }
-            if (userInfo.getError() != null) {
-                model.addAttribute("message", userInfo.getError());
-                return VIEW_ERR;
-            }
+//            if (userInfo.getError() != null) {
+//                model.addAttribute("message", userInfo.getError());
+//                return VIEW_ERR;
+//            }
             request.getSession().setAttribute("user", userInfo);
             model.addAttribute("passwordChangeDTO", new PasswordChangeDTO());
             return "settings";

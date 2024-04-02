@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDate;
 
 @Data
 public class UserInfo {
@@ -14,9 +13,6 @@ public class UserInfo {
 
     @JsonProperty("user_name")
     private String userName;
-
-    @JsonProperty("email")
-    private String email;
 
     @JsonProperty("birthday")
     @DateTimeFormat(pattern="yyyyMMdd")
@@ -37,6 +33,4 @@ public class UserInfo {
     @JsonProperty("avata")
     private String avata;
 
-    @JsonProperty("error")
-    private String error;
 }

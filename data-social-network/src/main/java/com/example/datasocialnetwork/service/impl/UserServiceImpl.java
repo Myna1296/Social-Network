@@ -126,9 +126,10 @@ public class UserServiceImpl implements UserService {
             String token = jwtTokenUtil.generateToken(user.getUserName());
             user.setToken(token);
             userRepository.save(user);
+            UserInfo userInfo = convertUserToUserInfo(user);
             HttpHeaders headers = new HttpHeaders();
             headers.add("Authorization", "Bearer " + token);
-            return  new ResponseEntity<>(Constants.OTP_COMFIRM_SUCCESS, headers, HttpStatus.OK);
+            return  new ResponseEntity<>(userInfo, headers, HttpStatus.OK);
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.OTP_NOT_CORRECT);
     }
@@ -188,7 +189,7 @@ public class UserServiceImpl implements UserService {
     public ResponseEntity<?> updateImageUser(UserInfo userInfo) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        User user = userRepository.findOneByEmail(userInfo.getEmail());
+        User user = userRepository.findOneByEmail("test");
         if (user == null){
             ResponseOk response = new ResponseOk(Constants.CODE_ERROR, Constants.MESS_010);
             return new ResponseEntity<>(response, HttpStatus.OK);
@@ -350,7 +351,6 @@ public class UserServiceImpl implements UserService {
         UserInfo userInfo = new UserInfo();
         userInfo.setId(String.valueOf(user.getId()));
         userInfo.setUserName(user.getUserName());
-        userInfo.setEmail(user.getEmail());
         userInfo.setBirthday(user.getBirthday() == null ? null : user.getBirthday().toString());
         userInfo.setAddress(user.getAddress());
         userInfo.setJob(user.getJob());

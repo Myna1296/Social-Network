@@ -760,7 +760,7 @@ public class UserServiceImplTests {
         UserInfo userInfo = new UserInfo();
         userInfo.setId("1");
         userInfo.setUserName("abc");
-        userInfo.setEmail("test@gmail.com");
+        //userInfo.setEmail("test@gmail.com");
         userInfo.setAddress("VN");
         userInfo.setJob("dev");
         userInfo.setPhone("123456789");
@@ -794,7 +794,7 @@ public class UserServiceImplTests {
         UserInfo userInfo = new UserInfo();
         userInfo.setId("1");
         userInfo.setUserName("abc");
-        userInfo.setEmail("test@gmail.com");
+        //userInfo.setEmail("test@gmail.com");
         userInfo.setAddress("VN");
         userInfo.setJob("dev");
         userInfo.setPhone("123456789");
@@ -829,7 +829,7 @@ public class UserServiceImplTests {
         UserInfo userInfo = new UserInfo();
         userInfo.setId("1");
         userInfo.setUserName("aaaaaa");
-        userInfo.setEmail("test@gmail.com");
+        //userInfo.setEmail("test@gmail.com");
         userInfo.setAddress("VN");
         userInfo.setJob("dev");
         userInfo.setPhone("123456789");
@@ -865,7 +865,7 @@ public class UserServiceImplTests {
         UserInfo userInfo = new UserInfo();
         userInfo.setId("1");
         userInfo.setUserName("abc");
-        userInfo.setEmail("test@gmail.com");
+        //userInfo.setEmail("test@gmail.com");
         userInfo.setAddress("VN");
         userInfo.setJob("dev");
         userInfo.setPhone("123456789");
@@ -899,7 +899,7 @@ public class UserServiceImplTests {
         UserInfo userInfo = new UserInfo();
         userInfo.setId("1");
         userInfo.setUserName("abc");
-        userInfo.setEmail("test@gmail.com");
+        //userInfo.setEmail("test@gmail.com");
         userInfo.setAddress("VN");
         userInfo.setJob("dev");
         userInfo.setPhone("123456789");
@@ -934,7 +934,7 @@ public class UserServiceImplTests {
         UserInfo userInfo = new UserInfo();
         userInfo.setId("1");
         userInfo.setUserName("abc");
-        userInfo.setEmail("test@gmail.com");
+        //userInfo.setEmail("test@gmail.com");
         userInfo.setAddress("VN");
         userInfo.setJob("dev");
         userInfo.setPhone("123456789");
@@ -942,7 +942,7 @@ public class UserServiceImplTests {
         userInfo.setBirthday("1999-01-01");
         userInfo.setAvata("image.jpg");
 
-        when(userRepository.findOneByEmail(userInfo.getEmail())).thenReturn(userDetails);
+        when(userRepository.findOneByEmail("test")).thenReturn(userDetails);
 
         ResponseEntity<?> responseEntity = userService.updateImageUser(userInfo);
 
@@ -969,14 +969,14 @@ public class UserServiceImplTests {
         UserInfo userInfo = new UserInfo();
         userInfo.setId("1");
         userInfo.setUserName("abc");
-        userInfo.setEmail("test@gmail.com");
+        //userInfo.setEmail("test@gmail.com");
         userInfo.setAddress("VN");
         userInfo.setJob("dev");
         userInfo.setPhone("123456789");
         userInfo.setSex("");
         userInfo.setBirthday("1999-01-01");
 
-        when(userRepository.findOneByEmail(userInfo.getEmail())).thenReturn(null);
+        when(userRepository.findOneByEmail("test")).thenReturn(null);
 
         ResponseEntity<?> responseEntity = userService.updateImageUser(userInfo);
 
@@ -1004,7 +1004,7 @@ public class UserServiceImplTests {
         UserInfo userInfo = new UserInfo();
         userInfo.setId("1");
         userInfo.setUserName("aaaaaa");
-        userInfo.setEmail("test@gmail.com");
+        //userInfo.setEmail("test@gmail.com");
         userInfo.setAddress("VN");
         userInfo.setJob("dev");
         userInfo.setPhone("123456789");
@@ -1016,7 +1016,7 @@ public class UserServiceImplTests {
         user.setId(1L);
         user.setEmail("test@gmail.com");
 
-        when(userRepository.findOneByEmail(userInfo.getEmail())).thenReturn(user);
+        when(userRepository.findOneByEmail("test")).thenReturn(user);
 
         assertThrows(UserNotFoundException.class, () -> {
             userService.updateImageUser(userInfo);
@@ -1040,7 +1040,7 @@ public class UserServiceImplTests {
         UserInfo userInfo = new UserInfo();
         userInfo.setId("1");
         userInfo.setUserName("abc");
-        userInfo.setEmail("test@gmail.com");
+        //userInfo.setEmail("test@gmail.com");
         userInfo.setAddress("VN");
         userInfo.setJob("dev");
         userInfo.setPhone("123456789");
@@ -1048,7 +1048,7 @@ public class UserServiceImplTests {
         userInfo.setBirthday("1999-01-01");
         userInfo.setAvata("image.xxxxx");
 
-        when(userRepository.findOneByEmail(userInfo.getEmail())).thenReturn(userDetails);
+        when(userRepository.findOneByEmail("test")).thenReturn(userDetails);
 
         ResponseEntity<?> responseEntity = userService.updateImageUser(userInfo);
 
