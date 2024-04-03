@@ -1,7 +1,8 @@
 package com.example.websocialnetwork.controller;
 
-import com.example.websocialnetwork.dto.SearchUserRequestDTO;
 import com.example.websocialnetwork.dto.reponse.SearchResponse;
+import com.example.websocialnetwork.dto.request.SearchRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
@@ -48,39 +50,37 @@ public class SearchController {
         if (page == null){
             page = 1;
         }
-        SearchUserRequestDTO searchUserRequestDTO = new SearchUserRequestDTO();
-        searchUserRequestDTO.setPage(page);
-        searchUserRequestDTO.setSearch(search);
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.setPageIndex(page);
+        searchRequest.setSearchValue(search);
+        searchRequest.setPageSize(PAGE_SIZE);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
-        HttpEntity<SearchUserRequestDTO> requestEntity = new HttpEntity<>(searchUserRequestDTO, headers);
+        HttpEntity<SearchRequest> requestEntity = new HttpEntity<>(searchRequest, headers);
 
         try {
-            ResponseEntity<SearchResponse> response = restTemplate.exchange(
+            ResponseEntity<?> response = restTemplate.exchange(
                     path + API_SEARCH_USER,
                     HttpMethod.POST,
                     requestEntity,
-                    SearchResponse.class
+                    String.class
             );
-            SearchResponse searchResponse = response.getBody();
-            if (searchResponse == null) {
-                model.addAttribute("message", MESS_001);
-                return VIEW_ERR;
-            }
-            if (searchResponse.getCode() != 0) {
-                model.addAttribute("message", searchResponse.getMessage());
-                return VIEW_ERR;
-            }
+            ObjectMapper objectMapper = new ObjectMapper();
+            SearchResponse searchResponse = objectMapper.readValue((String) response.getBody(), SearchResponse.class);
+
             model.addAttribute("search", search);
             model.addAttribute("listUser", searchResponse.getListUser());
             model.addAttribute("totalPage", searchResponse.getTotalPage());
             model.addAttribute("page", page);
             return "search";
-        } catch(Exception ex) {
-            model.addAttribute("message", ex);
+        }catch (HttpClientErrorException e) {
+            model.addAttribute("message", e.getResponseBodyAsString());
             return VIEW_ERR;
+
+        }catch (Exception e) {
+            return VIEW_ERROR;
         }
     }
 }

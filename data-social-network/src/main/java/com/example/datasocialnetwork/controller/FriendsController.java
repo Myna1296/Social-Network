@@ -21,8 +21,8 @@ public class FriendsController {
       return friendsService.getFriendsOfUser(id);
    }
 
-   @PostMapping("/check-friend-ship/{id}")
-   public ResponseEntity<CheckFriendShipResponse> checkFriendShip(@PathVariable("id")  Long id ){
+   @PostMapping("/check-friend-ship/{userId}")
+   public ResponseEntity<?> checkFriendShip(@PathVariable("userId")  Long id ){
       return friendsService.checkFriendship(id);
    }
 

@@ -3,6 +3,8 @@ package com.example.datasocialnetwork.service.impl;
 import com.example.datasocialnetwork.common.Constants;
 import com.example.datasocialnetwork.config.UserAuthDetails;
 import com.example.datasocialnetwork.dto.request.StatusDTO;
+import com.example.datasocialnetwork.dto.request.StatusInfo;
+import com.example.datasocialnetwork.dto.request.StatusRequest;
 import com.example.datasocialnetwork.dto.response.ResponseOk;
 import com.example.datasocialnetwork.dto.response.StatusAllResponse;
 import com.example.datasocialnetwork.dto.response.StatusInfoResponse;
@@ -42,47 +44,31 @@ public class StatusServiceImpl implements StatusService {
     private CommentRepository commentRepository;
 
     @Override
-    public ResponseEntity<?> getStatusByUserId(Long pageId) {
+    public ResponseEntity<?> getNewsFeed (int pageIndex,int pageSize) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        User user = userRepository.findOneByUserName(userDetails.getUsername());
-        if (user == null) {
-            StatusAllResponse response = new StatusAllResponse();
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage(Constants.MESS_010);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }
-        Page<Status> pageStatus = statusRepository.findStatusByUserIdWithLimitOffset(
-                user.getId(),
-                PageRequest.of(pageId.intValue() - 1, Constants.LIMIT)
+        Page<Status> pageStatus = statusRepository.findStatusOfAllFriends(
+                Long.parseLong(userDetails.getUserID()),
+                PageRequest.of(pageIndex - 1, pageSize)
         );
 
-        StatusAllResponse response = convertPageToResponse(pageStatus);
-        response.setUserName(user.getUserName());
-        response.setPage(pageId.intValue());
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        StatusAllResponse response  = convertPageToResponse(pageStatus);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
-    public ResponseEntity<?> getStatusFriendUser(Long pageId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        User user = userRepository.findOneByUserName(userDetails.getUsername());
+    public ResponseEntity<?> getStatusByUserId(StatusRequest statusRequest) {
+        User user = userRepository.findOneById(statusRequest.getUserId());
         if (user == null) {
-            StatusAllResponse response = new StatusAllResponse();
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage(Constants.MESS_010);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.USER_NOT_FOUND);
         }
-        Page<Status> pageStatus = statusRepository.findStatusOfAllFriends(
-                user.getId(),
-                PageRequest.of(pageId.intValue() - 1, Constants.LIMIT)
+        Page<Status> pageStatus = statusRepository.findStatusByUserIdWithLimitOffset(
+                statusRequest.getUserId(),
+                PageRequest.of(statusRequest.getPageIndex() - 1, statusRequest.getPageSize())
         );
 
-        StatusAllResponse response = convertPageToResponse(pageStatus);
-        response.setUserName(user.getUserName());
-        response.setPage(pageId.intValue());
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        StatusAllResponse response  = convertPageToResponse(pageStatus);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
@@ -211,16 +197,16 @@ public class StatusServiceImpl implements StatusService {
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
         long count = likeRepository.countByStatusIdAndUserId(id, user.getId());
-        StatusDTO statusDTO = convertStatusToDTO(status);
+       // StatusDTO statusDTO = convertStatusToDTO(status);
         response.setCode(Constants.CODE_OK);
         response.setMessage("");
-        response.setStatus(statusDTO);
+        //response.setStatus(statusDTO);
         response.setLike( count!= 0);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    private static StatusDTO convertStatusToDTO(Status status) {
-        StatusDTO statusDTO = new StatusDTO();
+    private static StatusInfo convertStatusToDTO(Status status) {
+        StatusInfo statusDTO = new StatusInfo();
         statusDTO.setId(status.getId());
         statusDTO.setTitle(status.getTitle());
         statusDTO.setContent(status.getStatusText());
@@ -237,9 +223,9 @@ public class StatusServiceImpl implements StatusService {
     private static StatusAllResponse convertPageToResponse(Page<Status> statusPage) {
         StatusAllResponse response = new StatusAllResponse();
         response.setTotalPage(statusPage.getTotalPages());
-        List<StatusDTO> statusDTOList = new ArrayList<>();
+        List<StatusInfo> statusDTOList = new ArrayList<>();
         for (Status status : statusPage.getContent()) {
-            StatusDTO statusDTO = convertStatusToDTO(status);
+            StatusInfo statusDTO = convertStatusToDTO(status);
             statusDTOList.add(statusDTO);
         }
         response.setListStatus(statusDTOList);

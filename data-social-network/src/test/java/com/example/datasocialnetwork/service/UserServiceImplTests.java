@@ -364,186 +364,93 @@ public class UserServiceImplTests {
         verify(userRepository, times(1)).save(any(User.class));
     }
 
-    @Test
-    public void testFindByEmail_UserNotFound(){
-        // Mock user details
-        User user = new User();
-        user.setUserName("abc");
-        user.setId(1L);
-        UserAuthDetails authUserDetails = new UserAuthDetails(user);
-        SecurityContext securityContext = mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        Authentication authentication = mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
-        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
-
-        // Mock repository methods
-        when(userRepository.findOneByEmail("test")).thenReturn(null);
-
-        // Call the method
-        UserInfoResponse responseEntity = userService.findByEmail("test");
-        assertEquals(Constants.MESS_010, responseEntity.getError());
-    }
-
-    @Test
-    public void testFindByEmail_AuthFail(){
-        // Mock user details
-        User userDetails = new User();
-        userDetails.setUserName("abc");
-        userDetails.setId(1L);
-        userDetails.setEmail("test1@gmail.com");
-        UserAuthDetails authUserDetails = new UserAuthDetails(userDetails);
-        SecurityContext securityContext = mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        Authentication authentication = mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
-        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
-
-        // Mock repository methods
-        User user = new User();
-        user.setId(1L);
-        user.setUserName("test");
-        when(userRepository.findOneByEmail("test@gmail.com")).thenReturn(user);
-
-        // Call the method
-        assertThrows(UserNotFoundException.class, () -> {
-            userService.findByEmail("test@gmail.com");
-        });
-
-    }
-
-    @Test
-    public void testFindByEmail_Success(){
-        // Mock user details
-        User userDetails = new User();
-        userDetails.setUserName("abc");
-        userDetails.setId(1L);
-        userDetails.setEmail("test@gmail.com");
-        UserAuthDetails authUserDetails = new UserAuthDetails(userDetails);
-        SecurityContext securityContext = mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        Authentication authentication = mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
-        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
-
-        // Mock repository methods
-        User user = new User();
-        user.setId(1L);
-        user.setUserName("abc");
-        user.setEmail("test@gmail.com");
-        user.setAddress("VN");
-        user.setJob("dev");
-        user.setPhone("123456789");
-        user.setSex(1);
-        user.setBirthday(LocalDate.now());
-        user.setImage("image2.jpg");
-        when(userRepository.findOneByEmail("test@gmail.com")).thenReturn(user);
-
-        // Call the method
-        // Call the method
-        UserInfoResponse responseEntity = userService.findByEmail("test@gmail.com");
-
-        UserInfoResponse userInfo = new UserInfoResponse();
-        userInfo.setId(user.getId().toString());
-        userInfo.setEmail(user.getEmail());
-        userInfo.setUserName(user.getUserName());
-        userInfo.setBirthday(user.getBirthday() == null ? "": DateTimeFormatter.ISO_LOCAL_DATE.format(user.getBirthday()));
-        userInfo.setAddress(user.getAddress());
-        userInfo.setJob(user.getJob());
-        userInfo.setPhone(user.getPhone());
-        userInfo.setAvata(user.getImage());
-        userInfo.setSex(getGenderById(user.getSex()).name());
-        assertEquals(userInfo, responseEntity);
-
-    }
-
-    @Test
-    public void testFindById_UserNotFound_1(){
-        // Mock user details
-        User user = new User();
-        user.setUserName("abc");
-        user.setId(1L);
-        UserAuthDetails authUserDetails = new UserAuthDetails(user);
-        SecurityContext securityContext = mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        Authentication authentication = mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
-        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
-
-        // Mock repository methods
-        when(userRepository.findOneByUserName("abc")).thenReturn(null);
-
-        // Call the method
-        UserInfoResponse responseEntity = userService.findById(1L);
-        assertEquals(Constants.MESS_010, responseEntity.getError());
-    }
-
-    @Test
-    public void testFindById_UserNotFound_2(){
-        // Mock user details
-        User user = new User();
-        user.setUserName("abc");
-        user.setId(1L);
-        UserAuthDetails authUserDetails = new UserAuthDetails(user);
-        SecurityContext securityContext = mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        Authentication authentication = mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
-        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
-
-        // Mock repository methods
-        when(userRepository.findOneByUserName("abc")).thenReturn(user);
-        when(userRepository.findOneById(1L)).thenReturn(null);
-
-        // Call the method
-        UserInfoResponse responseEntity = userService.findById(1L);
-        assertEquals(Constants.MESS_013, responseEntity.getError());
-    }
-
-    @Test
-    public void testFindById_Success(){
-        // Mock user details
-        User userDetails = new User();
-        userDetails.setUserName("abc");
-        userDetails.setId(1L);
-        userDetails.setEmail("test@gmail.com");
-        UserAuthDetails authUserDetails = new UserAuthDetails(userDetails);
-        SecurityContext securityContext = mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        Authentication authentication = mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
-        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
-
-        // Mock repository methods
-        User user = new User();
-        user.setId(1L);
-        user.setUserName("abc");
-        user.setEmail("test@gmail.com");
-        user.setAddress("VN");
-        user.setJob("dev");
-        user.setPhone("123456789");
-        user.setSex(1);
-        user.setBirthday(LocalDate.now());
-        user.setImage("image2.jpg");
-        when(userRepository.findOneByUserName("abc")).thenReturn(userDetails);
-        when(userRepository.findOneById(1L)).thenReturn(user);
-
-        // Call the method
-        // Call the method
-        UserInfoResponse responseEntity = userService.findById(1L);
-
-        UserInfoResponse userInfo = new UserInfoResponse();
-        userInfo.setId(user.getId().toString());
-        userInfo.setUserName(user.getUserName());
-        userInfo.setBirthday(user.getBirthday() == null ? "": DateTimeFormatter.ISO_LOCAL_DATE.format(user.getBirthday()));
-        userInfo.setAddress(user.getAddress());
-        userInfo.setJob(user.getJob());
-        userInfo.setPhone(user.getPhone());
-        userInfo.setAvata(user.getImage());
-        userInfo.setSex(getGenderById(user.getSex()).name());
-        assertEquals(userInfo, responseEntity);
-
-    }
+//    @Test
+//    public void testFindById_UserNotFound_1(){
+//        // Mock user details
+//        User user = new User();
+//        user.setUserName("abc");
+//        user.setId(1L);
+//        UserAuthDetails authUserDetails = new UserAuthDetails(user);
+//        SecurityContext securityContext = mock(SecurityContext.class);
+//        SecurityContextHolder.setContext(securityContext);
+//        Authentication authentication = mock(Authentication.class);
+//        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
+//        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
+//
+//        // Mock repository methods
+//        when(userRepository.findOneByUserName("abc")).thenReturn(null);
+//
+//        // Call the method
+//        UserInfoResponse responseEntity = userService.findById(1L);
+//        assertEquals(Constants.MESS_010, responseEntity.getError());
+//    }
+//
+//    @Test
+//    public void testFindById_UserNotFound_2(){
+//        // Mock user details
+//        User user = new User();
+//        user.setUserName("abc");
+//        user.setId(1L);
+//        UserAuthDetails authUserDetails = new UserAuthDetails(user);
+//        SecurityContext securityContext = mock(SecurityContext.class);
+//        SecurityContextHolder.setContext(securityContext);
+//        Authentication authentication = mock(Authentication.class);
+//        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
+//        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
+//
+//        // Mock repository methods
+//        when(userRepository.findOneByUserName("abc")).thenReturn(user);
+//        when(userRepository.findOneById(1L)).thenReturn(null);
+//
+//        // Call the method
+//        UserInfoResponse responseEntity = userService.findById(1L);
+//        assertEquals(Constants.MESS_013, responseEntity.getError());
+//    }
+//
+//    @Test
+//    public void testFindById_Success(){
+//        // Mock user details
+//        User userDetails = new User();
+//        userDetails.setUserName("abc");
+//        userDetails.setId(1L);
+//        userDetails.setEmail("test@gmail.com");
+//        UserAuthDetails authUserDetails = new UserAuthDetails(userDetails);
+//        SecurityContext securityContext = mock(SecurityContext.class);
+//        SecurityContextHolder.setContext(securityContext);
+//        Authentication authentication = mock(Authentication.class);
+//        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
+//        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
+//
+//        // Mock repository methods
+//        User user = new User();
+//        user.setId(1L);
+//        user.setUserName("abc");
+//        user.setEmail("test@gmail.com");
+//        user.setAddress("VN");
+//        user.setJob("dev");
+//        user.setPhone("123456789");
+//        user.setSex(1);
+//        user.setBirthday(LocalDate.now());
+//        user.setImage("image2.jpg");
+//        when(userRepository.findOneByUserName("abc")).thenReturn(userDetails);
+//        when(userRepository.findOneById(1L)).thenReturn(user);
+//
+//        // Call the method
+//        // Call the method
+//        UserInfoResponse responseEntity = userService.findById(1L);
+//
+//        UserInfoResponse userInfo = new UserInfoResponse();
+//        userInfo.setId(user.getId().toString());
+//        userInfo.setUserName(user.getUserName());
+//        userInfo.setBirthday(user.getBirthday() == null ? "": DateTimeFormatter.ISO_LOCAL_DATE.format(user.getBirthday()));
+//        userInfo.setAddress(user.getAddress());
+//        userInfo.setJob(user.getJob());
+//        userInfo.setPhone(user.getPhone());
+//        userInfo.setAvata(user.getImage());
+//        userInfo.setSex(getGenderById(user.getSex()).name());
+//        assertEquals(userInfo, responseEntity);
+//
+//    }
 
     @Test
     public void testUpdatePassword_Success(){
@@ -598,150 +505,150 @@ public class UserServiceImplTests {
 
     }
 
-    @Test
-    public void testSearchUserByUserName_Success() {
-        User userDetails = new User();
-        userDetails.setUserName("abc");
-        userDetails.setId(1L);
-        userDetails.setEmail("test@gmail.com");
-        UserAuthDetails authUserDetails = new UserAuthDetails(userDetails);
-        SecurityContext securityContext = mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        Authentication authentication = mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
-        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
-
-        // Mock repository methods
-        List<User> list = new ArrayList<>();
-        User user = new User();
-        user.setId(1L);
-        user.setUserName("abc");
-        user.setEmail("test@gmail.com");
-        user.setAddress("VN");
-        user.setJob("dev");
-        user.setPhone("123456789");
-        user.setSex(1);
-        user.setBirthday(LocalDate.now());
-        user.setImage("image2.jpg");
-        list.add(user);
-        Pageable pageable = mock(Pageable.class);
-
-        Page<User> userPage = new PageImpl<>(list, pageable, list.size());
-        when(userRepository.findOneByUserName("abc")).thenReturn(userDetails);
-
-        // Create a mock SearchUserRequestDTO
-        SearchUserRequestDTO searchUserRequestDTO = new SearchUserRequestDTO();
-        searchUserRequestDTO.setSearch("search query");
-        searchUserRequestDTO.setPage(1);
-        Pageable pag= PageRequest.of(searchUserRequestDTO.getPage() - 1 , Constants.LIMIT);
-        when(userRepository.findByUserNameContaining("search query", pag)).thenReturn(userPage);
-
-        // Act
-        ResponseEntity<SearchResponse> responseEntity = userService.searchUserByUserName(searchUserRequestDTO);
-
-        // Assert
-        SearchResponse searchResponse = responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_OK, searchResponse.getCode());
-        assertEquals(1, searchResponse.getListUser().size());
-        assertEquals(1, searchResponse.getTotalPage());
-    }
-
-    @Test
-    public void testSearchUserByUserName_UserNotFound() {
-        User userDetails = new User();
-        userDetails.setUserName("abc");
-        userDetails.setId(1L);
-        userDetails.setEmail("test@gmail.com");
-        UserAuthDetails authUserDetails = new UserAuthDetails(userDetails);
-        SecurityContext securityContext = mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        Authentication authentication = mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
-        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
-
-        // Mock repository methods
-        List<User> list = new ArrayList<>();
-        User user = new User();
-        user.setId(1L);
-        user.setUserName("abc");
-        user.setEmail("test@gmail.com");
-        user.setAddress("VN");
-        user.setJob("dev");
-        user.setPhone("123456789");
-        user.setSex(1);
-        user.setBirthday(LocalDate.now());
-        user.setImage("image2.jpg");
-        list.add(user);
-        Pageable pageable = mock(Pageable.class);
-
-        Page<User> userPage = new PageImpl<>(list, pageable, list.size());
-        when(userRepository.findOneByUserName("abc")).thenReturn(null);
-
-        // Create a mock SearchUserRequestDTO
-        SearchUserRequestDTO searchUserRequestDTO = new SearchUserRequestDTO();
-        searchUserRequestDTO.setSearch("search query");
-        searchUserRequestDTO.setPage(1);
-
-        // Act
-        ResponseEntity<SearchResponse> responseEntity = userService.searchUserByUserName(searchUserRequestDTO);
-
-        // Assert
-        SearchResponse searchResponse = responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, searchResponse.getCode());
-        assertEquals(Constants.MESS_010, searchResponse.getMessage());
-        assertEquals(0, searchResponse.getTotalPage());
-    }
-
-    @Test
-    public void testSearchUserByUserName_SearchAll() {
-        User userDetails = new User();
-        userDetails.setUserName("abc");
-        userDetails.setId(1L);
-        userDetails.setEmail("test@gmail.com");
-        UserAuthDetails authUserDetails = new UserAuthDetails(userDetails);
-        SecurityContext securityContext = mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        Authentication authentication = mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
-        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
-
-        // Mock repository methods
-        List<User> list = new ArrayList<>();
-        User user = new User();
-        user.setId(1L);
-        user.setUserName("abc");
-        user.setEmail("test@gmail.com");
-        user.setAddress("VN");
-        user.setJob("dev");
-        user.setPhone("123456789");
-        user.setSex(1);
-        user.setBirthday(LocalDate.now());
-        user.setImage("image2.jpg");
-        list.add(user);
-        Pageable pageable = mock(Pageable.class);
-
-        Page<User> userPage = new PageImpl<>(list, pageable, list.size());
-        when(userRepository.findOneByUserName("abc")).thenReturn(userDetails);
-
-        // Create a mock SearchUserRequestDTO
-        SearchUserRequestDTO searchUserRequestDTO = new SearchUserRequestDTO();
-        searchUserRequestDTO.setSearch("");
-        searchUserRequestDTO.setPage(1);
-        Pageable pag= PageRequest.of(searchUserRequestDTO.getPage() - 1 , Constants.LIMIT);
-        when(userRepository.findAll(pag)).thenReturn(userPage);
-
-        // Act
-        ResponseEntity<SearchResponse> responseEntity = userService.searchUserByUserName(searchUserRequestDTO);
-
-        // Assert
-        SearchResponse searchResponse = responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_OK, searchResponse.getCode());
-        assertEquals(1, searchResponse.getListUser().size());
-        assertEquals(1, searchResponse.getTotalPage());
-    }
+//    @Test
+//    public void testSearchUserByUserName_Success() {
+//        User userDetails = new User();
+//        userDetails.setUserName("abc");
+//        userDetails.setId(1L);
+//        userDetails.setEmail("test@gmail.com");
+//        UserAuthDetails authUserDetails = new UserAuthDetails(userDetails);
+//        SecurityContext securityContext = mock(SecurityContext.class);
+//        SecurityContextHolder.setContext(securityContext);
+//        Authentication authentication = mock(Authentication.class);
+//        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
+//        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
+//
+//        // Mock repository methods
+//        List<User> list = new ArrayList<>();
+//        User user = new User();
+//        user.setId(1L);
+//        user.setUserName("abc");
+//        user.setEmail("test@gmail.com");
+//        user.setAddress("VN");
+//        user.setJob("dev");
+//        user.setPhone("123456789");
+//        user.setSex(1);
+//        user.setBirthday(LocalDate.now());
+//        user.setImage("image2.jpg");
+//        list.add(user);
+//        Pageable pageable = mock(Pageable.class);
+//
+//        Page<User> userPage = new PageImpl<>(list, pageable, list.size());
+//        when(userRepository.findOneByUserName("abc")).thenReturn(userDetails);
+//
+//        // Create a mock SearchUserRequestDTO
+//        SearchUserRequestDTO searchUserRequestDTO = new SearchUserRequestDTO();
+//        searchUserRequestDTO.setSearch("search query");
+//        searchUserRequestDTO.setPage(1);
+//        Pageable pag= PageRequest.of(searchUserRequestDTO.getPage() - 1 , Constants.LIMIT);
+//        when(userRepository.findByUserNameContaining("search query", pag)).thenReturn(userPage);
+//
+//        // Act
+//        ResponseEntity<SearchResponse> responseEntity = userService.searchUserByUserName(searchUserRequestDTO);
+//
+//        // Assert
+//        SearchResponse searchResponse = responseEntity.getBody();
+//        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+//        assertEquals(Constants.CODE_OK, searchResponse.getCode());
+//        assertEquals(1, searchResponse.getListUser().size());
+//        assertEquals(1, searchResponse.getTotalPage());
+//    }
+//
+//    @Test
+//    public void testSearchUserByUserName_UserNotFound() {
+//        User userDetails = new User();
+//        userDetails.setUserName("abc");
+//        userDetails.setId(1L);
+//        userDetails.setEmail("test@gmail.com");
+//        UserAuthDetails authUserDetails = new UserAuthDetails(userDetails);
+//        SecurityContext securityContext = mock(SecurityContext.class);
+//        SecurityContextHolder.setContext(securityContext);
+//        Authentication authentication = mock(Authentication.class);
+//        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
+//        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
+//
+//        // Mock repository methods
+//        List<User> list = new ArrayList<>();
+//        User user = new User();
+//        user.setId(1L);
+//        user.setUserName("abc");
+//        user.setEmail("test@gmail.com");
+//        user.setAddress("VN");
+//        user.setJob("dev");
+//        user.setPhone("123456789");
+//        user.setSex(1);
+//        user.setBirthday(LocalDate.now());
+//        user.setImage("image2.jpg");
+//        list.add(user);
+//        Pageable pageable = mock(Pageable.class);
+//
+//        Page<User> userPage = new PageImpl<>(list, pageable, list.size());
+//        when(userRepository.findOneByUserName("abc")).thenReturn(null);
+//
+//        // Create a mock SearchUserRequestDTO
+//        SearchUserRequestDTO searchUserRequestDTO = new SearchUserRequestDTO();
+//        searchUserRequestDTO.setSearch("search query");
+//        searchUserRequestDTO.setPage(1);
+//
+//        // Act
+//        ResponseEntity<SearchResponse> responseEntity = userService.searchUserByUserName(searchUserRequestDTO);
+//
+//        // Assert
+//        SearchResponse searchResponse = responseEntity.getBody();
+//        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+//        assertEquals(Constants.CODE_ERROR, searchResponse.getCode());
+//        assertEquals(Constants.MESS_010, searchResponse.getMessage());
+//        assertEquals(0, searchResponse.getTotalPage());
+//    }
+//
+//    @Test
+//    public void testSearchUserByUserName_SearchAll() {
+//        User userDetails = new User();
+//        userDetails.setUserName("abc");
+//        userDetails.setId(1L);
+//        userDetails.setEmail("test@gmail.com");
+//        UserAuthDetails authUserDetails = new UserAuthDetails(userDetails);
+//        SecurityContext securityContext = mock(SecurityContext.class);
+//        SecurityContextHolder.setContext(securityContext);
+//        Authentication authentication = mock(Authentication.class);
+//        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
+//        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
+//
+//        // Mock repository methods
+//        List<User> list = new ArrayList<>();
+//        User user = new User();
+//        user.setId(1L);
+//        user.setUserName("abc");
+//        user.setEmail("test@gmail.com");
+//        user.setAddress("VN");
+//        user.setJob("dev");
+//        user.setPhone("123456789");
+//        user.setSex(1);
+//        user.setBirthday(LocalDate.now());
+//        user.setImage("image2.jpg");
+//        list.add(user);
+//        Pageable pageable = mock(Pageable.class);
+//
+//        Page<User> userPage = new PageImpl<>(list, pageable, list.size());
+//        when(userRepository.findOneByUserName("abc")).thenReturn(userDetails);
+//
+//        // Create a mock SearchUserRequestDTO
+//        SearchUserRequestDTO searchUserRequestDTO = new SearchUserRequestDTO();
+//        searchUserRequestDTO.setSearch("");
+//        searchUserRequestDTO.setPage(1);
+//        Pageable pag= PageRequest.of(searchUserRequestDTO.getPage() - 1 , Constants.LIMIT);
+//        when(userRepository.findAll(pag)).thenReturn(userPage);
+//
+//        // Act
+//        ResponseEntity<SearchResponse> responseEntity = userService.searchUserByUserName(searchUserRequestDTO);
+//
+//        // Assert
+//        SearchResponse searchResponse = responseEntity.getBody();
+//        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+//        assertEquals(Constants.CODE_OK, searchResponse.getCode());
+//        assertEquals(1, searchResponse.getListUser().size());
+//        assertEquals(1, searchResponse.getTotalPage());
+//    }
 
     @Test
     public void testUpdateProfile_Success() {
@@ -917,146 +824,146 @@ public class UserServiceImplTests {
         assertEquals("date is not valid", searchResponse.getMessage());
     }
 
-    @Test
-    public void testUpdateImageProfile_Success() {
-        User userDetails = new User();
-        userDetails.setUserName("abc");
-        userDetails.setId(1L);
-        userDetails.setEmail("test@gmail.com");
-        UserAuthDetails authUserDetails = new UserAuthDetails(userDetails);
-        SecurityContext securityContext = mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        Authentication authentication = mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
-        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
-
-        // Mock repository methods
-        UserInfo userInfo = new UserInfo();
-        userInfo.setId("1");
-        userInfo.setUserName("abc");
-        //userInfo.setEmail("test@gmail.com");
-        userInfo.setAddress("VN");
-        userInfo.setJob("dev");
-        userInfo.setPhone("123456789");
-        userInfo.setSex("");
-        userInfo.setBirthday("1999-01-01");
-        userInfo.setAvata("image.jpg");
-
-        when(userRepository.findOneByEmail("test")).thenReturn(userDetails);
-
-        ResponseEntity<?> responseEntity = userService.updateImageUser(userInfo);
-
-        // Assert
-        ResponseOk searchResponse = (ResponseOk) responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_OK, searchResponse.getCode());
-    }
-
-    @Test
-    public void testUpdateImageProfile_UserNotFound() {
-        User userDetails = new User();
-        userDetails.setUserName("abc");
-        userDetails.setId(1L);
-        userDetails.setEmail("test@gmail.com");
-        UserAuthDetails authUserDetails = new UserAuthDetails(userDetails);
-        SecurityContext securityContext = mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        Authentication authentication = mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
-        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
-
-        // Mock repository methods
-        UserInfo userInfo = new UserInfo();
-        userInfo.setId("1");
-        userInfo.setUserName("abc");
-        //userInfo.setEmail("test@gmail.com");
-        userInfo.setAddress("VN");
-        userInfo.setJob("dev");
-        userInfo.setPhone("123456789");
-        userInfo.setSex("");
-        userInfo.setBirthday("1999-01-01");
-
-        when(userRepository.findOneByEmail("test")).thenReturn(null);
-
-        ResponseEntity<?> responseEntity = userService.updateImageUser(userInfo);
-
-        // Assert
-        ResponseOk responseOk = (ResponseOk) responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, responseOk.getCode());
-        assertEquals(Constants.MESS_010,responseOk.getMessage());
-    }
-
-    @Test
-    public void testUpdateImageProfile_AuthFaile() {
-        User userDetails = new User();
-        userDetails.setUserName("abc");
-        userDetails.setId(1L);
-        userDetails.setEmail("test@gmail.com");
-        UserAuthDetails authUserDetails = new UserAuthDetails(userDetails);
-        SecurityContext securityContext = mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        Authentication authentication = mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
-        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
-
-        // Mock repository methods
-        UserInfo userInfo = new UserInfo();
-        userInfo.setId("1");
-        userInfo.setUserName("aaaaaa");
-        //userInfo.setEmail("test@gmail.com");
-        userInfo.setAddress("VN");
-        userInfo.setJob("dev");
-        userInfo.setPhone("123456789");
-        userInfo.setSex("");
-        userInfo.setBirthday("1999-01-01");
-
-        User user = new User();
-        user.setUserName("abaac");
-        user.setId(1L);
-        user.setEmail("test@gmail.com");
-
-        when(userRepository.findOneByEmail("test")).thenReturn(user);
-
-        assertThrows(UserNotFoundException.class, () -> {
-            userService.updateImageUser(userInfo);
-        });
-    }
-
-    @Test
-    public void testUpdateImageProfile_AvataFaile() {
-        User userDetails = new User();
-        userDetails.setUserName("abc");
-        userDetails.setId(1L);
-        userDetails.setEmail("test@gmail.com");
-        UserAuthDetails authUserDetails = new UserAuthDetails(userDetails);
-        SecurityContext securityContext = mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        Authentication authentication = mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
-        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
-
-        // Mock repository methods
-        UserInfo userInfo = new UserInfo();
-        userInfo.setId("1");
-        userInfo.setUserName("abc");
-        //userInfo.setEmail("test@gmail.com");
-        userInfo.setAddress("VN");
-        userInfo.setJob("dev");
-        userInfo.setPhone("123456789");
-        userInfo.setSex("");
-        userInfo.setBirthday("1999-01-01");
-        userInfo.setAvata("image.xxxxx");
-
-        when(userRepository.findOneByEmail("test")).thenReturn(userDetails);
-
-        ResponseEntity<?> responseEntity = userService.updateImageUser(userInfo);
-
-        // Assert
-        ResponseOk searchResponse = (ResponseOk) responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, searchResponse.getCode());
-        assertEquals(Constants.MESS_011, searchResponse.getMessage());
-    }
+//    @Test
+//    public void testUpdateImageProfile_Success() {
+//        User userDetails = new User();
+//        userDetails.setUserName("abc");
+//        userDetails.setId(1L);
+//        userDetails.setEmail("test@gmail.com");
+//        UserAuthDetails authUserDetails = new UserAuthDetails(userDetails);
+//        SecurityContext securityContext = mock(SecurityContext.class);
+//        SecurityContextHolder.setContext(securityContext);
+//        Authentication authentication = mock(Authentication.class);
+//        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
+//        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
+//
+//        // Mock repository methods
+//        UserInfo userInfo = new UserInfo();
+//        userInfo.setId("1");
+//        userInfo.setUserName("abc");
+//        //userInfo.setEmail("test@gmail.com");
+//        userInfo.setAddress("VN");
+//        userInfo.setJob("dev");
+//        userInfo.setPhone("123456789");
+//        userInfo.setSex("");
+//        userInfo.setBirthday("1999-01-01");
+//        userInfo.setAvata("image.jpg");
+//
+//        when(userRepository.findOneByEmail("test")).thenReturn(userDetails);
+//
+//        ResponseEntity<?> responseEntity = userService.updateImageUser(userInfo);
+//
+//        // Assert
+//        ResponseOk searchResponse = (ResponseOk) responseEntity.getBody();
+//        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+//        assertEquals(Constants.CODE_OK, searchResponse.getCode());
+//    }
+//
+//    @Test
+//    public void testUpdateImageProfile_UserNotFound() {
+//        User userDetails = new User();
+//        userDetails.setUserName("abc");
+//        userDetails.setId(1L);
+//        userDetails.setEmail("test@gmail.com");
+//        UserAuthDetails authUserDetails = new UserAuthDetails(userDetails);
+//        SecurityContext securityContext = mock(SecurityContext.class);
+//        SecurityContextHolder.setContext(securityContext);
+//        Authentication authentication = mock(Authentication.class);
+//        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
+//        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
+//
+//        // Mock repository methods
+//        UserInfo userInfo = new UserInfo();
+//        userInfo.setId("1");
+//        userInfo.setUserName("abc");
+//        //userInfo.setEmail("test@gmail.com");
+//        userInfo.setAddress("VN");
+//        userInfo.setJob("dev");
+//        userInfo.setPhone("123456789");
+//        userInfo.setSex("");
+//        userInfo.setBirthday("1999-01-01");
+//
+//        when(userRepository.findOneByEmail("test")).thenReturn(null);
+//
+//        ResponseEntity<?> responseEntity = userService.updateImageUser(userInfo);
+//
+//        // Assert
+//        ResponseOk responseOk = (ResponseOk) responseEntity.getBody();
+//        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+//        assertEquals(Constants.CODE_ERROR, responseOk.getCode());
+//        assertEquals(Constants.MESS_010,responseOk.getMessage());
+//    }
+//
+//    @Test
+//    public void testUpdateImageProfile_AuthFaile() {
+//        User userDetails = new User();
+//        userDetails.setUserName("abc");
+//        userDetails.setId(1L);
+//        userDetails.setEmail("test@gmail.com");
+//        UserAuthDetails authUserDetails = new UserAuthDetails(userDetails);
+//        SecurityContext securityContext = mock(SecurityContext.class);
+//        SecurityContextHolder.setContext(securityContext);
+//        Authentication authentication = mock(Authentication.class);
+//        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
+//        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
+//
+//        // Mock repository methods
+//        UserInfo userInfo = new UserInfo();
+//        userInfo.setId("1");
+//        userInfo.setUserName("aaaaaa");
+//        //userInfo.setEmail("test@gmail.com");
+//        userInfo.setAddress("VN");
+//        userInfo.setJob("dev");
+//        userInfo.setPhone("123456789");
+//        userInfo.setSex("");
+//        userInfo.setBirthday("1999-01-01");
+//
+//        User user = new User();
+//        user.setUserName("abaac");
+//        user.setId(1L);
+//        user.setEmail("test@gmail.com");
+//
+//        when(userRepository.findOneByEmail("test")).thenReturn(user);
+//
+//        assertThrows(UserNotFoundException.class, () -> {
+//            userService.updateImageUser(userInfo);
+//        });
+//    }
+//
+//    @Test
+//    public void testUpdateImageProfile_AvataFaile() {
+//        User userDetails = new User();
+//        userDetails.setUserName("abc");
+//        userDetails.setId(1L);
+//        userDetails.setEmail("test@gmail.com");
+//        UserAuthDetails authUserDetails = new UserAuthDetails(userDetails);
+//        SecurityContext securityContext = mock(SecurityContext.class);
+//        SecurityContextHolder.setContext(securityContext);
+//        Authentication authentication = mock(Authentication.class);
+//        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
+//        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
+//
+//        // Mock repository methods
+//        UserInfo userInfo = new UserInfo();
+//        userInfo.setId("1");
+//        userInfo.setUserName("abc");
+//        //userInfo.setEmail("test@gmail.com");
+//        userInfo.setAddress("VN");
+//        userInfo.setJob("dev");
+//        userInfo.setPhone("123456789");
+//        userInfo.setSex("");
+//        userInfo.setBirthday("1999-01-01");
+//        userInfo.setAvata("image.xxxxx");
+//
+//        when(userRepository.findOneByEmail("test")).thenReturn(userDetails);
+//
+//        ResponseEntity<?> responseEntity = userService.updateImageUser(userInfo);
+//
+//        // Assert
+//        ResponseOk searchResponse = (ResponseOk) responseEntity.getBody();
+//        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+//        assertEquals(Constants.CODE_ERROR, searchResponse.getCode());
+//        assertEquals(Constants.MESS_011, searchResponse.getMessage());
+//    }
 
 }

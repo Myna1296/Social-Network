@@ -13,20 +13,20 @@ public class Const {
     public static final String API_COMFIRM_OTP_LOGIN ="/api/auth/comfirm-otp-login";
     public static final String API_FORGOT_PASSWORD ="/api/auth/forgot-password/{email}";
     public static final String API_USER_INFO = "/api/user/profile";
-    public static final String API_USER_INFO_BY_ID = "/api/user/profile-user/{id}";
+    public static final String API_USER_INFO_BY_ID = "/api/user/profile/{userId}";
     public static final String API_UPDATE_IMAGE = "/api/user/update-avata";
     public static final String API_UPDATE_PROFILE = "/api/user/update-profile";
     public static final String API_UPDATE_PASSWORD = "/api/user/update-password";
+    public static final String API_SEARCH_USER = "/api/user/search";
     public static final String API_GET_FRIENF_OF_USER = "/api/friends/get-friend/{pageId}";
     public static final String API_GET_REQUEST_USER_NOT_ACCEPTE = "/api/friends/get-request-user-notaccepte/{pageId}";
     public static final String API_GET_REQUEST_NOT_ACCEPTE_TO_USER = "/api/friends/get-request-notaccepte-touser/{pageId}";
-    public static final String API_CHECK_FRIEND_SHIP = "/api/friends/check-friend-ship/{id}";
-    public static final String API_SEARCH_USER = "/api/user/search-user";
+    public static final String API_CHECK_FRIEND_SHIP = "/api/friends/check-friend-ship/{userId}";
     public static final String API_ADD_FRIEND = "/api/friends/add-to-friends/{id}";
     public static final String API_DELETE_FRIENDSHIP = "/api/friends/delete";
     public static final String API_ACCEPTE_FRIENDSHIP = "/api/friends/accepte";
-    public static final String API_GET_ALL_STATUS_USER = "/api/status/all/{pageId}";
-    public static final String API_GET_ALL_STATUS_FRIEND = "/api/status/all/friend/{pageId}";
+    public static final String API_GET_ALL_STATUS_USER = "/api/status";
+    public static final String API_NEWS_FEED = "/api/status/newsfeed?pageIndex={index}&pageSize={size}";
     public static final String API_DELETE_STATUS = "/api/status/delete/{postId}";
     public static final String API_ADD_STATUS = "/api/status/add";
     public static final String API_SEARCH_STATUS = "/api/status/search/{id}";
@@ -41,6 +41,6 @@ public class Const {
     public static final String PROFILE_IMAGES = "profileImages";
     public static final String MESS_001 = "This account does not exist";
     public static final String MESS_002 = "Page does not exist or has no data.";
-    public static final  int LIMIT  = 3;
+    public static final  int PAGE_SIZE  = 5;
 
 }

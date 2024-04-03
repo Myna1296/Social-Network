@@ -1,6 +1,7 @@
 package com.example.datasocialnetwork.controller;
 
 import com.example.datasocialnetwork.dto.request.PasswordChangeDTO;
+import com.example.datasocialnetwork.dto.request.SearchRequest;
 import com.example.datasocialnetwork.dto.request.SearchUserRequestDTO;
 import com.example.datasocialnetwork.dto.request.UserInfo;
 import com.example.datasocialnetwork.dto.response.ErrorResponse;
@@ -26,13 +27,8 @@ public class UserController {
     @Autowired
     private UserServiceImpl userService;
 
-    @GetMapping("/profile")
-    public ResponseEntity<?> getUserInfo(){
-          return userService.getProfileUser();
-    }
-
-    @GetMapping("/profile-user/{id}")
-    public UserInfoResponse getProfileUserInfoById( @PathVariable("id")  Long id){
+    @GetMapping("/profile/{userId}")
+    public ResponseEntity<?> getProfileUserInfoById( @PathVariable("userId")  Long id){
         return userService.findById(id);
     }
 
@@ -60,8 +56,8 @@ public class UserController {
         return userService.updatePassword(passwordChangeDTO);
     }
 
-    @PostMapping("/search-user")
-    public ResponseEntity<SearchResponse> searchUserByUsername(@RequestBody SearchUserRequestDTO sreachUserRequestDTO){
-        return userService.searchUserByUserName(sreachUserRequestDTO);
+    @PostMapping("/search")
+    public ResponseEntity<?> searchUserByUsername(@RequestBody SearchRequest searchRequest){
+        return userService.searchUserByUserName(searchRequest);
     }
 }

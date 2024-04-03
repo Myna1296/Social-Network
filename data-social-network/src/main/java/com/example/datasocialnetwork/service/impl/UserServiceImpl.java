@@ -7,11 +7,8 @@ import com.example.datasocialnetwork.config.JwtTokenUtil;
 import com.example.datasocialnetwork.config.UserAuthDetails;
 import com.example.datasocialnetwork.dto.request.*;
 import com.example.datasocialnetwork.dto.response.SearchResponse;
-import com.example.datasocialnetwork.dto.response.UserInfoResponse;
 import com.example.datasocialnetwork.entity.Otp;
 import com.example.datasocialnetwork.entity.User;
-import com.example.datasocialnetwork.dto.response.ResponseOk;
-import com.example.datasocialnetwork.exceptions.UserNotFoundException;
 import com.example.datasocialnetwork.repository.OtpRepository;
 import com.example.datasocialnetwork.repository.UserRepository;
 import com.example.datasocialnetwork.service.MailService;
@@ -89,23 +86,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<?> getProfileUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        User user = userRepository.findOneById(Long.parseLong(userDetails.getUserID()));
-        if(user == null){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Constants.LOGIN_USER_NOT_FOUND);
-        }
-        UserInfo userInfo = convertUserToUserInfo(user);
-        return ResponseEntity.status(HttpStatus.OK).body(userInfo);
-    }
-
-    @Override
-    public Boolean existsByUsername(String username) {
-        return userRepository.existsByUserName(username);
-    }
-
-    @Override
     public Boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
     }
@@ -150,54 +130,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserInfoResponse findByEmail(String email) {
-        UserInfoResponse userInfo = new UserInfoResponse();
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        User users= userRepository.findOneByEmail(email);
-        if(users == null){
-            userInfo.setError(Constants.MESS_010);
-        } else {
-            if (!userDetails.getUsername().equals(users.getUserName())){
-                throw(new UserNotFoundException("Authentication information does not match"));
-            }
-            userInfo.setId(users.getId().toString());
-            userInfo.setEmail(users.getEmail());
-            userInfo.setUserName(users.getUserName());
-            userInfo.setBirthday(users.getBirthday() == null ? "": DateTimeFormatter.ISO_LOCAL_DATE.format(users.getBirthday()));
-            userInfo.setAddress(users.getAddress());
-            userInfo.setJob(users.getJob());
-            userInfo.setPhone(users.getPhone());
-            userInfo.setAvata(users.getImage());
-            userInfo.setSex(getGenderById(users.getSex()).name());
-        }
-        return userInfo;
-    }
+    public ResponseEntity<?> findById(Long id) {
 
-    @Override
-    public UserInfoResponse findById(Long id) {
-        UserInfoResponse userInfo = new UserInfoResponse();
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        User users= userRepository.findOneByUserName(userDetails.getUsername());
-        if(users == null){
-            userInfo.setError(Constants.MESS_010);
-        } else {
-            User usersById = userRepository.findOneById(id);
-            if(usersById == null){
-                userInfo.setError(Constants.MESS_013);
-            } else {
-                userInfo.setId(usersById.getId().toString());
-                userInfo.setUserName(usersById.getUserName());
-                userInfo.setBirthday(usersById.getBirthday() == null ? "" : DateTimeFormatter.ISO_LOCAL_DATE.format(usersById.getBirthday()));
-                userInfo.setAddress(usersById.getAddress());
-                userInfo.setJob(usersById.getJob());
-                userInfo.setPhone(usersById.getPhone());
-                userInfo.setAvata(usersById.getImage());
-                userInfo.setSex(getGenderById(usersById.getSex()).name());
-            }
+        User usersById = userRepository.findOneById(id);
+        if(usersById == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Constants.USER_NOT_FOUND);
         }
-        return userInfo;
+        UserInfo userInfo = convertUserToUserInfo(usersById);
+        return ResponseEntity.status(HttpStatus.OK).body(userInfo);
     }
 
     @Override
@@ -267,22 +207,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<SearchResponse> searchUserByUserName(SearchUserRequestDTO searchUserRequestDTO) {
+    public ResponseEntity<?> searchUserByUserName(SearchRequest searchRequest) {
         SearchResponse sreachResponse = new SearchResponse();
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        User user = userRepository.findOneByUserName(userDetails.getUsername());
-        if (user == null){
-            sreachResponse.setCode(Constants.CODE_ERROR);
-            sreachResponse.setMessage(Constants.MESS_010);
-            return new ResponseEntity<>(sreachResponse, HttpStatus.OK);
-        }
-        Pageable pageable = PageRequest.of(searchUserRequestDTO.getPage() - 1 , Constants.LIMIT);
+        Pageable pageable = PageRequest.of(searchRequest.getPageIndex() - 1 , searchRequest.getPageSize());
         Page<User> users;
-        if ( searchUserRequestDTO.getSearch().isEmpty()){
+        if ( searchRequest.getSearchValue().isEmpty()){
             users = userRepository.findAll(pageable);
         } else {
-            users = userRepository.findByUserNameContaining(searchUserRequestDTO.getSearch(), pageable);
+            users = userRepository.findByUserNameContaining(searchRequest.getSearchValue(), pageable);
         }
         List<User> userList = users.getContent();
         List<UserInfo>  listUserInfo = userList.stream()
@@ -290,8 +222,7 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
         sreachResponse.setListUser(listUserInfo);
         sreachResponse.setTotalPage(users.getTotalPages());
-        sreachResponse.setCode(Constants.CODE_OK);
-        return new ResponseEntity<>(sreachResponse, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK).body(sreachResponse);
     }
 
     @Override

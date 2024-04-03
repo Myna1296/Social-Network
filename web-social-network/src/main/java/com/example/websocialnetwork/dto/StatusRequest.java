@@ -9,6 +9,6 @@ import lombok.Setter;
 @Data
 public class StatusRequest {
     private Long userId;
-    private Long statusId;
-    private int page;
+    private  int pageIndex;
+    private int pageSize;
 }

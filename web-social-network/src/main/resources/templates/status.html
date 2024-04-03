@@ -67,9 +67,9 @@
             <div class="friends-top" th:if="${id != null}">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                 <h3 th:text="${userName + ' status'}"></h3>
-                &nbsp;<a th:if="${isStatusUser == 'true'}" th:href="@{/user/status/add}" class="btn btn-success">New status</a>
+                &nbsp;<a th:if="${isStatusUser}" th:href="@{/user/status/add}" class="btn btn-success">New status</a>
                 </div>
-                <table class="table friends"  th:if="${isStatusUser == 'flase'}">
+                <table class="table friends"  th:if="${!isStatusUser}">
                     <tr th:each="status : ${statusList}">
                         <td>
                             <a th:href="@{'/user/status/info/' + ${status.id}}"><span th:text="${status.title}"></span></a>
@@ -82,7 +82,7 @@
                         </td>
                     </tr>
                 </table>
-                <table class="table friends"  th:if="${isStatusUser == 'true'}">
+                <table class="table friends"  th:if="${isStatusUser}">
                     <tr th:each="status : ${statusList}">
                         <td>
                             <a th:href="@{'/user/status/info/' + ${status.id}}"><span th:text="${status.title}"></span></a>

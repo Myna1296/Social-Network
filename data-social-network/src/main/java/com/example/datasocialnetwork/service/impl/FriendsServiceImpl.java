@@ -72,31 +72,20 @@ public class FriendsServiceImpl implements FriendsService {
     }
 
     @Override
-    public ResponseEntity<CheckFriendShipResponse> checkFriendship(Long id) {
-        CheckFriendShipResponse response = new CheckFriendShipResponse();
+    public ResponseEntity<?> checkFriendship(Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        User user = userRepository.findOneByUserName(userDetails.getUsername());
-        if (user == null) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage(Constants.MESS_010);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }
-        if (user.getId() == id){
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage("Do not check friends ships with yourself");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+        if (Long.parseLong(userDetails.getUserID()) == id){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.CHECK_FRIENDSHIP_ERR1);
         }
         User userFriend = userRepository.findOneById(id);
         if (userFriend == null) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage("Friend does not exist");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.USER_NOT_FOUND);
         }
+        User user = userRepository.findOneById(Long.parseLong(userDetails.getUserID()));
         Boolean checkFriendShip = friendShipRepository.checkFriendshipExists(user, userFriend);
-        response.setCode(Constants.CODE_OK);
-        response.setCheckFriendShip(checkFriendShip);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        String jsonResponse = "{\"isFriendShip\": " + checkFriendShip + "}";
+        return ResponseEntity.status(HttpStatus.OK).body(jsonResponse);
     }
 
     @Override

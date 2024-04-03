@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @Service
 public interface FriendsService {
     ResponseEntity<FriendResponse> getFriendsOfUser(Long pageId);
-    ResponseEntity<CheckFriendShipResponse> checkFriendship(Long id);
+    ResponseEntity<?> checkFriendship(Long id);
     ResponseEntity<?> addFriendRequest(Long idTarget);
     ResponseEntity<FriendResponse> getUsersNotAcceptedRequests(Long pageId);
     ResponseEntity<FriendResponse> getNotAcceptedRequestsToUser(Long pageId);

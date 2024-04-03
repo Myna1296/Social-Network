@@ -18,6 +18,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -30,7 +31,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-
+        if( isPublicEndpoint(request.getServletPath())){
+            filterChain.doFilter(request, response);
+            return;
+        }
         String jwtToken = getJwtFromRequest(request);
         if (jwtToken != null) {
             User user = userService.findUserByToken(jwtToken);
@@ -44,13 +48,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
                 } else {
-                    ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Constants.TOKEN_INVALID);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("text/plain;charset=UTF-8");
+                PrintWriter writer = response.getWriter();
+                writer.println(Constants.TOKEN_INVALID);
+                writer.close();
+                return;
                 }
             } else {
-                ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Constants.TOKEN_INVALID);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("text/plain;charset=UTF-8");
+                PrintWriter writer = response.getWriter();
+                writer.println(Constants.USER_BY_TOKEN_NOT_FOUND);
+                return;
             }
-        }else {
-            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Constants.TOKEN_IS_NULL);
+        } else {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("text/plain;charset=UTF-8");
+            PrintWriter writer = response.getWriter();
+            writer.println(Constants.TOKEN_IS_NULL);
+            return;
         }
 
         filterChain.doFilter(request, response);
@@ -62,5 +79,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return bearerToken.substring(7);
         }
         return null;
+    }
+
+    private boolean isPublicEndpoint(String servletPath) {
+        for (String endpoint : Constants.ENDPOINTS_PUBLIC_PATH) {
+            if (servletPath.startsWith(endpoint)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

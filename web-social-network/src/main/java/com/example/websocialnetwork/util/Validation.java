@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.example.websocialnetwork.common.Const.LIMIT;
+import static com.example.websocialnetwork.common.Const.PAGE_SIZE;
 
 public class Validation {
     public static String checkUserName(String user){
@@ -43,6 +43,6 @@ public class Validation {
             return 0;
         }
 
-        return (int) Math.ceil((double) totalItems / LIMIT);
+        return (int) Math.ceil((double) totalItems / PAGE_SIZE);
     }
 }

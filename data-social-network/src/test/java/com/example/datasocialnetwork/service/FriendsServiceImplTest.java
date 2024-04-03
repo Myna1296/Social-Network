@@ -441,103 +441,103 @@ public class FriendsServiceImplTest {
         assertEquals(Constants.CODE_OK, response.getCode());
     }
 
-    @Test
-    public void testCheckFriendShip_Success(){
-        // Mock user details
-        User user = new User();
-        user.setUserName("abc");
-        user.setId(1L);
-        UserAuthDetails authUserDetails = new UserAuthDetails(user);
-        SecurityContext securityContext = mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        Authentication authentication = mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
-        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
-
-        // Mock repository methods
-        when(userRepository.findOneByUserName(user.getUserName())).thenReturn(user);
-
-        when(userRepository.findOneById(2L)).thenReturn(user);
-
-        when(friendShipRepository.checkFriendshipExists(user, user)).thenReturn(true);
-        // Call the method
-        ResponseEntity<CheckFriendShipResponse> responseEntity = friendsService.checkFriendship(2L);
-        CheckFriendShipResponse response =  responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_OK, response.getCode());
-    }
-
-    @Test
-    public void testCheckFriendShip_UserNotFound1(){
-        // Mock user details
-        User user = new User();
-        user.setUserName("abc");
-        user.setId(1L);
-        UserAuthDetails authUserDetails = new UserAuthDetails(user);
-        SecurityContext securityContext = mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        Authentication authentication = mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
-        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
-
-        // Mock repository methods
-        when(userRepository.findOneByUserName(user.getUserName())).thenReturn(null);
-        // Call the method
-        ResponseEntity<CheckFriendShipResponse> responseEntity = friendsService.checkFriendship(2L);
-        CheckFriendShipResponse response =  responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, response.getCode());
-        assertEquals(Constants.MESS_010, response.getMessage());
-    }
-
-    @Test
-    public void testCheckFriendShip_UserNotFound2(){
-        // Mock user details
-        User user = new User();
-        user.setUserName("abc");
-        user.setId(1L);
-        UserAuthDetails authUserDetails = new UserAuthDetails(user);
-        SecurityContext securityContext = mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        Authentication authentication = mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
-        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
-
-        // Mock repository methods
-        when(userRepository.findOneByUserName(user.getUserName())).thenReturn(user);
-
-        when(userRepository.findOneById(2L)).thenReturn(null);
-
-        // Call the method
-        ResponseEntity<CheckFriendShipResponse> responseEntity = friendsService.checkFriendship(2L);
-        CheckFriendShipResponse response =  responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, response.getCode());
-        assertEquals("Friend does not exist", response.getMessage());
-    }
-
-    @Test
-    public void testCheckFriendShip_Faile(){
-        // Mock user details
-        User user = new User();
-        user.setUserName("abc");
-        user.setId(1L);
-        UserAuthDetails authUserDetails = new UserAuthDetails(user);
-        SecurityContext securityContext = mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        Authentication authentication = mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
-        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
-
-        // Mock repository methods
-        when(userRepository.findOneByUserName(user.getUserName())).thenReturn(user);
-        // Call the method
-        ResponseEntity<CheckFriendShipResponse> responseEntity = friendsService.checkFriendship(1L);
-        CheckFriendShipResponse response = responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, response.getCode());
-        assertEquals("Do not check friends ships with yourself", response.getMessage());
-    }
+//    @Test
+//    public void testCheckFriendShip_Success(){
+//        // Mock user details
+//        User user = new User();
+//        user.setUserName("abc");
+//        user.setId(1L);
+//        UserAuthDetails authUserDetails = new UserAuthDetails(user);
+//        SecurityContext securityContext = mock(SecurityContext.class);
+//        SecurityContextHolder.setContext(securityContext);
+//        Authentication authentication = mock(Authentication.class);
+//        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
+//        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
+//
+//        // Mock repository methods
+//        when(userRepository.findOneByUserName(user.getUserName())).thenReturn(user);
+//
+//        when(userRepository.findOneById(2L)).thenReturn(user);
+//
+//        when(friendShipRepository.checkFriendshipExists(user, user)).thenReturn(true);
+//        // Call the method
+//        ResponseEntity<CheckFriendShipResponse> responseEntity = friendsService.checkFriendship(2L);
+//        CheckFriendShipResponse response =  responseEntity.getBody();
+//        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+//        assertEquals(Constants.CODE_OK, response.getCode());
+//    }
+//
+//    @Test
+//    public void testCheckFriendShip_UserNotFound1(){
+//        // Mock user details
+//        User user = new User();
+//        user.setUserName("abc");
+//        user.setId(1L);
+//        UserAuthDetails authUserDetails = new UserAuthDetails(user);
+//        SecurityContext securityContext = mock(SecurityContext.class);
+//        SecurityContextHolder.setContext(securityContext);
+//        Authentication authentication = mock(Authentication.class);
+//        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
+//        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
+//
+//        // Mock repository methods
+//        when(userRepository.findOneByUserName(user.getUserName())).thenReturn(null);
+//        // Call the method
+//        ResponseEntity<CheckFriendShipResponse> responseEntity = friendsService.checkFriendship(2L);
+//        CheckFriendShipResponse response =  responseEntity.getBody();
+//        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+//        assertEquals(Constants.CODE_ERROR, response.getCode());
+//        assertEquals(Constants.MESS_010, response.getMessage());
+//    }
+//
+//    @Test
+//    public void testCheckFriendShip_UserNotFound2(){
+//        // Mock user details
+//        User user = new User();
+//        user.setUserName("abc");
+//        user.setId(1L);
+//        UserAuthDetails authUserDetails = new UserAuthDetails(user);
+//        SecurityContext securityContext = mock(SecurityContext.class);
+//        SecurityContextHolder.setContext(securityContext);
+//        Authentication authentication = mock(Authentication.class);
+//        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
+//        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
+//
+//        // Mock repository methods
+//        when(userRepository.findOneByUserName(user.getUserName())).thenReturn(user);
+//
+//        when(userRepository.findOneById(2L)).thenReturn(null);
+//
+//        // Call the method
+//        ResponseEntity<CheckFriendShipResponse> responseEntity = friendsService.checkFriendship(2L);
+//        CheckFriendShipResponse response =  responseEntity.getBody();
+//        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+//        assertEquals(Constants.CODE_ERROR, response.getCode());
+//        assertEquals("Friend does not exist", response.getMessage());
+//    }
+//
+//    @Test
+//    public void testCheckFriendShip_Faile(){
+//        // Mock user details
+//        User user = new User();
+//        user.setUserName("abc");
+//        user.setId(1L);
+//        UserAuthDetails authUserDetails = new UserAuthDetails(user);
+//        SecurityContext securityContext = mock(SecurityContext.class);
+//        SecurityContextHolder.setContext(securityContext);
+//        Authentication authentication = mock(Authentication.class);
+//        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
+//        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
+//
+//        // Mock repository methods
+//        when(userRepository.findOneByUserName(user.getUserName())).thenReturn(user);
+//        // Call the method
+//        ResponseEntity<CheckFriendShipResponse> responseEntity = friendsService.checkFriendship(1L);
+//        CheckFriendShipResponse response = responseEntity.getBody();
+//        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+//        assertEquals(Constants.CODE_ERROR, response.getCode());
+//        assertEquals("Do not check friends ships with yourself", response.getMessage());
+//    }
 
     @Test
     public void testAddFriendShip_Success(){

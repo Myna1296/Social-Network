@@ -1,7 +1,11 @@
 package com.example.websocialnetwork.controller;
 
+import com.example.websocialnetwork.common.Const;
 import com.example.websocialnetwork.dto.*;
 import com.example.websocialnetwork.dto.reponse.*;
+import com.example.websocialnetwork.dto.request.NewStatusRequest;
+import com.example.websocialnetwork.dto.request.StatusInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,35 +58,36 @@ public class StatusController {
         if (page == null || page < 1){
             page = 1;
         }
-        UserInfo user = getUserFromSession(request);
-        StatusRequest statusRequest = new StatusRequest();
-        statusRequest.setPage(page);
-        statusRequest.setUserId(Long.parseLong(user.getId()));
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
         try {
-            ResponseEntity<StatusAllResponse> responseEntity = restTemplate.exchange(
-                    path + API_GET_ALL_STATUS_FRIEND,
+            ResponseEntity<?> response = restTemplate.exchange(
+                    path + API_NEWS_FEED,
                     HttpMethod.GET,
                     requestEntity,
-                    StatusAllResponse.class,
-                    page
+                    String.class,
+                    page,
+                    PAGE_SIZE
             );
-            StatusAllResponse statusAllResponse = responseEntity.getBody();
-            if (statusAllResponse.getCode() == 1) {
-                model.addAttribute("message", statusAllResponse.getMessage());
-                return VIEW_ERR;
-            }
+            ObjectMapper objectMapper = new ObjectMapper();
+            StatusAllResponse statusAllResponse = objectMapper.readValue((String) response.getBody(), StatusAllResponse.class);
             model.addAttribute("statusList", statusAllResponse.getListStatus());
-            model.addAttribute("userName", statusAllResponse.getUserName());
             model.addAttribute("totalPage", statusAllResponse.getTotalPage());
-            model.addAttribute("page", statusAllResponse.getPage());
+            model.addAttribute("page", page);
             return "status";
 
-        } catch (Exception ex) {
-            model.addAttribute("message", ex);
+        } catch (HttpClientErrorException ex) {
+            HttpStatus statusCode = ex.getStatusCode();
+            if( statusCode == HttpStatus.BAD_REQUEST || statusCode == HttpStatus.NOT_FOUND) {
+                model.addAttribute("message", ex.getResponseBodyAsString());
+                return VIEW_ERR;
+            }
+            model.addAttribute("message", ex.getResponseBodyAsString());
+            return VIEW_ERR;
+        } catch (Exception e) {
+            model.addAttribute("message", e);
             return VIEW_ERR;
         }
     }
@@ -98,37 +103,56 @@ public class StatusController {
             page = 1;
         }
         StatusRequest statusRequest = new StatusRequest();
-        statusRequest.setPage(page);
+        statusRequest.setPageIndex(page);
         statusRequest.setUserId(id);
+        statusRequest.setPageSize(PAGE_SIZE);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
         try {
-            ResponseEntity<StatusAllResponse> responseEntity = restTemplate.exchange(
-                    path + API_GET_ALL_STATUS_USER,
+            ResponseEntity<?> responseEntity = restTemplate.exchange(
+                    path + API_USER_INFO_BY_ID,
                     HttpMethod.GET,
                     requestEntity,
-                    StatusAllResponse.class,
-                    page
+                    String.class,
+                    id
             );
-            StatusAllResponse statusAllResponse = responseEntity.getBody();
-            if (statusAllResponse.getCode() == 1) {
-                model.addAttribute("message", statusAllResponse.getMessage());
-                return VIEW_ERR;
-            }
+            ObjectMapper objectMapper = new ObjectMapper();
+            UserInfo userInfo = objectMapper.readValue((String) responseEntity.getBody(), UserInfo.class);
+
+            HttpEntity<StatusRequest> requestStatus = new HttpEntity<>(statusRequest, headers);
+            ResponseEntity<?> response = restTemplate.exchange(
+                    path + API_GET_ALL_STATUS_USER,
+                    HttpMethod.POST,
+                    requestStatus,
+                    String.class
+            );
+
+            StatusAllResponse statusAllResponse = objectMapper.readValue((String) response.getBody(), StatusAllResponse.class);
             UserInfo user = getUserFromSession(request);
-            String isStatusUser = Long.parseLong(user.getId()) == id ? "true":"flase";
+            boolean isStatusUser = false;
+            if ( userInfo.getId().equals(user.getId())){
+                isStatusUser = true;
+            }
             model.addAttribute("statusList", statusAllResponse.getListStatus());
             model.addAttribute("id", id);
-            model.addAttribute("userName", statusAllResponse.getUserName());
+            model.addAttribute("userName", userInfo.getUserName());
             model.addAttribute("totalPage", statusAllResponse.getTotalPage());
-            model.addAttribute("page", statusAllResponse.getPage());
+            model.addAttribute("page", page);
             model.addAttribute("isStatusUser", isStatusUser);
             return "status";
 
-        } catch (Exception ex) {
-            model.addAttribute("message", ex);
+        } catch (HttpClientErrorException ex) {
+            HttpStatus statusCode = ex.getStatusCode();
+            if( statusCode == HttpStatus.BAD_REQUEST || statusCode == HttpStatus.NOT_FOUND) {
+                model.addAttribute("message", ex.getResponseBodyAsString());
+                return VIEW_ERR;
+            }
+            model.addAttribute("message", ex.getResponseBodyAsString());
+            return VIEW_ERR;
+        } catch (Exception e) {
+            model.addAttribute("message", e);
             return VIEW_ERR;
         }
     }
@@ -259,7 +283,7 @@ public class StatusController {
             }
             StatusDTO statusDTO = response.getStatus();
             model.addAttribute("status", statusDTO);
-            model.addAttribute("isEdit", "true");;
+            model.addAttribute("isEdit", "true");
             return "status-edit";
         } catch (Exception ex) {
             model.addAttribute("message", ex);
@@ -285,18 +309,11 @@ public class StatusController {
             model.addAttribute("error","File extension is not supported");
             return "status-edit";
         }
-        UserInfo user = getUserFromSession(request);
-        byte[] bytes = imageFile.getBytes();
-        Path pathImages = getProfileImagesPath();
-        String newFileName = getNewFileName("status-" +
-                user.getUserName()+ "-" +
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")), imageFile);
-        Files.write(pathImages.resolve(newFileName), bytes);
-        StatusDTO status = new StatusDTO();
+
+        NewStatusRequest status = new NewStatusRequest();
         status.setTitle(statusDTO.getTitle());
         status.setContent(statusDTO.getContent());
-        status.setStatusImage(newFileName);
-        status.setUserId(Long.parseLong(user.getId()));
+        status.setImage(imageFile);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

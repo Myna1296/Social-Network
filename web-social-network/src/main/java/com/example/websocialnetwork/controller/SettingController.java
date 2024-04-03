@@ -29,6 +29,7 @@ import java.util.Set;
 
 import static com.example.websocialnetwork.common.Const.*;
 import static com.example.websocialnetwork.common.Const.VIEW_ERR;
+import static com.example.websocialnetwork.util.ServerUtils.getUserFromSession;
 import static com.example.websocialnetwork.util.Validation.checkBirthday;
 
 @Controller
@@ -48,16 +49,18 @@ public class SettingController {
         if (request.getSession().getAttribute("user") == null) {
             return "redirect:/";
         }
+        UserInfo sessionUser = getUserFromSession(request);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
         try {
             ResponseEntity<?> response = restTemplate.exchange(
-                    path + API_USER_INFO,
+                    path + API_USER_INFO_BY_ID,
                     HttpMethod.GET,
                     requestEntity,
-                    String.class
+                    String.class,
+                    Long.parseLong(sessionUser.getId())
             );
 
             ObjectMapper objectMapper = new ObjectMapper();

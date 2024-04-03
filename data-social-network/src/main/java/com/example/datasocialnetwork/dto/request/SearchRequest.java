@@ -4,11 +4,11 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+@Data
 @Getter
 @Setter
-@Data
-public class StatusRequest {
-    private Long userId;
-    private  int pageIndex;
+public class SearchRequest {
+    private String searchValue;
+    private int pageIndex;
     private int pageSize;
 }

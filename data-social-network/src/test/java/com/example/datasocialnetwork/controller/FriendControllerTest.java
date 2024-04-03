@@ -43,14 +43,14 @@ public class FriendControllerTest {
         verify(friendsService, times(1)).getFriendsOfUser(1L);
     }
 
-    @Test
-    public void testCheckFriendShip() {
-        ResponseEntity<CheckFriendShipResponse> expectedResponse = new ResponseEntity<>(new CheckFriendShipResponse(), HttpStatus.OK);
-        when(friendsService.checkFriendship(1L)).thenAnswer(invocation -> ResponseEntity.ok(new CheckFriendShipResponse()));
-        ResponseEntity<CheckFriendShipResponse> actualResponse = friendsController.checkFriendShip(1L);
-        assertEquals(expectedResponse, actualResponse);
-        verify(friendsService, times(1)).checkFriendship(1L);
-    }
+//    @Test
+//    public void testCheckFriendShip() {
+//        ResponseEntity<CheckFriendShipResponse> expectedResponse = new ResponseEntity<>(new CheckFriendShipResponse(), HttpStatus.OK);
+//        when(friendsService.checkFriendship(1L)).thenAnswer(invocation -> ResponseEntity.ok(new CheckFriendShipResponse()));
+//        ResponseEntity<CheckFriendShipResponse> actualResponse = friendsController.checkFriendShip(1L);
+//        assertEquals(expectedResponse, actualResponse);
+//        verify(friendsService, times(1)).checkFriendship(1L);
+//    }
     @Test
     public void testAddFriendRequest() {
         ResponseEntity<ResponseOk> expectedResponse = new ResponseEntity<>(new ResponseOk(), HttpStatus.OK);

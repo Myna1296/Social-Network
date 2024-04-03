@@ -1,6 +1,7 @@
 package com.example.datasocialnetwork.controller;
 
 import com.example.datasocialnetwork.dto.request.StatusDTO;
+import com.example.datasocialnetwork.dto.request.StatusRequest;
 import com.example.datasocialnetwork.dto.response.ErrorResponse;
 import com.example.datasocialnetwork.service.impl.StatusServiceImpl;
 import lombok.AllArgsConstructor;
@@ -58,14 +59,15 @@ public class StatusController {
     return statusService.deleteStatus(postId);
 }
 
-    @GetMapping("/all/friend/{pageId}")
-    public ResponseEntity<?> getStatusFriendUser(@PathVariable("pageId") Long pageId){
-        return statusService.getStatusFriendUser(pageId);
+    @PostMapping()
+    public ResponseEntity<?> getStatusFriendUser(@RequestBody StatusRequest statusRequest){
+        return statusService.getStatusByUserId(statusRequest);
     }
 
-    @GetMapping("/all/{pageId}")
-    public ResponseEntity<?> getPostByUserId (@PathVariable("pageId") Long pageId){
-        return statusService.getStatusByUserId(pageId);
+    @GetMapping("/newsfeed")
+    public ResponseEntity<?> getNewsFeed (@RequestParam(name = "pageIndex", defaultValue = "1") int pageIndex,
+                                              @RequestParam(name = "pageSize", defaultValue = "5") int pageSize){
+        return statusService.getNewsFeed(pageIndex, pageSize);
     }
 
     @GetMapping("/search/{id}")
