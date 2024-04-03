@@ -318,14 +318,14 @@ public class StatusController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
-        HttpEntity<StatusDTO> requestEntity = new HttpEntity<>(status, headers);
+        HttpEntity<NewStatusRequest> requestEntity = new HttpEntity<>(status, headers);
         try {
             //call API
-            ResponseEntity<ResponseOk> response = restTemplate.exchange(
+            ResponseEntity<?> response = restTemplate.exchange(
                     path + API_ADD_STATUS,
                     HttpMethod.POST,
                     requestEntity,
-                    ResponseOk.class
+                    String.class
             );
             ResponseOk responseBody = response.getBody();
             if ( responseBody == null){
