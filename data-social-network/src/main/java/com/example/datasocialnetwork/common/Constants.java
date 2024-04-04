@@ -26,6 +26,16 @@ public class Constants {
     public static final String UPDATE_PASSWORD_SUCCESS = "update password thành công";
     public static final String USER_NOT_FOUND = "Không tìm thấy tài khoản user này.";
     public static final String CHECK_FRIENDSHIP_ERR1 = "Không thể check frend ship với chính bản thân mình.";
+    public static final String ADD_NEW_STATUS_SUCCESS = "tạo status mới thành công";
+    public static final String STATUS_NOT_FOUND = "Status không tồn tại";
+    public static final String STATUS_UPDATE_FORBIDDEN = "Bạn không có quyền thực hiện update status này.";
+    public static final String STATUS_DELETE_FORBIDDEN = "Bạn không có quyền thực hiện xóa status này.";
+    public static final String STATUS_UPDATE_SUCCESS = "Update status thành công.";
+    public static final String STATUS_DELETE_SUCCESS = "DELETE status thành công.";
+    public static final String LIKE_ERR = "Bạn đã like , không thể thực hiện like tiếp nữa.";
+    public static final String UNLIKE_ERR = "Bạn chưa like , không thể thực hiện unlike tiếp nữa.";
+    public static final String LIKE_SUCCESS = "Bạn đã likethành công.";
+    public static final String UNLIKE_SUCCESS = "Bạn đã unlikethành công.";
     public static final String MESS_001 = "Username already exists";
     public static final String MESS_002 = "Email already exists";
     public static final String MESS_003 = "Account registration successful";

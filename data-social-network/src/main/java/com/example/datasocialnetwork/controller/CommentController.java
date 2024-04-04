@@ -24,7 +24,7 @@ public class CommentController {
     @Autowired
     private CommentServiceImpl commentService;
 
-    @PostMapping("/search")
+    @PostMapping()
     public ResponseEntity<?> getCommentByStatusId(@RequestBody CommentRequest commentRequest){
         return commentService.searchCommentByStatusId(commentRequest);
     }

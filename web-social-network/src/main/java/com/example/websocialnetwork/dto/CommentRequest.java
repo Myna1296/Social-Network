@@ -8,6 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CommentRequest {
-    private int page;
+    private int pageIndex;
+    private int pageSize;
     private Long statusId;
 }

@@ -2,7 +2,6 @@ package com.example.websocialnetwork.dto.request;
 
 import lombok.*;
 import org.hibernate.validator.constraints.Length;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotBlank;
@@ -14,7 +13,9 @@ import javax.validation.constraints.NotEmpty;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NewStatusRequest {
+public class UpdateStatusRequest {
+
+    private Long id;
     @NotEmpty(message = "Title cannot be empty")
     @NotBlank(message = "Title cannot be blank")
     @Length(min = 1, max = 50, message = "Title must be between 1 and 50 words in length")

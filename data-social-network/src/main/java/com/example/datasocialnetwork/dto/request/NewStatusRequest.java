@@ -1,4 +1,4 @@
-package com.example.websocialnetwork.dto.request;
+package com.example.datasocialnetwork.dto.request;
 
 import lombok.*;
 import org.hibernate.validator.constraints.Length;
@@ -22,7 +22,7 @@ public class NewStatusRequest {
 
     @NotEmpty(message = "Content cannot be empty")
     @NotBlank(message = "Content cannot be blank")
-    @Length(min = 1, max = 5000, message = "Content must be between 1 and 5000 words in length")
+    @Length(min = 1, max = 5000, message = "Content must be between 10 and 50 words in length")
     private String content;
 
     private MultipartFile image;

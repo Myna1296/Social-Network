@@ -18,7 +18,7 @@ public class StatusDTO {
 
     @NotEmpty(message = "Title cannot be empty")
     @NotBlank(message = "Title cannot be blank")
-    @Length(min = 10, max = 50, message = "Title must be between 10 and 50 words in length")
+    @Length(min = 1, max = 50, message = "Title must be between 1 and 50 words in length")
     private String title;
 
     @NotEmpty(message = "Content cannot be empty")

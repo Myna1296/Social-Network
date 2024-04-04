@@ -1,20 +1,16 @@
 package com.example.datasocialnetwork.controller;
 
-import com.example.datasocialnetwork.dto.request.StatusDTO;
+import com.example.datasocialnetwork.dto.request.NewStatusRequest;
 import com.example.datasocialnetwork.dto.request.StatusRequest;
-import com.example.datasocialnetwork.dto.response.ErrorResponse;
+import com.example.datasocialnetwork.dto.request.UpdateStatusRequest;
 import com.example.datasocialnetwork.service.impl.StatusServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
-import javax.validation.Valid;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/status")
@@ -23,39 +19,36 @@ public class StatusController {
 
     @Autowired
     private StatusServiceImpl  statusService;
-//    private final PostService postService;
-//    private final Profile profile;
+
     @PostMapping("/add")
-    public  ResponseEntity<?> saveStatus(@Valid @RequestBody StatusDTO statusDTO, BindingResult bindingResult){
-        if (bindingResult.hasErrors()) {
-            List<String> errors = bindingResult.getAllErrors()
-                    .stream()
-                    .map(ObjectError::getDefaultMessage)
-                    .collect(Collectors.toList());
-            ErrorResponse errorResponse = new ErrorResponse();
-            errorResponse.setErrors(errors);
-            errorResponse.setMessage("Invalid data submitted");
-            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-        }
-        return statusService.addNewStatus(statusDTO);
+    public  ResponseEntity<?> saveStatus( MultipartHttpServletRequest request){
+        String title = request.getParameter("title");
+        String content = request.getParameter("content");
+        // Lấy tệp MultipartFile từ tên trường "image"
+        MultipartFile file = request.getFile("image");
+        NewStatusRequest newStatusRequest = new NewStatusRequest();
+        newStatusRequest.setImage(file);
+        newStatusRequest.setContent(content);
+        newStatusRequest.setTitle(title);
+        return statusService.addNewStatus(newStatusRequest);
     }
-    @PostMapping("/update") // update post
-    public ResponseEntity<?> updateStatus(@Valid @RequestBody StatusDTO statusDTO, BindingResult bindingResult){
-        if (bindingResult.hasErrors()) {
-            List<String> errors = bindingResult.getAllErrors()
-                    .stream()
-                    .map(ObjectError::getDefaultMessage)
-                    .collect(Collectors.toList());
-            ErrorResponse errorResponse = new ErrorResponse();
-            errorResponse.setErrors(errors);
-            errorResponse.setMessage("Invalid data submitted");
-            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-        }
-        return statusService.updateStatus(statusDTO);
+    @PutMapping("/update") // update post
+    public ResponseEntity<?> updateStatus(MultipartHttpServletRequest request){
+        String title = request.getParameter("title");
+        String content = request.getParameter("content");
+        // Lấy tệp MultipartFile từ tên trường "image"
+        MultipartFile file = request.getFile("image");
+        String id = request.getParameter("id");
+        UpdateStatusRequest updateStatusRequest = new UpdateStatusRequest();
+        updateStatusRequest.setImage(file);
+        updateStatusRequest.setContent(content);
+        updateStatusRequest.setTitle(title);
+        updateStatusRequest.setId(Long.parseLong(id));
+        return statusService.updateStatus(updateStatusRequest);
     }
 
-    @DeleteMapping("/delete/{postId}")
-    public ResponseEntity deleteStatus(@PathVariable("postId") Long postId){
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteStatus(@PathVariable("id") Long postId){
     return statusService.deleteStatus(postId);
 }
 
@@ -70,7 +63,7 @@ public class StatusController {
         return statusService.getNewsFeed(pageIndex, pageSize);
     }
 
-    @GetMapping("/search/{id}")
+    @GetMapping("/info/{id}")
     public ResponseEntity<?> search(@PathVariable("id") Long id){
         return statusService.searchStatus(id);
     }

@@ -3,6 +3,7 @@ package com.example.datasocialnetwork.service.impl;
 import com.example.datasocialnetwork.common.Constants;
 import com.example.datasocialnetwork.config.UserAuthDetails;
 import com.example.datasocialnetwork.dto.request.CommentDTO;
+import com.example.datasocialnetwork.dto.request.CommentInfo;
 import com.example.datasocialnetwork.dto.request.CommentRequest;
 import com.example.datasocialnetwork.dto.response.CommentListResponse;
 import com.example.datasocialnetwork.dto.response.ResponseOk;
@@ -41,19 +42,14 @@ public class CommentServiceImpl implements CommentService {
     public ResponseEntity<?> searchCommentByStatusId(CommentRequest commentRequest) {
         Status status = statusRepository.findStatusById(commentRequest.getStatusId());
         if (status == null) {
-            CommentListResponse response = new CommentListResponse();
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage("Status does not exist");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Constants.STATUS_NOT_FOUND);
         }
         Page<Comment> pageComment = commentRepository.findCommentsByStatusId(
                 commentRequest.getStatusId(),
-                PageRequest.of(commentRequest.getPage() - 1, Constants.LIMIT)
+                PageRequest.of(commentRequest.getPageIndex() - 1, commentRequest.getPageSize())
         );
         CommentListResponse response =  convertPageToResponse(pageComment);
-        response.setPage(commentRequest.getPage());
-        response.setCode(Constants.CODE_OK);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
@@ -119,25 +115,25 @@ public class CommentServiceImpl implements CommentService {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    private static CommentDTO convertCommontToDTO(Comment comment) {
-        CommentDTO commentDTO = new CommentDTO();
-        commentDTO.setId(comment.getId());
-        commentDTO.setContent(comment.getCommentText());
-        commentDTO.setCreateDate(comment.getCreatedDate().toString());
-        commentDTO.setUserId(comment.getUser().getId());
-        commentDTO.setStatusId(comment.getStatus().getId());
-        commentDTO.setUserName(comment.getUser().getUserName());
-        commentDTO.setUserAvata(comment.getUser().getImage()); // Assuming this field exists in User entity
-        return commentDTO;
+    private static CommentInfo convertCommontToDTO(Comment comment) {
+        CommentInfo commentInfo = new CommentInfo();
+        commentInfo.setId(comment.getId());
+        commentInfo.setContent(comment.getCommentText());
+        commentInfo.setCreateDate(comment.getCreatedDate().toString());
+        commentInfo.setUserId(comment.getUser().getId());
+        commentInfo.setStatusId(comment.getStatus().getId());
+        commentInfo.setUserName(comment.getUser().getUserName());
+        commentInfo.setUserAvata(comment.getUser().getImage()); // Assuming this field exists in User entity
+        return commentInfo;
     }
 
     private static CommentListResponse convertPageToResponse(Page<Comment> commentPage) {
         CommentListResponse response = new CommentListResponse();
         response.setTotalPage(commentPage.getTotalPages());
-        List<CommentDTO> commentDTOList = new ArrayList<>();
+        List<CommentInfo> commentDTOList = new ArrayList<>();
         for (Comment comment : commentPage.getContent()) {
-            CommentDTO commentDTO = convertCommontToDTO(comment);
-            commentDTOList.add(commentDTO);
+            CommentInfo commentInfo = convertCommontToDTO(comment);
+            commentDTOList.add(commentInfo);
         }
         response.setListComment(commentDTOList);
         return response;

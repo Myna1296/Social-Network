@@ -1,10 +1,9 @@
 package com.example.websocialnetwork.controller;
 
-import com.example.websocialnetwork.common.Const;
 import com.example.websocialnetwork.dto.*;
 import com.example.websocialnetwork.dto.reponse.*;
 import com.example.websocialnetwork.dto.request.NewStatusRequest;
-import com.example.websocialnetwork.dto.request.StatusInfo;
+import com.example.websocialnetwork.dto.request.UpdateStatusRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -13,6 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
@@ -23,19 +24,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 import static com.example.websocialnetwork.common.Const.*;
 import static com.example.websocialnetwork.common.Const.VIEW_ERR;
 import static com.example.websocialnetwork.util.ServerUtils.*;
-import static com.example.websocialnetwork.util.ServerUtils.getProfileImagesPath;
 
 @Controller
 @RequestMapping("/user/status")
@@ -167,24 +160,27 @@ public class StatusController {
         headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
         try {
-            ResponseEntity<ResponseOk> responseEntity = restTemplate.exchange(
+            restTemplate.exchange(
                     path + API_DELETE_STATUS,
                     HttpMethod.DELETE,
                     requestEntity,
-                    ResponseOk.class,
+                    String.class,
                     id
             );
-            ResponseOk responseOk = responseEntity.getBody();
-            if (responseOk.getCode() == 1) {
-                model.addAttribute("message", responseOk.getMessage());
-                return VIEW_ERR;
-            }
             UserInfo user = getUserFromSession(request);
             String path = "redirect:/user/status/" + user.getId();
             return path;
 
-        } catch (Exception ex) {
-            model.addAttribute("message", ex);
+        }catch (HttpClientErrorException ex) {
+            HttpStatus statusCode = ex.getStatusCode();
+            if( statusCode == HttpStatus.BAD_REQUEST || statusCode == HttpStatus.NOT_FOUND) {
+                model.addAttribute("message", ex.getResponseBodyAsString());
+                return VIEW_ERR;
+            }
+            model.addAttribute("message", ex.getResponseBodyAsString());
+            return VIEW_ERR;
+        } catch (Exception e) {
+            model.addAttribute("message", e);
             return VIEW_ERR;
         }
     }
@@ -206,44 +202,46 @@ public class StatusController {
         headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
         try {
-            ResponseEntity<StatusInfoResponse> responseEntity = restTemplate.exchange(
+            ResponseEntity<String> responseEntity = restTemplate.exchange(
                     path + API_SEARCH_STATUS,
                     HttpMethod.GET,
                     requestEntity,
-                    StatusInfoResponse.class,
+                    String.class,
                     id
             );
-            StatusInfoResponse response = responseEntity.getBody();
-            if (response.getCode() == 1) {
-                model.addAttribute("message", response.getMessage());
-                return VIEW_ERR;
-            }
-            StatusDTO statusDTO = response.getStatus();
-            model.addAttribute("status", statusDTO);
-            model.addAttribute("isLike", response.isLike());
+            ObjectMapper objectMapper = new ObjectMapper();
+            StatusInfoResponse statusInfoResponse = objectMapper.readValue((String) responseEntity.getBody(), StatusInfoResponse.class);
+            model.addAttribute("status", statusInfoResponse.getStatus());
+            model.addAttribute("isLike", statusInfoResponse.isLike());
             CommentRequest commentRequest = new CommentRequest();
             commentRequest.setStatusId(id);
-            commentRequest.setPage(page);
+            commentRequest.setPageIndex(page);
+            commentRequest.setPageSize(PAGE_SIZE);
 
             HttpEntity<CommentRequest> requestCommentEntity = new HttpEntity<>(commentRequest,headers);
-            ResponseEntity<CommentListResponse> responseCommentEntity = restTemplate.exchange(
+            ResponseEntity<?> responseCommentEntity = restTemplate.exchange(
                     path + API_SEARCH_COMMENT,
                     HttpMethod.POST,
                     requestCommentEntity,
-                    CommentListResponse.class
+                    String.class
             );
-            CommentListResponse commentListResponse = responseCommentEntity.getBody();
-            if (commentListResponse.getCode() == 1) {
-                model.addAttribute("message", commentListResponse.getMessage());
-                return VIEW_ERR;
-            }
+            CommentListResponse commentListResponse =  objectMapper.readValue((String) responseCommentEntity.getBody(), CommentListResponse.class);
+
             model.addAttribute("listComment", commentListResponse.getListComment());
             model.addAttribute("totalPage", commentListResponse.getTotalPage());
-            model.addAttribute("page", commentListResponse.getPage());
+            model.addAttribute("page", page);
             model.addAttribute("idUser", Long.parseLong(user.getId()));
             return "status-info";
-        } catch (Exception ex) {
-            model.addAttribute("message", ex);
+        } catch (HttpClientErrorException ex) {
+            HttpStatus statusCode = ex.getStatusCode();
+            if( statusCode == HttpStatus.BAD_REQUEST || statusCode == HttpStatus.NOT_FOUND) {
+                model.addAttribute("message", ex.getResponseBodyAsString());
+                return VIEW_ERR;
+            }
+            model.addAttribute("message", ex.getResponseBodyAsString());
+            return VIEW_ERR;
+        } catch (Exception e) {
+            model.addAttribute("message", e);
             return VIEW_ERR;
         }
     }
@@ -269,24 +267,28 @@ public class StatusController {
         headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
         try {
-            ResponseEntity<StatusInfoResponse> responseEntity = restTemplate.exchange(
+            ResponseEntity<?> responseEntity = restTemplate.exchange(
                     path + API_SEARCH_STATUS,
                     HttpMethod.GET,
                     requestEntity,
-                    StatusInfoResponse.class,
+                    String.class,
                     id
             );
-            StatusInfoResponse response = responseEntity.getBody();
-            if (response.getCode() == 1) {
-                model.addAttribute("message", response.getMessage());
-                return VIEW_ERR;
-            }
-            StatusDTO statusDTO = response.getStatus();
-            model.addAttribute("status", statusDTO);
+            ObjectMapper objectMapper = new ObjectMapper();
+            StatusInfoResponse statusInfoResponse = objectMapper.readValue((String) responseEntity.getBody(), StatusInfoResponse.class);
+            model.addAttribute("status", statusInfoResponse.getStatus());
             model.addAttribute("isEdit", "true");
             return "status-edit";
-        } catch (Exception ex) {
-            model.addAttribute("message", ex);
+        }catch (HttpClientErrorException ex) {
+            HttpStatus statusCode = ex.getStatusCode();
+            if( statusCode == HttpStatus.BAD_REQUEST || statusCode == HttpStatus.NOT_FOUND) {
+                model.addAttribute("message", ex.getResponseBodyAsString());
+                return VIEW_ERR;
+            }
+            model.addAttribute("message", ex.getResponseBodyAsString());
+            return VIEW_ERR;
+        } catch (Exception e) {
+            model.addAttribute("message", e);
             return VIEW_ERR;
         }
     }
@@ -296,60 +298,57 @@ public class StatusController {
     public String addNewStatus(@RequestParam("imageStatus") MultipartFile imageFile,
                                @Valid @ModelAttribute("status") StatusDTO statusDTO,
                                BindingResult bindingResult, Model model,
-                               HttpServletRequest request) throws IOException {
+                               HttpServletRequest request)  {
         if (request.getSession().getAttribute("user") == null) {
             return "redirect:/";
         }
         if (bindingResult.hasErrors()) {
             return "status-edit";
         }
+        MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
 
-        String contentType = imageFile.getContentType();
-        if(!allowedExtensions.contains(contentType)) {
-            model.addAttribute("error","File extension is not supported");
-            return "status-edit";
+        if(!imageFile.getOriginalFilename().isEmpty()) {
+            String contentType = imageFile.getContentType();
+            // Thêm tệp vào MultiValueMap
+            formData.add("image", imageFile.getResource());
+            if (!allowedExtensions.contains(contentType)) {
+                model.addAttribute("error", "File extension is not supported");
+                return "status-edit";
+            }
+        } else {
+            formData.add("image",null);
         }
 
-        NewStatusRequest status = new NewStatusRequest();
-        status.setTitle(statusDTO.getTitle());
-        status.setContent(statusDTO.getContent());
-        status.setImage(imageFile);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
-        HttpEntity<NewStatusRequest> requestEntity = new HttpEntity<>(status, headers);
+
+        formData.add("title", statusDTO.getTitle());
+        formData.add("content", statusDTO.getContent());
+
+        // Tạo đối tượng HttpEntity chứa dữ liệu và tiêu đề
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(formData, headers);
         try {
             //call API
-            ResponseEntity<?> response = restTemplate.exchange(
+            restTemplate.exchange(
                     path + API_ADD_STATUS,
                     HttpMethod.POST,
                     requestEntity,
                     String.class
             );
-            ResponseOk responseBody = response.getBody();
-            if ( responseBody == null){
-                Files.delete(pathImages.resolve(newFileName));
-                return VIEW_ERROR;
-            }else if (responseBody.getCode() == 1) {
-                Files.delete(pathImages.resolve(newFileName));
-                model.addAttribute("error", responseBody.getMessage());
-                model.addAttribute("status", statusDTO);
-                return "status-edit";
-            }
+            UserInfo user = getUserFromSession(request);
             String path = "redirect:/user/status/" + user.getId();
             return path;
-        }catch (HttpClientErrorException e) {
-            if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
-                Files.delete(pathImages.resolve(newFileName));
-                model.addAttribute("error", "Invalid data submitted");
-                model.addAttribute("status", statusDTO);
-                return "status-edit";
-            } else {
-                model.addAttribute("message", e);
+        } catch (HttpClientErrorException ex) {
+            HttpStatus statusCode = ex.getStatusCode();
+            if( statusCode == HttpStatus.BAD_REQUEST || statusCode == HttpStatus.NOT_FOUND) {
+                model.addAttribute("message", ex.getResponseBodyAsString());
                 return VIEW_ERR;
             }
-        }catch (Exception e) {
+            model.addAttribute("message", ex.getResponseBodyAsString());
+            return VIEW_ERR;
+        } catch (Exception e) {
             model.addAttribute("message", e);
             return VIEW_ERR;
         }
@@ -366,64 +365,50 @@ public class StatusController {
         if (bindingResult.hasErrors()) {
             return "status-edit";
         }
-        String contentType = imageFile.getContentType();
-        if(!allowedExtensions.contains(contentType)) {
-            statusDTO.setStatusImage(imageFile.getOriginalFilename());
-            model.addAttribute("status", statusDTO);
-            model.addAttribute("error","File extension is not supported");
-            return "status-edit";
+        MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
+        if(!imageFile.getOriginalFilename().isEmpty()) {
+            String contentType = imageFile.getContentType();
+            // Thêm tệp vào MultiValueMap
+            formData.add("image", imageFile.getResource());
+            if (!allowedExtensions.contains(contentType)) {
+                model.addAttribute("error", "File extension is not supported");
+                return "status-edit";
+            }
+        } else {
+            formData.add("image",null);
         }
-        UserInfo user = getUserFromSession(request);
-        byte[] bytes = imageFile.getBytes();
-        Path pathImages = getProfileImagesPath();
-        String newFileName = getNewFileName("status-" +
-                user.getUserName()+ "-" +
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")), imageFile);
-        Files.write(pathImages.resolve(newFileName), bytes);
-        StatusDTO status = new StatusDTO();
-        status.setTitle(statusDTO.getTitle());
-        status.setContent(statusDTO.getContent());
-        status.setStatusImage(newFileName);
-        status.setUserId(Long.parseLong(user.getId()));
-        status.setId(statusDTO.getId());
+
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
-        HttpEntity<StatusDTO> requestEntity = new HttpEntity<>(status, headers);
+
+        formData.add("title", statusDTO.getTitle());
+        formData.add("content", statusDTO.getContent());
+        formData.add("id", statusDTO.getId());
+
+        // Tạo đối tượng HttpEntity chứa dữ liệu và tiêu đề
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(formData, headers);
         try {
             //call API
-            ResponseEntity<ResponseOk> response = restTemplate.exchange(
+            restTemplate.exchange(
                     path + API_UPDATE_STATUS,
-                    HttpMethod.POST,
+                    HttpMethod.PUT,
                     requestEntity,
-                    ResponseOk.class
+                    String.class
             );
-            ResponseOk responseBody = response.getBody();
-            if ( responseBody == null){
-                Files.delete(pathImages.resolve(newFileName));
-                return VIEW_ERROR;
-            }else if (responseBody.getCode() == 1) {
-                Files.delete(pathImages.resolve(newFileName));
-                model.addAttribute("error", responseBody.getMessage());
-                statusDTO.setStatusImage(imageFile.getOriginalFilename());
-                model.addAttribute("status", statusDTO);
-                return "status-edit";
-            }
+            UserInfo user = getUserFromSession(request);
             String path = "redirect:/user/status/" + user.getId();
             return path;
-        }catch (HttpClientErrorException e) {
-            if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
-                Files.delete(pathImages.resolve(newFileName));
-                model.addAttribute("error", "Invalid data submitted");
-                statusDTO.setStatusImage(imageFile.getOriginalFilename());
-                model.addAttribute("status", statusDTO);
-                return "status-edit";
-            } else {
-                model.addAttribute("message", e);
+        } catch (HttpClientErrorException ex) {
+            HttpStatus statusCode = ex.getStatusCode();
+            if( statusCode == HttpStatus.BAD_REQUEST || statusCode == HttpStatus.NOT_FOUND) {
+                model.addAttribute("message", ex.getResponseBodyAsString());
                 return VIEW_ERR;
             }
-        }catch (Exception e) {
+            model.addAttribute("message", ex.getResponseBodyAsString());
+            return VIEW_ERR;
+        } catch (Exception e) {
             model.addAttribute("message", e);
             return VIEW_ERR;
         }

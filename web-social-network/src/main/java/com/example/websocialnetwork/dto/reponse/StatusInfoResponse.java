@@ -1,6 +1,6 @@
 package com.example.websocialnetwork.dto.reponse;
 
-import com.example.websocialnetwork.dto.StatusDTO;
+import com.example.websocialnetwork.dto.request.StatusInfo;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,9 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class StatusInfoResponse {
-    private StatusDTO status;
+    private StatusInfo status;
     private boolean isLike;
-    private int code;
-    private String message;
 
 }

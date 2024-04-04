@@ -30,26 +30,16 @@ public class LikeServicesImpl implements LikeService {
 
     @Override
     public ResponseEntity<?> addLike(Long id) {
-        ResponseOk response = new ResponseOk();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        User user = userRepository.findOneByUserName(userDetails.getUsername());
-        if (user == null) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage(Constants.MESS_013);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }
+        User user = userRepository.findOneById(Long.parseLong(userDetails.getUserID()));
         Status status = statusRepository.findStatusById(id);
         if (status == null) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage("Status does not exist");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.STATUS_NOT_FOUND);
         }
-        LikeStatus like = likeRepository.findLikesByStatusIdAndUserId(id,user.getId());
+        LikeStatus like = likeRepository.findLikesByStatusIdAndUserId(id,Long.parseLong(userDetails.getUserID()));
         if (like != null) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage("I've already liked this post, but I can't like it again.");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.LIKE_ERR);
         }
         LikeStatus likeStatus = new LikeStatus();
         likeStatus.setStatus(status);
@@ -57,9 +47,7 @@ public class LikeServicesImpl implements LikeService {
         likeStatus.setCreatedDate(LocalDateTime.now());
 
         likeRepository.save(likeStatus);
-        response.setCode(Constants.CODE_OK);
-        response.setMessage("");
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK).body(Constants.LIKE_SUCCESS);
     }
 
     @Override
@@ -67,28 +55,17 @@ public class LikeServicesImpl implements LikeService {
         ResponseOk response = new ResponseOk();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        User user = userRepository.findOneByUserName(userDetails.getUsername());
-        if (user == null) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage(Constants.MESS_013);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }
+        User user = userRepository.findOneById(Long.parseLong(userDetails.getUserID()));
         Status status = statusRepository.findStatusById(id);
         if (status == null) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage("Status does not exist");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.STATUS_NOT_FOUND);
         }
         LikeStatus like = likeRepository.findLikesByStatusIdAndUserId(id,user.getId());
         if (like == null) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage("Haven't liked the post yet, can't unlike it");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.UNLIKE_ERR);
         }
         likeRepository.delete(like);
-        response.setCode(Constants.CODE_OK);
-        response.setMessage("");
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK).body(Constants.UNLIKE_SUCCESS);
     }
 }
 

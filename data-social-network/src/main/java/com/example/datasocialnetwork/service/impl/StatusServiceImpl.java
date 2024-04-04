@@ -1,11 +1,10 @@
 package com.example.datasocialnetwork.service.impl;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.example.datasocialnetwork.common.Constants;
 import com.example.datasocialnetwork.config.UserAuthDetails;
-import com.example.datasocialnetwork.dto.request.StatusDTO;
-import com.example.datasocialnetwork.dto.request.StatusInfo;
-import com.example.datasocialnetwork.dto.request.StatusRequest;
-import com.example.datasocialnetwork.dto.response.ResponseOk;
+import com.example.datasocialnetwork.dto.request.*;
 import com.example.datasocialnetwork.dto.response.StatusAllResponse;
 import com.example.datasocialnetwork.dto.response.StatusInfoResponse;
 import com.example.datasocialnetwork.entity.Status;
@@ -24,10 +23,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class StatusServiceImpl implements StatusService {
@@ -42,6 +44,9 @@ public class StatusServiceImpl implements StatusService {
 
     @Autowired
     private CommentRepository commentRepository;
+
+    @Autowired
+    private Cloudinary cloudinary;
 
     @Override
     public ResponseEntity<?> getNewsFeed (int pageIndex,int pageSize) {
@@ -74,135 +79,103 @@ public class StatusServiceImpl implements StatusService {
     @Override
     @Transactional
     public ResponseEntity<?> deleteStatus(Long id) {
-        ResponseOk response = new ResponseOk();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        User user = userRepository.findOneByUserName(userDetails.getUsername());
-        if (user == null) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage(Constants.MESS_010);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }
         Status status = statusRepository.findStatusById(id);
         if (status == null) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage("Status does not exist");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.STATUS_NOT_FOUND);
         }
-        if( status.getUser().getId() != user.getId()){
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage("Cannot delete other people's status");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+        if (status.getUser().getId() != Long.parseLong(userDetails.getUserID())){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Constants.STATUS_DELETE_FORBIDDEN);
         }
         likeRepository.deleteLikeStatusByStatusId(id);
         commentRepository.deleteCommentByStatusId(id);
         statusRepository.delete(status);
-        response.setCode(Constants.CODE_OK);
-        response.setMessage("");
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK).body(Constants.STATUS_DELETE_SUCCESS);
     }
 
     @Override
-    public ResponseEntity<?> addNewStatus(StatusDTO statusDTO) {
-        ResponseOk response = new ResponseOk();
+    public ResponseEntity<?> addNewStatus(NewStatusRequest newStatusRequest) {
+        List<String> listErr = validateStatus(newStatusRequest.getTitle(), newStatusRequest.getContent());
+        if (!listErr.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(listErr);
+        }
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        User user = userRepository.findOneByUserName(userDetails.getUsername());
+        User user = userRepository.findOneById(Long.parseLong(userDetails.getUserID()));
         if (user == null) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage(Constants.MESS_010);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.USER_NOT_FOUND);
         }
-        User userAddStatus = userRepository.findOneById(statusDTO.getUserId());
-        if (userAddStatus == null) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage(Constants.MESS_010);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+        try {
+            Status status = new Status();
+            if( newStatusRequest.getImage() != null) {
+                MultipartFile fileImage =  newStatusRequest.getImage();
+                if (!isImageFile(fileImage.getContentType())) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.FILE_IS_NOT_FORMAT);
+                }
+                Map data = this.cloudinary.uploader().upload(fileImage.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
+                String url = (String) data.get("secure_url");
+                status.setStatusImage(url);
+            }
+            status.setTitle(newStatusRequest.getTitle());
+            status.setStatusText(newStatusRequest.getContent());
+            status.setCreatedDate(LocalDateTime.now());
+            status.setUser(user);
+            statusRepository.save(status);
+            return ResponseEntity.status(HttpStatus.OK).body(Constants.ADD_NEW_STATUS_SUCCESS);
+        }catch (Exception ex){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
         }
-        if (user.getId() != statusDTO.getUserId()) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage("Authentication information does not match");
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }
-        Status status = new Status();
-        status.setTitle(statusDTO.getTitle());
-        status.setStatusText(statusDTO.getContent());
-        status.setCreatedDate(LocalDateTime.now());
-        status.setStatusImage(statusDTO.getStatusImage());
-        status.setUser(userAddStatus);
-        statusRepository.save(status);
-        response.setCode(Constants.CODE_OK);
-        response.setMessage("");
-        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<?> updateStatus(StatusDTO statusDTO) {
-        ResponseOk response = new ResponseOk();
+    public ResponseEntity<?> updateStatus(UpdateStatusRequest updateStatusRequest) {
+        List<String> listErr = validateStatus(updateStatusRequest.getTitle(), updateStatusRequest.getContent());
+        if (!listErr.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(listErr);
+        }
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        User user = userRepository.findOneByUserName(userDetails.getUsername());
-        if (user == null) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage(Constants.MESS_010);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }
-        User userAddStatus = userRepository.findOneById(statusDTO.getUserId());
-        if (userAddStatus == null) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage(Constants.MESS_010);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }
-        if (user.getId() != statusDTO.getUserId()) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage("Authentication information does not match");
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }
-        Status status = statusRepository.findStatusById(statusDTO.getId());
+        Status status = statusRepository.findStatusById(updateStatusRequest.getId());
         if (status == null) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage("Status does not exist");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.STATUS_NOT_FOUND);
         }
-        if (status.getUser().getId() != user.getId()){
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage("Cannot update other people's status");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+        if (status.getUser().getId() != Long.parseLong(userDetails.getUserID())){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Constants.STATUS_UPDATE_FORBIDDEN);
         }
-        status.setTitle(statusDTO.getTitle());
-        status.setStatusText(statusDTO.getContent());
-        status.setCreatedDate(LocalDateTime.now());
-        status.setStatusImage(statusDTO.getStatusImage());
-        statusRepository.save(status);
-        response.setCode(Constants.CODE_OK);
-        response.setMessage("");
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        try {
+            if (updateStatusRequest.getImage() != null){
+                if (!isImageFile(updateStatusRequest.getImage().getContentType())) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.FILE_IS_NOT_FORMAT);
+                }
+            Map data = this.cloudinary.uploader().upload(updateStatusRequest.getImage().getBytes(), ObjectUtils.asMap("resource_type", "auto"));
+            String url = (String) data.get("secure_url");
+            status.setStatusImage(url);
+            }
+            status.setTitle(updateStatusRequest.getTitle());
+            status.setStatusText(updateStatusRequest.getContent());
+            status.setCreatedDate(LocalDateTime.now());
+            statusRepository.save(status);
+            return ResponseEntity.status(HttpStatus.OK).body(Constants.STATUS_UPDATE_SUCCESS);
+        }catch (Exception ex){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        }
     }
 
     @Override
     public ResponseEntity<?> searchStatus(Long id) {
-        StatusInfoResponse response = new StatusInfoResponse();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        User user = userRepository.findOneByUserName(userDetails.getUsername());
-        if (user == null) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage(Constants.MESS_010);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }
         Status status = statusRepository.findStatusById(id);
         if(status == null){
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage("Status does not exist");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.STATUS_NOT_FOUND);
         }
-        long count = likeRepository.countByStatusIdAndUserId(id, user.getId());
-       // StatusDTO statusDTO = convertStatusToDTO(status);
-        response.setCode(Constants.CODE_OK);
-        response.setMessage("");
+        long count = likeRepository.countByStatusIdAndUserId(id, Long.parseLong(userDetails.getUserID()));
+        StatusInfoResponse statusInfoResponse = new StatusInfoResponse();
+        statusInfoResponse.setStatus(convertStatusToDTO(status));
         //response.setStatus(statusDTO);
-        response.setLike( count!= 0);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        statusInfoResponse.setLike( count!= 0);
+        return ResponseEntity.status(HttpStatus.OK).body(statusInfoResponse);
     }
 
     private static StatusInfo convertStatusToDTO(Status status) {
@@ -231,4 +204,38 @@ public class StatusServiceImpl implements StatusService {
         response.setListStatus(statusDTOList);
         return response;
     }
+
+    private static boolean isImageFile(String contentType) throws IOException {;
+        return contentType != null &&
+                (contentType.equals("image/jpeg") || contentType.equals("image/png"));
+    }
+    private List<String> validateStatus(String title, String content){
+        List<String> listErr = new ArrayList<>();
+        if(title == null){
+            listErr.add("Title cannot be null");
+        }
+        if(title.isEmpty()){
+            listErr.add("Title cannot be empty");
+        }
+        if(title.trim().isEmpty()){
+            listErr.add("Title cannot be blank");
+        }
+        if(title.length() > 50){
+            listErr.add("Title must be between 1 and 50 words in length");
+        }
+        if(content == null){
+            listErr.add("Content cannot be null");
+        }
+        if(content.isEmpty()){
+            listErr.add("Content cannot be empty");
+        }
+        if(content.trim().isEmpty()){
+            listErr.add("Content cannot be blank");
+        }
+        if(content.length() > 5000){
+            listErr.add("Content must be between 1 and 5000 words in length");
+        }
+        return listErr;
+    }
+
 }

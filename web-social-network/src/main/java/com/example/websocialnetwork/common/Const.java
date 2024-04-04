@@ -27,11 +27,11 @@ public class Const {
     public static final String API_ACCEPTE_FRIENDSHIP = "/api/friends/accepte";
     public static final String API_GET_ALL_STATUS_USER = "/api/status";
     public static final String API_NEWS_FEED = "/api/status/newsfeed?pageIndex={index}&pageSize={size}";
-    public static final String API_DELETE_STATUS = "/api/status/delete/{postId}";
+    public static final String API_DELETE_STATUS = "/api/status/delete/{id}";
     public static final String API_ADD_STATUS = "/api/status/add";
-    public static final String API_SEARCH_STATUS = "/api/status/search/{id}";
+    public static final String API_SEARCH_STATUS = "/api/status/info/{id}";
     public static final String API_UPDATE_STATUS = "/api/status/update";
-    public static final String API_SEARCH_COMMENT = "/api/comment/search";
+    public static final String API_SEARCH_COMMENT = "/api/comment";
     public static final String API_ADD_COMMENT = "/api/comment/add";
     public static final String API_DELETE_COMMENT = "/api/comment/delete/{id}";
     public static final String API_EXPORT_FILE = "/api/export-file";

@@ -1,8 +1,6 @@
 package com.example.websocialnetwork.controller;
 
 import com.example.websocialnetwork.dto.CommentDTO;
-import com.example.websocialnetwork.dto.reponse.ResponseOk;
-import com.example.websocialnetwork.dto.reponse.UserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +14,6 @@ import org.springframework.web.client.RestTemplate;
 import javax.servlet.http.HttpServletRequest;
 
 import static com.example.websocialnetwork.common.Const.*;
-import static com.example.websocialnetwork.util.ServerUtils.getUserFromSession;
 
 @Controller
 @RequestMapping("/user/like")
@@ -37,23 +34,24 @@ public class LikeController {
             headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
             HttpEntity<CommentDTO> requestEntity = new HttpEntity<>( headers);
             //call API
-            ResponseEntity<ResponseOk> response = restTemplate.exchange(
+            restTemplate.exchange(
                     path + API_ADD_LIKE,
                     HttpMethod.POST,
                     requestEntity,
-                    ResponseOk.class,
+                    String.class,
                     id
             );
-            ResponseOk responseBody = response.getBody();
-            if ( responseBody == null){
-                return VIEW_ERROR;
-            }else if (responseBody.getCode() == 1) {
-                model.addAttribute("message", responseBody.getMessage());
-                return VIEW_ERR;
-            }
             String path =  "redirect:/user/status/info/" + id;
             return path;
-        }catch (Exception e) {
+        }catch (HttpClientErrorException ex) {
+            HttpStatus statusCode = ex.getStatusCode();
+            if( statusCode == HttpStatus.BAD_REQUEST || statusCode == HttpStatus.NOT_FOUND) {
+                model.addAttribute("message", ex.getResponseBodyAsString());
+                return VIEW_ERR;
+            }
+            model.addAttribute("message", ex.getResponseBodyAsString());
+            return VIEW_ERR;
+        } catch (Exception e) {
             model.addAttribute("message", e);
             return VIEW_ERR;
         }
@@ -71,23 +69,26 @@ public class LikeController {
         headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
         try {
-            ResponseEntity<ResponseOk> responseEntity = restTemplate.exchange(
+            restTemplate.exchange(
                     path + API_DELETE_LIKE,
                     HttpMethod.DELETE,
                     requestEntity,
-                    ResponseOk.class,
+                    String.class,
                     id
             );
-            ResponseOk responseOk = responseEntity.getBody();
-            if (responseOk.getCode() == 1) {
-                model.addAttribute("message", responseOk.getMessage());
-                return VIEW_ERR;
-            }
             String path =  "redirect:/user/status/info/" + id;
             return path;
 
-        } catch (Exception ex) {
-            model.addAttribute("message", ex);
+        } catch (HttpClientErrorException ex) {
+            HttpStatus statusCode = ex.getStatusCode();
+            if( statusCode == HttpStatus.BAD_REQUEST || statusCode == HttpStatus.NOT_FOUND) {
+                model.addAttribute("message", ex.getResponseBodyAsString());
+                return VIEW_ERR;
+            }
+            model.addAttribute("message", ex.getResponseBodyAsString());
+            return VIEW_ERR;
+        } catch (Exception e) {
+            model.addAttribute("message", e);
             return VIEW_ERR;
         }
     }
