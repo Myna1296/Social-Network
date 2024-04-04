@@ -10,8 +10,6 @@ import java.util.List;
 @Getter
 @Data
 public class FriendResponse {
-    private int code;
-    private String message;
     private List<UserInfo> friendData;
     private long total;
 }

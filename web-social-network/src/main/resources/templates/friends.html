@@ -21,7 +21,7 @@
                         <td>
                             <a th:href="@{'/user/profile/' + ${user.id}}">
                                 <img th:if="${user.avata != null}" class="img-circle img-thumbnail img-message"
-                                     th:src="@{'/' + ${user.avata}}" alt="User's image">
+                                     th:src="${user.avata}" alt="User's image">
                                 <img th:unless="${user.avata != null}" class="img-circle img-thumbnail img-message"
                                      th:src="@{/images/noname.svg}" alt="User's image">
                             </a>
@@ -63,7 +63,7 @@
                         <td>
                             <a th:href="@{'/user/profile/' + ${user.id}}">
                                 <img th:if="${user.avata != null}" class="img-circle img-thumbnail img-message"
-                                     th:src="@{'/' + ${user.avata}}" alt="User's image">
+                                     th:src="${user.avata}" alt="User's image">
                                 <img th:unless="${user.avata != null}" class="img-circle img-thumbnail img-message"
                                      th:src="@{/images/noname.svg}" alt="User's image">
                             </a>
@@ -106,7 +106,7 @@
                     <td>
                         <a th:href="@{'/user/profile/' + ${user.id}}">
                             <img th:if="${user.avata != null}" class="img-circle img-thumbnail img-message"
-                                 th:src="@{'/' + ${user.avata}}" alt="User's image">
+                                 th:src="${user.avata}" alt="User's image">
                             <img th:unless="${user.avata != null}" class="img-circle img-thumbnail img-message"
                                  th:src="@{/images/noname.svg}" alt="User's image">
                         </a>

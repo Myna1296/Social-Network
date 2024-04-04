@@ -1,11 +1,8 @@
 package com.example.datasocialnetwork.controller;
 
 import com.example.datasocialnetwork.dto.request.PasswordChangeDTO;
-import com.example.datasocialnetwork.dto.request.SearchUserRequestDTO;
+import com.example.datasocialnetwork.dto.request.SearchRequest;
 import com.example.datasocialnetwork.dto.request.UserInfo;
-import com.example.datasocialnetwork.dto.response.ResponseOk;
-import com.example.datasocialnetwork.dto.response.SearchResponse;
-import com.example.datasocialnetwork.dto.response.UserInfoResponse;
 import com.example.datasocialnetwork.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -41,28 +39,28 @@ public class UserControllerTest {
     }
 
 
-//    @Test
-//    public void testGetProfileUserInfoById() {
-//        UserInfoResponse expectedResponse = new UserInfoResponse();
-//        when(userService.findById(1L)).thenReturn(new UserInfoResponse());
-//        UserInfoResponse actualResponse = userController.getProfileUserInfoById(1L);
-//        assertEquals(expectedResponse, actualResponse);
-//        verify(userService, times(1)).findById(1L);
-//    }
-//
-//    @Test
-//    public void testUpdateImage() {
-//        ResponseEntity<ResponseOk> expectedResponse = new ResponseEntity<>(new ResponseOk(), HttpStatus.OK);
-//        when(userService.updateImageUser(new UserInfo())).thenAnswer(invocation -> ResponseEntity.ok(new ResponseOk()));
-//        ResponseEntity<?> actualResponse = userController.updateImage(new UserInfo());
-//        assertEquals(expectedResponse, actualResponse);
-//        verify(userService, times(1)).updateImageUser(new UserInfo());
-//    }
+    @Test
+    public void testGetProfileUserInfoById() {
+        ResponseEntity<?> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(userService.findById(1L)).thenReturn(new ResponseEntity<>(HttpStatus.OK));
+        ResponseEntity<?> actualResponse = userController.getProfileUserInfoById(1L);
+        assertEquals(expectedResponse, actualResponse);
+        verify(userService, times(1)).findById(1L);
+    }
+
+    @Test
+    public void testUpdateImage() {
+        ResponseEntity<?> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(userService.updateImageUser(any())).thenAnswer(invocation -> new ResponseEntity<>(HttpStatus.OK));
+        ResponseEntity<?> actualResponse = userController.updateImage(any());
+        assertEquals(expectedResponse, actualResponse);
+        verify(userService, times(1)).updateImageUser(any());
+    }
 
     @Test
     public void testUpdateInfo() {
-        ResponseEntity<ResponseOk> expectedResponse = new ResponseEntity<>(new ResponseOk(), HttpStatus.OK);
-        when(userService.updateProfileUser(new UserInfo())).thenAnswer(invocation -> ResponseEntity.ok(new ResponseOk()));
+        ResponseEntity<?> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(userService.updateProfileUser(new UserInfo())).thenAnswer(invocation -> new ResponseEntity<>(HttpStatus.OK));
         ResponseEntity<?> actualResponse = userController.updateInfo(new UserInfo());
         assertEquals(expectedResponse, actualResponse);
         verify(userService, times(1)).updateProfileUser(new UserInfo());
@@ -86,20 +84,20 @@ public class UserControllerTest {
         passwordChangeDTO.setPassword("1234455");
         passwordChangeDTO.setOldPassword("12335555");
         when(bindingResult.hasErrors()).thenReturn(false);
-        ResponseEntity<ResponseOk> expectedResponse = new ResponseEntity<>(new ResponseOk(), HttpStatus.OK);
+        ResponseEntity<?> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
 
-        when(userService.updatePassword(passwordChangeDTO)).thenAnswer(invocation -> ResponseEntity.ok(new ResponseOk()));
+        when(userService.updatePassword(passwordChangeDTO)).thenAnswer(invocation -> new ResponseEntity<>(HttpStatus.OK));
         ResponseEntity<?> actualResponse = userController.updatePassword(passwordChangeDTO, bindingResult);
         assertEquals(expectedResponse, actualResponse);
         verify(userService, times(1)).updatePassword(passwordChangeDTO);
     }
 
-//    @Test
-//    public void testSearchUserByUsername() {
-//        ResponseEntity<SearchResponse> expectedResponse = new ResponseEntity<>(new SearchResponse(), HttpStatus.OK);
-//        when(userService.searchUserByUserName(new SearchUserRequestDTO())).thenAnswer(invocation -> ResponseEntity.ok(new SearchResponse()));
-//        ResponseEntity<SearchResponse> actualResponse = userController.searchUserByUsername(new SearchUserRequestDTO());
-//        assertEquals(expectedResponse, actualResponse);
-//        verify(userService, times(1)).searchUserByUserName(new SearchUserRequestDTO());
-//    }
+    @Test
+    public void testSearchUserByUsername() {
+        ResponseEntity<?> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(userService.searchUserByUserName(new SearchRequest())).thenAnswer(invocation -> new ResponseEntity<>(HttpStatus.OK));
+        ResponseEntity<?> actualResponse = userController.searchUserByUsername(new SearchRequest());
+        assertEquals(expectedResponse, actualResponse);
+        verify(userService, times(1)).searchUserByUserName(new SearchRequest());
+    }
 }

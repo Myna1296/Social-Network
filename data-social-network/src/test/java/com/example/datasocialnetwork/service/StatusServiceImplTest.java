@@ -2,9 +2,7 @@
 //
 //import com.example.datasocialnetwork.common.Constants;
 //import com.example.datasocialnetwork.config.UserAuthDetails;
-//import com.example.datasocialnetwork.dto.request.StatusDTO;
 //import com.example.datasocialnetwork.dto.request.StatusRequest;
-//import com.example.datasocialnetwork.dto.response.ResponseOk;
 //import com.example.datasocialnetwork.dto.response.StatusAllResponse;
 //import com.example.datasocialnetwork.dto.response.StatusInfoResponse;
 //import com.example.datasocialnetwork.entity.Comment;

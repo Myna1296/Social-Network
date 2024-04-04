@@ -63,6 +63,9 @@ public class StatusServiceImpl implements StatusService {
 
     @Override
     public ResponseEntity<?> getStatusByUserId(StatusRequest statusRequest) {
+        if (statusRequest == null || statusRequest.getUserId() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("VUi lòng nhập đủ thông tin request yêu cầu");
+        }
         User user = userRepository.findOneById(statusRequest.getUserId());
         if (user == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Constants.USER_NOT_FOUND);

@@ -2,8 +2,6 @@ package com.example.websocialnetwork.controller;
 
 import com.example.websocialnetwork.dto.*;
 import com.example.websocialnetwork.dto.reponse.*;
-import com.example.websocialnetwork.dto.request.NewStatusRequest;
-import com.example.websocialnetwork.dto.request.UpdateStatusRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;

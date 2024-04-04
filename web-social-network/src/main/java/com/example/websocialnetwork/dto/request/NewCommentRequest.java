@@ -1,4 +1,4 @@
-package com.example.datasocialnetwork.dto.request;
+package com.example.websocialnetwork.dto.request;
 
 import lombok.Data;
 import lombok.Getter;
@@ -11,16 +11,10 @@ import javax.validation.constraints.NotEmpty;
 @Data
 @Getter
 @Setter
-public class CommentDTO {
+public class NewCommentRequest {
     @NotEmpty(message = "Comment cannot be empty")
     @NotBlank(message = "Comment cannot be blank")
-    @Length(min = 1, max = 50, message = "0Comment must be between 1 and 500 words in length")
+    @Length(min = 1, max = 500, message = "Comment must be between 1 and 500 words in length")
     private String content;
-
-    private Long id;
     private Long statusId;
-    private Long userId;
-    private String userName;
-    private String userAvata;
-    private String createDate;
 }

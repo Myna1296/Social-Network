@@ -7,7 +7,7 @@ import lombok.Setter;
 @Data
 @Getter
 @Setter
-public class SearchUserRequestDTO {
-    private String search;
-    private int page;
+public class FriendRequest {
+    private int pageIndex;
+    private int pageSize;
 }

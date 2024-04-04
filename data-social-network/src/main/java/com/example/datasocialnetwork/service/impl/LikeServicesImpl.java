@@ -2,7 +2,6 @@ package com.example.datasocialnetwork.service.impl;
 
 import com.example.datasocialnetwork.common.Constants;
 import com.example.datasocialnetwork.config.UserAuthDetails;
-import com.example.datasocialnetwork.dto.response.ResponseOk;
 import com.example.datasocialnetwork.entity.LikeStatus;
 import com.example.datasocialnetwork.entity.Status;
 import com.example.datasocialnetwork.entity.User;
@@ -52,7 +51,6 @@ public class LikeServicesImpl implements LikeService {
 
     @Override
     public ResponseEntity<?> deleteLike(Long id) {
-        ResponseOk response = new ResponseOk();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
         User user = userRepository.findOneById(Long.parseLong(userDetails.getUserID()));

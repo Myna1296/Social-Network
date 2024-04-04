@@ -1,19 +1,16 @@
 package com.example.datasocialnetwork.service;
 
 import com.example.datasocialnetwork.dto.request.FriendShipRequestDTO;
-import com.example.datasocialnetwork.dto.request.FriendRequestDTO;
-import com.example.datasocialnetwork.dto.response.CheckFriendShipResponse;
-import com.example.datasocialnetwork.dto.response.FriendResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
 public interface FriendsService {
-    ResponseEntity<FriendResponse> getFriendsOfUser(Long pageId);
+    ResponseEntity<?> getAccepteFriendRequest(int pageIndex, int pageSize);
     ResponseEntity<?> checkFriendship(Long id);
     ResponseEntity<?> addFriendRequest(Long idTarget);
-    ResponseEntity<FriendResponse> getUsersNotAcceptedRequests(Long pageId);
-    ResponseEntity<FriendResponse> getNotAcceptedRequestsToUser(Long pageId);
+    ResponseEntity<?> getUserSentFriendRequest(int pageIndex, int pageSize);
+    ResponseEntity<?> getWaitingUserToAccept(int pageIndex, int pageSize);
     ResponseEntity<?> deleteFriendship(FriendShipRequestDTO friendShipRequestDTO);
-    ResponseEntity<?> accepteFriendShip(FriendShipRequestDTO friendShipRequestDTO);
+    ResponseEntity<?> accepteFriendShip(Long idTarget);
 }

@@ -1,11 +1,8 @@
 package com.example.websocialnetwork.controller;
-import com.example.websocialnetwork.dto.FriendRequestDTO;
+
 import com.example.websocialnetwork.dto.FriendShipRequestDTO;
-import com.example.websocialnetwork.dto.PasswordChangeDTO;
 import com.example.websocialnetwork.dto.reponse.FriendResponse;
-import com.example.websocialnetwork.dto.reponse.ResponseOk;
-import com.example.websocialnetwork.dto.reponse.UserInfo;
-import com.example.websocialnetwork.exceptionHandling.BadRequestException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,18 +14,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static com.example.websocialnetwork.common.Const.*;
 import static com.example.websocialnetwork.common.Const.VIEW_ERR;
-import static com.example.websocialnetwork.util.ServerUtils.getUserFromSession;
 import static com.example.websocialnetwork.util.Validation.calculateTotalPages;
 
 @Controller
@@ -61,65 +54,62 @@ public class FriendsController {
             }
         }
 
-        UserInfo user = getUserFromSession(request);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
-        HttpEntity<String> requestfriendsOfUserRequest = new HttpEntity<>(headers);
+        HttpEntity<String> requestEntity = new HttpEntity<>( headers);
         try {
-            ResponseEntity<FriendResponse> responseEntity = restTemplate.exchange(
+            ResponseEntity<?> responseEntity = restTemplate.exchange(
                     path + API_GET_FRIENF_OF_USER,
                     HttpMethod.GET,
-                    requestfriendsOfUserRequest,
-                    FriendResponse.class,
-                    pageFriendsOfUser
+                    requestEntity,
+                    String.class,
+                    pageFriendsOfUser,
+                    PAGE_SIZE
             );
-            FriendResponse friendResponse = responseEntity.getBody();
-            if (friendResponse.getCode() == 1) {
-                model.addAttribute("message", friendResponse.getMessage());
-                return VIEW_ERR;
-            }
+            ObjectMapper objectMapper = new ObjectMapper();
+            FriendResponse friendResponse = objectMapper.readValue((String) responseEntity.getBody(), FriendResponse.class);
+
             model.addAttribute("friendsOfUser",friendResponse.getFriendData());
             model.addAttribute("friendsOfUserTotal", calculateTotalPages(friendResponse.getTotal()));
             model.addAttribute("friendsOfUserPage", pageFriendsOfUser);
 
-            HttpEntity<String> requestusersNotAccepted = new HttpEntity<>(headers);
-            ResponseEntity<FriendResponse> usersNotAcceptedEntity = restTemplate.exchange(
-                    path + API_GET_REQUEST_USER_NOT_ACCEPTE,
+            ResponseEntity<?> usersNotAcceptedEntity = restTemplate.exchange(
+                    path + API_USER_SENT_FRIEND_REQUEST,
                     HttpMethod.GET,
-                    requestusersNotAccepted,
-                    FriendResponse.class,
-                    pageUsersNotAcceptedRequests
+                    requestEntity,
+                    String.class,
+                    pageUsersNotAcceptedRequests,PAGE_SIZE
             );
-            FriendResponse usersNotAcceptedResponse = usersNotAcceptedEntity.getBody();
-            if (friendResponse.getCode() == 1) {
-                model.addAttribute("message", friendResponse.getMessage());
-                return VIEW_ERR;
-            }
+            FriendResponse usersNotAcceptedResponse = objectMapper.readValue((String) usersNotAcceptedEntity.getBody(), FriendResponse.class);
             model.addAttribute("usersNotAcceptedRequests",usersNotAcceptedResponse.getFriendData());
             model.addAttribute("usersNotAcceptedRequestsTotal", calculateTotalPages(usersNotAcceptedResponse.getTotal()));
             model.addAttribute("usersNotAcceptedRequestsPage", pageUsersNotAcceptedRequests);
 
-            HttpEntity<String> requestNotAcceptedToUser = new HttpEntity<>(headers);
-            ResponseEntity<FriendResponse> notAcceptedRequestsToUserEntity = restTemplate.exchange(
-                    path + API_GET_REQUEST_NOT_ACCEPTE_TO_USER,
+
+            ResponseEntity<?> notAcceptedRequestsToUserEntity = restTemplate.exchange(
+                    path + API_WAITING_USER_TO_ACCEPT,
                     HttpMethod.GET,
-                    requestNotAcceptedToUser,
-                    FriendResponse.class,
-                    pageNotAcceptedRequestsToUser
+                    requestEntity,
+                    String.class,
+                    pageNotAcceptedRequestsToUser, PAGE_SIZE
             );
-            FriendResponse notAcceptedRequestsToUserResponse = notAcceptedRequestsToUserEntity.getBody();
-            if (friendResponse.getCode() == 1) {
-                model.addAttribute("message", friendResponse.getMessage());
-                return VIEW_ERR;
-            }
+            FriendResponse notAcceptedRequestsToUserResponse = objectMapper.readValue((String) notAcceptedRequestsToUserEntity.getBody(), FriendResponse.class);
             model.addAttribute("notAcceptedRequestsToUser",notAcceptedRequestsToUserResponse.getFriendData());
             model.addAttribute("notAcceptedRequestsToUserTotal", calculateTotalPages(notAcceptedRequestsToUserResponse.getTotal()));
             model.addAttribute("notAcceptedRequestsToUserPage", pageNotAcceptedRequestsToUser);
             return "friends";
-        } catch (Exception ex) {
-            model.addAttribute("message", ex);
+        } catch (HttpClientErrorException ex) {
+            HttpStatus statusCode = ex.getStatusCode();
+            if( statusCode == HttpStatus.BAD_REQUEST || statusCode == HttpStatus.NOT_FOUND) {
+                model.addAttribute("message", ex.getResponseBodyAsString());
+                return VIEW_ERR;
+            }
+            model.addAttribute("message", ex.getResponseBodyAsString());
+            return VIEW_ERR;
+        } catch (Exception e) {
+            model.addAttribute("message", e);
             return VIEW_ERR;
         }
     }
@@ -134,18 +124,25 @@ public class FriendsController {
         headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
         try {
-            ResponseEntity<ResponseOk> responseEntity = restTemplate.exchange(
+            ResponseEntity<?> responseEntity =restTemplate.exchange(
                     path + API_ADD_FRIEND,
                     HttpMethod.POST,
                     requestEntity,
-                    ResponseOk.class,
+                    String.class,
                     friendId
             );
-            ResponseOk responseOk = responseEntity.getBody();
-            redirectAttributes.addFlashAttribute("message", responseOk.getMessage());
+            redirectAttributes.addFlashAttribute("message", responseEntity.getBody());
+            return "redirect:/user/profile/"+ friendId;
+        } catch (HttpClientErrorException ex) {
+            HttpStatus statusCode = ex.getStatusCode();
+            if( statusCode == HttpStatus.BAD_REQUEST || statusCode == HttpStatus.NOT_FOUND) {
+                redirectAttributes.addFlashAttribute("message", ex.getResponseBodyAsString());
                 return "redirect:/user/profile/"+ friendId;
-        } catch (Exception ex) {
-            model.addAttribute("message", ex);
+            }
+            model.addAttribute("message", ex.getResponseBodyAsString());
+            return VIEW_ERR;
+        } catch (Exception e) {
+            model.addAttribute("message", e);
             return VIEW_ERR;
         }
     }
@@ -160,7 +157,6 @@ public class FriendsController {
         if( index == null || (index != 1 & index != 2 & index != 3)){
             return "redirect:/user/friends";
         }
-        UserInfo user = getUserFromSession(request);
         friendShipRequestDTO.setId(id);
         if( index == 3){
             friendShipRequestDTO.setAccepte(true);
@@ -172,20 +168,24 @@ public class FriendsController {
         headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
         HttpEntity<FriendShipRequestDTO> requestEntity = new HttpEntity<>(friendShipRequestDTO,headers);
         try {
-            ResponseEntity<ResponseOk> responseEntity = restTemplate.exchange(
+            restTemplate.exchange(
                     path + API_DELETE_FRIENDSHIP,
                     HttpMethod.DELETE,
                     requestEntity,
-                    ResponseOk.class
+                    String.class
             );
-            ResponseOk responseOk = responseEntity.getBody();
-            if(responseOk.getCode() != 0){
-                model.addAttribute("message", responseOk.getMessage());
+
+            return "redirect:/user/friends";
+        } catch (HttpClientErrorException ex) {
+            HttpStatus statusCode = ex.getStatusCode();
+            if( statusCode == HttpStatus.BAD_REQUEST || statusCode == HttpStatus.NOT_FOUND) {
+                model.addAttribute("message", ex.getResponseBodyAsString());
                 return VIEW_ERR;
             }
-            return "redirect:/user/friends";
-        } catch (Exception ex) {
-            model.addAttribute("message", ex);
+            model.addAttribute("message", ex.getResponseBodyAsString());
+            return VIEW_ERR;
+        } catch (Exception e) {
+            model.addAttribute("message", e);
             return VIEW_ERR;
         }
     }
@@ -195,28 +195,30 @@ public class FriendsController {
         if (request.getSession().getAttribute("user") == null) {
             return "redirect:/";
         }
-        FriendShipRequestDTO friendShipRequestDTO = new FriendShipRequestDTO();
-        friendShipRequestDTO.setId(id);
-        friendShipRequestDTO.setAccepte(false);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
-        HttpEntity<FriendShipRequestDTO> requestEntity = new HttpEntity<>(friendShipRequestDTO,headers);
+        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
         try {
-            ResponseEntity<ResponseOk> responseEntity = restTemplate.exchange(
+            restTemplate.exchange(
                     path + API_ACCEPTE_FRIENDSHIP,
-                    HttpMethod.POST,
+                    HttpMethod.PUT,
                     requestEntity,
-                    ResponseOk.class
+                    String.class,
+                    id
             );
-            ResponseOk responseOk = responseEntity.getBody();
-            if(responseOk.getCode() != 0){
-                model.addAttribute("message", responseOk.getMessage());
+
+            return "redirect:/user/friends";
+        } catch (HttpClientErrorException ex) {
+            HttpStatus statusCode = ex.getStatusCode();
+            if( statusCode == HttpStatus.BAD_REQUEST || statusCode == HttpStatus.NOT_FOUND) {
+                model.addAttribute("message", ex.getResponseBodyAsString());
                 return VIEW_ERR;
             }
-            return "redirect:/user/friends";
-        } catch (Exception ex) {
-            model.addAttribute("message", ex);
+            model.addAttribute("message", ex.getResponseBodyAsString());
+            return VIEW_ERR;
+        } catch (Exception e) {
+            model.addAttribute("message", e);
             return VIEW_ERR;
         }
     }

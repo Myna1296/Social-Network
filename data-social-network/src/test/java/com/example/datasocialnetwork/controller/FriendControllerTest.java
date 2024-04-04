@@ -1,9 +1,6 @@
 package com.example.datasocialnetwork.controller;
 
 import com.example.datasocialnetwork.dto.request.FriendShipRequestDTO;
-import com.example.datasocialnetwork.dto.response.CheckFriendShipResponse;
-import com.example.datasocialnetwork.dto.response.FriendResponse;
-import com.example.datasocialnetwork.dto.response.ResponseOk;
 import com.example.datasocialnetwork.service.impl.FriendsServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,61 +32,61 @@ public class FriendControllerTest {
     }
 
     @Test
-    public void testGetFriendsOfUser() {
-        ResponseEntity<FriendResponse> expectedResponse = new ResponseEntity<>(new FriendResponse(), HttpStatus.OK);
-        when(friendsService.getFriendsOfUser(1L)).thenAnswer(invocation -> ResponseEntity.ok(new FriendResponse()));
-        ResponseEntity<FriendResponse> actualResponse = friendsController.getFriendsOfUser(1L);
+    public void testGetAccepteFriendRequest() {
+        ResponseEntity<?> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(friendsService.getAccepteFriendRequest(1, 5)).thenAnswer(invocation -> new ResponseEntity<>(HttpStatus.OK));
+        ResponseEntity<?> actualResponse = friendsController.getFriendsOfUser(1, 5);
         assertEquals(expectedResponse, actualResponse);
-        verify(friendsService, times(1)).getFriendsOfUser(1L);
+        verify(friendsService, times(1)).getAccepteFriendRequest(1, 5);
     }
 
-//    @Test
-//    public void testCheckFriendShip() {
-//        ResponseEntity<CheckFriendShipResponse> expectedResponse = new ResponseEntity<>(new CheckFriendShipResponse(), HttpStatus.OK);
-//        when(friendsService.checkFriendship(1L)).thenAnswer(invocation -> ResponseEntity.ok(new CheckFriendShipResponse()));
-//        ResponseEntity<CheckFriendShipResponse> actualResponse = friendsController.checkFriendShip(1L);
-//        assertEquals(expectedResponse, actualResponse);
-//        verify(friendsService, times(1)).checkFriendship(1L);
-//    }
+    @Test
+    public void testCheckFriendShip() {
+        ResponseEntity<?> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(friendsService.checkFriendship(1L)).thenAnswer(invocation ->new ResponseEntity<>(HttpStatus.OK));
+        ResponseEntity<?> actualResponse = friendsController.checkFriendShip(1L);
+        assertEquals(expectedResponse, actualResponse);
+        verify(friendsService, times(1)).checkFriendship(1L);
+    }
     @Test
     public void testAddFriendRequest() {
-        ResponseEntity<ResponseOk> expectedResponse = new ResponseEntity<>(new ResponseOk(), HttpStatus.OK);
-        when(friendsService.addFriendRequest(1L)).thenAnswer(invocation -> ResponseEntity.ok(new ResponseOk()));
+        ResponseEntity<?> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(friendsService.addFriendRequest(1L)).thenAnswer(invocation ->new ResponseEntity<>(HttpStatus.OK));
         ResponseEntity<?> actualResponse = friendsController.addFriendRequest(1L);
         assertEquals(expectedResponse, actualResponse);
         verify(friendsService, times(1)).addFriendRequest(1L);
     }
     @Test
-    public void testGetRequestUserNotAccepte() {
-        ResponseEntity<FriendResponse> expectedResponse = new ResponseEntity<>(new FriendResponse(), HttpStatus.OK);
-        when(friendsService.getUsersNotAcceptedRequests(1L)).thenAnswer(invocation -> ResponseEntity.ok(new FriendResponse()));
-        ResponseEntity<FriendResponse> actualResponse = friendsController.getRequestUserNotAccepte(1L);
+    public void testGetUserSentFriendRequest() {
+        ResponseEntity<?> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(friendsService.getUserSentFriendRequest(1,5)).thenAnswer(invocation ->new ResponseEntity<>(HttpStatus.OK));
+        ResponseEntity<?> actualResponse = friendsController.getUserSentFriendRequest(1,5);
         assertEquals(expectedResponse, actualResponse);
-        verify(friendsService, times(1)).getUsersNotAcceptedRequests(1L);
+        verify(friendsService, times(1)).getUserSentFriendRequest(1,5);
     }
     @Test
     public void testGetRequestNotAccepteToUser() {
-        ResponseEntity<FriendResponse> expectedResponse = new ResponseEntity<>(new FriendResponse(), HttpStatus.OK);
-        when(friendsService.getNotAcceptedRequestsToUser(1L)).thenAnswer(invocation -> ResponseEntity.ok(new FriendResponse()));
-        ResponseEntity<FriendResponse> actualResponse = friendsController.getRequestNotAccepteToUser(1L);
+        ResponseEntity<?> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(friendsService.getWaitingUserToAccept(1,5)).thenAnswer(invocation ->new ResponseEntity<>(HttpStatus.OK));
+        ResponseEntity<?> actualResponse = friendsController.getWaitingUserToAccept(1,5);
         assertEquals(expectedResponse, actualResponse);
-        verify(friendsService, times(1)).getNotAcceptedRequestsToUser(1L);
+        verify(friendsService, times(1)).getWaitingUserToAccept(1,5);
     }
     @Test
     public void testDeleteFriendship() {
-        ResponseEntity<ResponseOk> expectedResponse = new ResponseEntity<>(new ResponseOk(), HttpStatus.OK);
-        when(friendsService.deleteFriendship(new FriendShipRequestDTO())).thenAnswer(invocation -> ResponseEntity.ok(new ResponseOk()));
+        ResponseEntity<?> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(friendsService.deleteFriendship(new FriendShipRequestDTO())).thenAnswer(invocation ->new ResponseEntity<>(HttpStatus.OK));
         ResponseEntity<?> actualResponse = friendsController.deleteFriendship(new FriendShipRequestDTO());
         assertEquals(expectedResponse, actualResponse);
         verify(friendsService, times(1)).deleteFriendship(new FriendShipRequestDTO());
     }
     @Test
     public void testAccepteFriendship() {
-        ResponseEntity<ResponseOk> expectedResponse = new ResponseEntity<>(new ResponseOk(), HttpStatus.OK);
-        when(friendsService.accepteFriendShip(new FriendShipRequestDTO())).thenAnswer(invocation -> ResponseEntity.ok(new ResponseOk()));
-        ResponseEntity<?> actualResponse = friendsController.accepteFriendship(new FriendShipRequestDTO());
+        ResponseEntity<?> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(friendsService.accepteFriendShip(1L)).thenAnswer(invocation ->new ResponseEntity<>(HttpStatus.OK));
+        ResponseEntity<?> actualResponse = friendsController.accepteFriendship(1L);
         assertEquals(expectedResponse, actualResponse);
-        verify(friendsService, times(1)).accepteFriendShip(new FriendShipRequestDTO());
+        verify(friendsService, times(1)).accepteFriendShip(1L);
     }
 
 }

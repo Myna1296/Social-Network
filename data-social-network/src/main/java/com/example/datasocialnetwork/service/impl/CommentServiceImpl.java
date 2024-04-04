@@ -2,11 +2,10 @@ package com.example.datasocialnetwork.service.impl;
 
 import com.example.datasocialnetwork.common.Constants;
 import com.example.datasocialnetwork.config.UserAuthDetails;
-import com.example.datasocialnetwork.dto.request.CommentDTO;
 import com.example.datasocialnetwork.dto.request.CommentInfo;
 import com.example.datasocialnetwork.dto.request.CommentRequest;
+import com.example.datasocialnetwork.dto.request.NewCommentRequest;
 import com.example.datasocialnetwork.dto.response.CommentListResponse;
-import com.example.datasocialnetwork.dto.response.ResponseOk;
 import com.example.datasocialnetwork.entity.Comment;
 import com.example.datasocialnetwork.entity.Status;
 import com.example.datasocialnetwork.entity.User;
@@ -53,66 +52,42 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public ResponseEntity<?> addNewCommen(CommentDTO commentDTO) {
-        ResponseOk response = new ResponseOk();
+    public ResponseEntity<?> addNewCommen(NewCommentRequest newCommentRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        User user = userRepository.findOneByUserName(userDetails.getUsername());
-        if (user == null) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage(Constants.MESS_010);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } else if (user.getId() != commentDTO.getUserId()){
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage("Authentication information does not match");
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }
-        Status status = statusRepository.findStatusById(commentDTO.getStatusId());
+        User user = userRepository.findOneById(Long.parseLong(userDetails.getUserID()));
+
+        Status status = statusRepository.findStatusById(newCommentRequest.getStatusId());
         if (status == null) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage("Status does not exist");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Constants.STATUS_NOT_FOUND);
         }
         Comment comment = new Comment();
-        comment.setCommentText(commentDTO.getContent());
+        comment.setCommentText(newCommentRequest.getContent());
         comment.setUser(user);
         comment.setStatus(status);
         comment.setCreatedDate(LocalDateTime.now());
         commentRepository.save(comment);
 
-        response.setCode(Constants.CODE_OK);
-        response.setMessage("");
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK).body(Constants.COMMENT_ADD_SUCCESS);
     }
 
     @Override
     public ResponseEntity<?> deleteCommnet(Long id) {
-        ResponseOk response = new ResponseOk();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserAuthDetails userDetails = (UserAuthDetails) authentication.getPrincipal();
-        User user = userRepository.findOneByUserName(userDetails.getUsername());
-        if (user == null) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage(Constants.MESS_010);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }
+        User user = userRepository.findOneById(Long.parseLong(userDetails.getUserID()));
+
         Comment comment = commentRepository.findOneById(id);
         if (comment == null) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage("Comment does not exist");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Constants.COMMENT_NOT_FOUND);
         }
         if (comment.getUser().getId() != user.getId()) {
-            response.setCode(Constants.CODE_ERROR);
-            response.setMessage("This comment is not allowed to be deleted");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Constants.COMMENT_FORBIDDEN);
         }
 
         commentRepository.delete(comment);
 
-        response.setCode(Constants.CODE_OK);
-        response.setMessage("");
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK).body(Constants.COMMENT_DELETE_SUCCESS);
     }
 
     private static CommentInfo convertCommontToDTO(Comment comment) {

@@ -6,8 +6,6 @@ import java.util.List;
 
 @Data
 public class SearchResponse {
-    private int code;
-    private String message;
     private List<UserInfo> listUser;
     private long totalPage;
 }

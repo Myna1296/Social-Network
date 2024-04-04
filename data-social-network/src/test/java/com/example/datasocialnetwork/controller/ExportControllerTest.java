@@ -1,6 +1,5 @@
 package com.example.datasocialnetwork.controller;
 
-import com.example.datasocialnetwork.dto.response.ResponseOk;
 import com.example.datasocialnetwork.service.impl.ExportServicesImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,8 +31,8 @@ public class ExportControllerTest {
 
     @Test
     public void testExportFile() {
-        ResponseEntity<ResponseOk> expectedResponse = new ResponseEntity<>(new ResponseOk(HttpStatus.OK.value(), ""), HttpStatus.OK);
-        when(exportServices.exportFile()).thenAnswer(invocation -> ResponseEntity.ok(new ResponseOk(HttpStatus.OK.value(), "")));
+        ResponseEntity<?> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(exportServices.exportFile()).thenAnswer(invocation ->new ResponseEntity<>(HttpStatus.OK));
         ResponseEntity<?> actualResponse = exportController.exportFile();
         assertEquals(expectedResponse, actualResponse);
         verify(exportServices, times(1)).exportFile();

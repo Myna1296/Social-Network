@@ -1,8 +1,6 @@
 package com.example.datasocialnetwork.controller;
 
 import com.example.datasocialnetwork.dto.request.FriendShipRequestDTO;
-import com.example.datasocialnetwork.dto.response.CheckFriendShipResponse;
-import com.example.datasocialnetwork.dto.response.FriendResponse;
 import com.example.datasocialnetwork.service.impl.FriendsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +14,10 @@ public class FriendsController {
    @Autowired
    private FriendsServiceImpl friendsService;
 
-   @GetMapping("/get-friend/{pageId}")
-   public ResponseEntity<FriendResponse> getFriendsOfUser(@PathVariable("pageId")  Long id  ){
-      return friendsService.getFriendsOfUser(id);
+   @GetMapping("/accepte-friend-request")
+   public ResponseEntity<?> getFriendsOfUser(@RequestParam(name = "pageIndex", defaultValue = "1") int pageIndex,
+                                                          @RequestParam(name = "pageSize", defaultValue = "5") int pageSize){
+      return friendsService.getAccepteFriendRequest(pageIndex, pageSize);
    }
 
    @PostMapping("/check-friend-ship/{userId}")
@@ -26,19 +25,21 @@ public class FriendsController {
       return friendsService.checkFriendship(id);
    }
 
-   @PostMapping("/add-to-friends/{id}")
+   @PostMapping("/sent-friend-request/{id}")
    public ResponseEntity<?> addFriendRequest(@PathVariable("id") Long idTarget){
       return friendsService.addFriendRequest(idTarget);
    }
 
-   @GetMapping("/get-request-user-notaccepte/{pageId}")
-   public ResponseEntity<FriendResponse> getRequestUserNotAccepte(@PathVariable("pageId")  Long id ){
-      return friendsService.getUsersNotAcceptedRequests(id);
+   @GetMapping("/user-sent-friend-request")
+   public ResponseEntity<?> getUserSentFriendRequest(@RequestParam(name = "pageIndex", defaultValue = "1") int pageIndex,
+                                                                  @RequestParam(name = "pageSize", defaultValue = "5") int pageSize){
+      return friendsService.getUserSentFriendRequest(pageIndex, pageSize);
    }
 
-   @GetMapping("/get-request-notaccepte-touser/{pageId}")
-   public ResponseEntity<FriendResponse> getRequestNotAccepteToUser(@PathVariable("pageId")  Long id ){
-      return friendsService.getNotAcceptedRequestsToUser(id);
+   @GetMapping("/waiting-user-to-accept")
+   public ResponseEntity<?> getWaitingUserToAccept(@RequestParam(name = "pageIndex", defaultValue = "1") int pageIndex,
+                                                       @RequestParam(name = "pageSize", defaultValue = "5") int pageSize){
+      return friendsService.getWaitingUserToAccept(pageIndex, pageSize);
    }
 
    @DeleteMapping("/delete")
@@ -46,9 +47,9 @@ public class FriendsController {
       return friendsService.deleteFriendship(friendShipRequestDTO);
    }
 
-   @PostMapping("/accepte")
-   public ResponseEntity<?> accepteFriendship(@RequestBody FriendShipRequestDTO friendShipRequestDTO){
-      return friendsService.accepteFriendShip(friendShipRequestDTO);
+   @PutMapping("/accepte/{id}")
+   public ResponseEntity<?> accepteFriendship(@PathVariable("id") Long idTarget){
+      return friendsService.accepteFriendShip(idTarget);
    }
 
 

@@ -1,8 +1,6 @@
 package com.example.datasocialnetwork.service;
 
-import com.example.datasocialnetwork.common.Constants;
 import com.example.datasocialnetwork.config.UserAuthDetails;
-import com.example.datasocialnetwork.dto.response.ResponseOk;
 import com.example.datasocialnetwork.entity.User;
 import com.example.datasocialnetwork.repository.*;
 import com.example.datasocialnetwork.service.impl.ExportServicesImpl;
@@ -22,7 +20,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.time.LocalDateTime;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -64,7 +61,7 @@ public class ExportServiceImplTests {
         Long number = Long.parseLong("10");
 
         // Mock repository methods
-        when(userRepository.findOneByUserName(anyString())).thenReturn(user);
+        when(userRepository.findOneById(1L)).thenReturn(user);
         when(friendShipRepository.countAcceptedFriendshipsAndCreatedDateAfter(anyLong(), any(LocalDateTime.class))).thenReturn(number);
         when(statusRepository.countStatusTAndCreatedDateAfter(anyLong(), any(LocalDateTime.class))).thenReturn(number);
         when(commentRepository.countCommentsByUserIdAndCreatedDateAfter(anyLong(), any(LocalDateTime.class))).thenReturn(number);
@@ -75,10 +72,8 @@ public class ExportServiceImplTests {
 
         // Call the method
         ResponseEntity<?> responseEntity = exportServices.exportFile();
-        ResponseOk response = (ResponseOk) responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_OK, response.getCode());
-        assertEquals("", response.getMessage());
+        ResponseEntity<?> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        assertEquals(expectedResponse.getStatusCode(), responseEntity.getStatusCode());
     }
 
     @Test
@@ -95,15 +90,12 @@ public class ExportServiceImplTests {
         Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
 
         // Mock repository methods
-        when(userRepository.findOneByUserName(anyString())).thenReturn(null);
+        when(userRepository.findOneById(1L)).thenReturn(null);
 
 
         // Call the method
         ResponseEntity<?> responseEntity = exportServices.exportFile();
-        ResponseOk response = (ResponseOk) responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, response.getCode());
-        assertEquals(Constants.MESS_013, response.getMessage());
+        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
     }
 
     @Test
@@ -120,15 +112,12 @@ public class ExportServiceImplTests {
         Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
 
         // Mock repository methods
-        when(userRepository.findOneByUserName(anyString())).thenThrow(new RuntimeException("User not found"));
+        when(userRepository.findOneById(1L)).thenThrow(new RuntimeException("User not found"));
 
 
         // Call the method
         ResponseEntity<?> responseEntity = exportServices.exportFile();
-        ResponseOk response = (ResponseOk) responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, response.getCode());
-        assertEquals("Error while exporting report file", response.getMessage());
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
     }
 
 }

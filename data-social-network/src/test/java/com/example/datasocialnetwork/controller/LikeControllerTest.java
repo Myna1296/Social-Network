@@ -1,6 +1,5 @@
 package com.example.datasocialnetwork.controller;
 
-import com.example.datasocialnetwork.dto.response.ResponseOk;
 import com.example.datasocialnetwork.service.impl.LikeServicesImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,8 +32,8 @@ public class LikeControllerTest {
 
     @Test
     public void testAddLike() {
-        ResponseEntity<ResponseOk> expectedResponse = new ResponseEntity<>(new ResponseOk(HttpStatus.OK.value(), ""), HttpStatus.OK);
-        when(likeServices.addLike(1L)).thenAnswer(invocation -> ResponseEntity.ok(new ResponseOk(HttpStatus.OK.value(), "")));
+        ResponseEntity<?> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(likeServices.addLike(1L)).thenAnswer(invocation -> new ResponseEntity<>(HttpStatus.OK));
         ResponseEntity<?> actualResponse = likeController.addLike(1L);
         assertEquals(expectedResponse, actualResponse);
         verify(likeServices, times(1)).addLike(1L);
@@ -42,8 +41,8 @@ public class LikeControllerTest {
 
     @Test
     public void testDeleteLike() {
-        ResponseEntity<ResponseOk> expectedResponse = new ResponseEntity<>(new ResponseOk(HttpStatus.OK.value(), ""), HttpStatus.OK);
-        when(likeServices.deleteLike(1L)).thenAnswer(invocation -> ResponseEntity.ok(new ResponseOk(HttpStatus.OK.value(), "")));
+        ResponseEntity<?> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(likeServices.deleteLike(1L)).thenAnswer(invocation -> new ResponseEntity<>(HttpStatus.OK));
         ResponseEntity<?> actualResponse = likeController.deleteLike(1L);
         assertEquals(expectedResponse, actualResponse);
         verify(likeServices, times(1)).deleteLike(1L);

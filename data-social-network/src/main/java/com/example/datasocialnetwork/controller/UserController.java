@@ -2,14 +2,12 @@ package com.example.datasocialnetwork.controller;
 
 import com.example.datasocialnetwork.dto.request.PasswordChangeDTO;
 import com.example.datasocialnetwork.dto.request.SearchRequest;
-import com.example.datasocialnetwork.dto.request.SearchUserRequestDTO;
 import com.example.datasocialnetwork.dto.request.UserInfo;
 import com.example.datasocialnetwork.dto.response.ErrorResponse;
-import com.example.datasocialnetwork.dto.response.SearchResponse;
-import com.example.datasocialnetwork.dto.response.UserInfoResponse;
 import com.example.datasocialnetwork.service.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -32,7 +30,7 @@ public class UserController {
         return userService.findById(id);
     }
 
-    @PutMapping("/update-avata")
+    @PutMapping(value = "/update-avata", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateImage(@RequestParam("image") MultipartFile file){
         return userService.updateImageUser(file);
     }

@@ -34,24 +34,16 @@ public class Constants {
     public static final String STATUS_DELETE_SUCCESS = "DELETE status thành công.";
     public static final String LIKE_ERR = "Bạn đã like , không thể thực hiện like tiếp nữa.";
     public static final String UNLIKE_ERR = "Bạn chưa like , không thể thực hiện unlike tiếp nữa.";
-    public static final String LIKE_SUCCESS = "Bạn đã likethành công.";
-    public static final String UNLIKE_SUCCESS = "Bạn đã unlikethành công.";
-    public static final String MESS_001 = "Username already exists";
-    public static final String MESS_002 = "Email already exists";
-    public static final String MESS_003 = "Account registration successful";
-    public static final String MESS_004 = "Email login does not exist";
-    public static final String MESS_005 = "Login password is incorrect";
-    public static final String MESS_006 = "Sending code failed";
-    public static final String MESS_007 = "User is not logged in, please log in first and then authenticate OTP";
-    public static final String MESS_008 = "OTP is not correct, please re-enter.";
-    public static final String MESS_009 = "OTP has expired, please login again";
-    public static final String MESS_010 = "Account has been deleted";
-    public static final String MESS_011 = "The file is not in the format image/jpeg,image/png";
-    public static final String MESS_012 = "File extension is not supported";
-    public static final String MESS_013 = "User does not exist";
-    public static final int LIMIT = 3;
-    public static final int CODE_OK = 0;
-    public static final int CODE_ERROR = 1;
+    public static final String LIKE_SUCCESS = "Bạn đã like thành công.";
+    public static final String UNLIKE_SUCCESS = "Bạn đã unlike thành công.";
+    public static final String COMMENT_NOT_FOUND = "Không tồn tại comment muốn xóa";
+    public static final String COMMENT_FORBIDDEN = "Bạn không có quyền xóa comment này";
+    public static final String COMMENT_DELETE_SUCCESS = "Xóa comment thành công";
+    public static final String COMMENT_ADD_SUCCESS = "Thêm  comment thành công";
+    public static final String FRIEND_ADD_ERR1 = "Không thể gửi yêu cầu kết bạn cho chính mình";
+    public static final String FRIEND_ADD_ERR2 = "Đã là bạn bè";
+    public static final String FRIEND_ADD_ERR3 = "Lời mời kết bạn đã tồn tại.";
+    public static final String FRIEND_ADD_SUCCESS = "Gửi lời mời kết bạn thành công";
     public static final String[] ENDPOINTS_PUBLIC = new String[] {
             "/",
             "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",

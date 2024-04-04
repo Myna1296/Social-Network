@@ -1,7 +1,6 @@
 package com.example.datasocialnetwork.controller;
 
 import com.example.datasocialnetwork.dto.request.*;
-import com.example.datasocialnetwork.dto.response.ResponseOk;
 import com.example.datasocialnetwork.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,8 +38,8 @@ public class AuthControllerTest {
     public void testLogin() {
         LoginRequest loginDTO = new LoginRequest();
         // Set loginDTO properties
-        ResponseEntity<ResponseOk> expectedResponse = new ResponseEntity<>(new ResponseOk(HttpStatus.OK.value(), ""), HttpStatus.OK);
-        when(userService.loginUser(loginDTO)).thenAnswer(invocation -> ResponseEntity.ok(new ResponseOk(HttpStatus.OK.value(), "")));
+        ResponseEntity<?> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(userService.loginUser(loginDTO)).thenAnswer(invocation ->new ResponseEntity<>(HttpStatus.OK));
         ResponseEntity<?> actualResponse = authController.login(loginDTO);
         assertEquals(expectedResponse, actualResponse);
         verify(userService, times(1)).loginUser(loginDTO);
@@ -50,8 +49,8 @@ public class AuthControllerTest {
     public void testComfirmOTPLogin() {
         ComfirmOTPRequest otpComfirmDTO = new ComfirmOTPRequest();
         // Set loginDTO properties
-        ResponseEntity<ResponseOk> expectedResponse = new ResponseEntity<>(new ResponseOk(HttpStatus.OK.value(), ""), HttpStatus.OK);
-        when(userService.comfirmOTPLogin(otpComfirmDTO)).thenAnswer(invocation -> ResponseEntity.ok(new ResponseOk(HttpStatus.OK.value(), "")));
+        ResponseEntity<?> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(userService.comfirmOTPLogin(otpComfirmDTO)).thenAnswer(invocation ->new ResponseEntity<>(HttpStatus.OK));
         ResponseEntity<?> actualResponse = authController.comfirmOTPLogin(otpComfirmDTO);
         assertEquals(expectedResponse, actualResponse);
         verify(userService, times(1)).comfirmOTPLogin(otpComfirmDTO);
@@ -80,19 +79,19 @@ public class AuthControllerTest {
         userDTO.setPassword("password");
         userDTO.setUserName("testUser");
         when(bindingResult.hasErrors()).thenReturn(false);
-
-        when(userService.createUser(any(RegisterUserRequest.class))).thenReturn(new ResponseEntity<>(HttpStatus.OK));
+        ResponseEntity<?> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(userService.createUser(any())).thenAnswer(invocation ->new ResponseEntity<>(HttpStatus.OK));
 
         ResponseEntity<?> responseEntity = authController.register(userDTO, bindingResult);
 
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(expectedResponse, responseEntity);
     }
 
     @Test
     public void testForgotPassword() {
         // Set loginDTO properties
-        ResponseEntity<ResponseOk> expectedResponse = new ResponseEntity<>(new ResponseOk(HttpStatus.OK.value(), ""), HttpStatus.OK);
-        when(userService.forgotPassword("test")).thenAnswer(invocation -> ResponseEntity.ok(new ResponseOk(HttpStatus.OK.value(), "")));
+        ResponseEntity<?> expectedResponse = new ResponseEntity<>(HttpStatus.OK);
+        when(userService.forgotPassword("test")).thenAnswer(invocation ->new ResponseEntity<>(HttpStatus.OK));
         ResponseEntity<?> actualResponse = authController.forgotPassword("test");
         assertEquals(expectedResponse, actualResponse);
         verify(userService, times(1)).forgotPassword("test");

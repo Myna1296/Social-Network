@@ -1,11 +1,8 @@
 package com.example.datasocialnetwork.service;
 
-import com.example.datasocialnetwork.common.Constants;
 import com.example.datasocialnetwork.config.UserAuthDetails;
-import com.example.datasocialnetwork.dto.request.CommentDTO;
 import com.example.datasocialnetwork.dto.request.CommentRequest;
-import com.example.datasocialnetwork.dto.response.CommentListResponse;
-import com.example.datasocialnetwork.dto.response.ResponseOk;
+import com.example.datasocialnetwork.dto.request.NewCommentRequest;
 import com.example.datasocialnetwork.entity.Comment;
 import com.example.datasocialnetwork.entity.Status;
 import com.example.datasocialnetwork.entity.User;
@@ -59,8 +56,9 @@ public class CommentServiceImplTests {
     public void testSearchCommentByStatusId_Success() {
 
         CommentRequest commentRequest = new CommentRequest();
-        commentRequest.setPage(1);
+        commentRequest.setPageIndex(1);
         commentRequest.setStatusId(1L);
+        commentRequest.setPageSize(5);
 
         User user = new User();
         user.setUserName("abc");
@@ -88,39 +86,35 @@ public class CommentServiceImplTests {
         when(statusRepository.findStatusById(commentRequest.getStatusId())).thenReturn(new Status());
         when(commentRepository.findCommentsByStatusId(
                 commentRequest.getStatusId(),
-                PageRequest.of(commentRequest.getPage() - 1, Constants.LIMIT)
+                PageRequest.of(commentRequest.getPageIndex() - 1, commentRequest.getPageSize())
         )).thenReturn(commentPage);
 
         // Call the method
         ResponseEntity<?> responseEntity = commentService.searchCommentByStatusId(commentRequest);
-        CommentListResponse response = (CommentListResponse) responseEntity.getBody();
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_OK, response.getCode());
     }
 
     @Test
     public void testSearchCommentByStatusId_StatusNotFound() {
 
         CommentRequest commentRequest = new CommentRequest();
-        commentRequest.setPage(1);
+        commentRequest.setPageIndex(1);
         commentRequest.setStatusId(1L);
+        commentRequest.setPageSize(5);
 
         when(statusRepository.findStatusById(commentRequest.getStatusId())).thenReturn(null);
 
         // Call the method
         ResponseEntity<?> responseEntity = commentService.searchCommentByStatusId(commentRequest);
-        CommentListResponse response = (CommentListResponse) responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, response.getCode());
-        assertEquals("Status does not exist", response.getMessage());
+        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+
     }
 
     @Test
     public void testAddNewCommen_Success() {
-        CommentDTO commentDTO = new CommentDTO();
+        NewCommentRequest commentDTO = new NewCommentRequest();
         commentDTO.setStatusId(1L);
         commentDTO.setContent("test");
-        commentDTO.setUserId(1L);
 
         User user = new User();
         user.setUserName("abc");
@@ -132,47 +126,18 @@ public class CommentServiceImplTests {
         Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
         Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
 
-        when(userRepository.findOneByUserName(user.getUserName())).thenReturn(user);
+        when(userRepository.findOneById(1L)).thenReturn(user);
         when(statusRepository.findStatusById(commentDTO.getStatusId())).thenReturn(new Status());
         // Call the method
         ResponseEntity<?> responseEntity = commentService.addNewCommen(commentDTO);
-        ResponseOk response = (ResponseOk) responseEntity.getBody();
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_OK, response.getCode());
-    }
-
-    @Test
-    public void testAddNewCommen_UserNotFound() {
-        CommentDTO commentDTO = new CommentDTO();
-        commentDTO.setStatusId(1L);
-        commentDTO.setContent("test");
-        commentDTO.setUserId(1L);
-
-        User user = new User();
-        user.setUserName("abc");
-        user.setId(1L);
-        UserAuthDetails authUserDetails = new UserAuthDetails(user);
-        SecurityContext securityContext = mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        Authentication authentication = mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
-        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
-
-        when(userRepository.findOneByUserName(user.getUserName())).thenReturn(null);
-        // Call the method
-        ResponseEntity<?> responseEntity = commentService.addNewCommen(commentDTO);
-        ResponseOk response = (ResponseOk) responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, response.getCode());
-        assertEquals(Constants.MESS_010, response.getMessage());
     }
 
     @Test
     public void testAddNewCommen_StatusNotFound() {
-        CommentDTO commentDTO = new CommentDTO();
+        NewCommentRequest commentDTO = new NewCommentRequest();
         commentDTO.setStatusId(1L);
         commentDTO.setContent("test");
-        commentDTO.setUserId(1L);
 
         User user = new User();
         user.setUserName("abc");
@@ -184,40 +149,11 @@ public class CommentServiceImplTests {
         Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
         Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
 
-        when(userRepository.findOneByUserName(user.getUserName())).thenReturn(user);
+        when(userRepository.findOneById(1L)).thenReturn(user);
         when(statusRepository.findStatusById(commentDTO.getStatusId())).thenReturn(null);
         // Call the method
         ResponseEntity<?> responseEntity = commentService.addNewCommen(commentDTO);
-        ResponseOk response = (ResponseOk) responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, response.getCode());
-        assertEquals("Status does not exist", response.getMessage());
-    }
-
-    @Test
-    public void testAddNewCommen_AuthFaile() {
-        CommentDTO commentDTO = new CommentDTO();
-        commentDTO.setStatusId(1L);
-        commentDTO.setContent("test");
-        commentDTO.setUserId(2L);
-
-        User user = new User();
-        user.setUserName("abc");
-        user.setId(1L);
-        UserAuthDetails authUserDetails = new UserAuthDetails(user);
-        SecurityContext securityContext = mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        Authentication authentication = mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
-        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
-
-        when(userRepository.findOneByUserName(user.getUserName())).thenReturn(user);
-        // Call the method
-        ResponseEntity<?> responseEntity = commentService.addNewCommen(commentDTO);
-        ResponseOk response = (ResponseOk) responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, response.getCode());
-        assertEquals("Authentication information does not match", response.getMessage());
+        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
     }
 
     @Test
@@ -235,38 +171,12 @@ public class CommentServiceImplTests {
 
         Comment comment = new Comment();
         comment.setUser(user);
-        when(userRepository.findOneByUserName(user.getUserName())).thenReturn(user);
+        when(userRepository.findOneById(1L)).thenReturn(user);
         when(commentRepository.findOneById(1L)).thenReturn(comment);
         doNothing().when(commentRepository).delete(any(Comment.class));
         // Call the method
         ResponseEntity<?> responseEntity = commentService.deleteCommnet(1L);
-        ResponseOk response = (ResponseOk) responseEntity.getBody();
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_OK, response.getCode());
-    }
-
-    @Test
-    public void testDeleteCommen_UserNotFound() {
-
-        User user = new User();
-        user.setUserName("abc");
-        user.setId(1L);
-        UserAuthDetails authUserDetails = new UserAuthDetails(user);
-        SecurityContext securityContext = mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        Authentication authentication = mock(Authentication.class);
-        Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
-        Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
-
-        Comment comment = new Comment();
-        comment.setUser(user);
-        when(userRepository.findOneByUserName(user.getUserName())).thenReturn(null);
-        // Call the method
-        ResponseEntity<?> responseEntity = commentService.deleteCommnet(1L);
-        ResponseOk response = (ResponseOk) responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, response.getCode());
-        assertEquals(Constants.MESS_010, response.getMessage());
     }
 
     @Test
@@ -282,14 +192,11 @@ public class CommentServiceImplTests {
         Mockito.when(authentication.getPrincipal()).thenReturn(authUserDetails);
         Mockito.when(SecurityContextHolder.getContext().getAuthentication()).thenReturn(authentication);
 
-        when(userRepository.findOneByUserName(user.getUserName())).thenReturn(user);
+        when(userRepository.findOneById(1L)).thenReturn(user);
         when(commentRepository.findOneById(1L)).thenReturn(null);
         // Call the method
         ResponseEntity<?> responseEntity = commentService.deleteCommnet(1L);
-        ResponseOk response = (ResponseOk) responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, response.getCode());
-        assertEquals("Comment does not exist", response.getMessage());
+        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
     }
 
     @Test
@@ -310,14 +217,11 @@ public class CommentServiceImplTests {
         userComment.setId(2L);
         Comment comment = new Comment();
         comment.setUser(userComment);
-        when(userRepository.findOneByUserName(user.getUserName())).thenReturn(user);
+        when(userRepository.findOneById(1L)).thenReturn(user);
         when(commentRepository.findOneById(1L)).thenReturn(comment);
         // Call the method
         ResponseEntity<?> responseEntity = commentService.deleteCommnet(1L);
-        ResponseOk response = (ResponseOk) responseEntity.getBody();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(Constants.CODE_ERROR, response.getCode());
-        assertEquals("This comment is not allowed to be deleted", response.getMessage());
+        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
     }
 
 

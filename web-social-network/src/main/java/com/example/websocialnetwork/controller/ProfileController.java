@@ -79,7 +79,7 @@ public class ProfileController {
             return "redirect:/";
         }
         UserInfo sessionUser = getUserFromSession(request);
-        if(sessionUser.getId().equals(id)) {
+        if(Long.parseLong(sessionUser.getId()) == id ) {
             return "redirect:/user/profile";
         }
         HttpHeaders headers = new HttpHeaders();

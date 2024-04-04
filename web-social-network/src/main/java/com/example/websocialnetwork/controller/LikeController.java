@@ -1,6 +1,5 @@
 package com.example.websocialnetwork.controller;
 
-import com.example.websocialnetwork.dto.CommentDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +31,7 @@ public class LikeController {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.add("Authorization", "Bearer " + request.getSession().getAttribute("token"));
-            HttpEntity<CommentDTO> requestEntity = new HttpEntity<>( headers);
+            HttpEntity<String> requestEntity = new HttpEntity<>( headers);
             //call API
             restTemplate.exchange(
                     path + API_ADD_LIKE,

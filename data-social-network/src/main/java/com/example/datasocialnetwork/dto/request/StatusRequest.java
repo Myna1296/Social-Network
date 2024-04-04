@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @Data
 public class StatusRequest {
-    private Long userId;
-    private  int pageIndex;
-    private int pageSize;
+    private Long userId  ;
+    private  int pageIndex ;
+    private int pageSize ;
 }

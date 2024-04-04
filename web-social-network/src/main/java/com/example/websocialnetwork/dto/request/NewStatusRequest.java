@@ -2,7 +2,6 @@ package com.example.websocialnetwork.dto.request;
 
 import lombok.*;
 import org.hibernate.validator.constraints.Length;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotBlank;

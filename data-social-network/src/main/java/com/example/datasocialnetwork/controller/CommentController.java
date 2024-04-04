@@ -1,8 +1,7 @@
 package com.example.datasocialnetwork.controller;
 
-
-import com.example.datasocialnetwork.dto.request.CommentDTO;
 import com.example.datasocialnetwork.dto.request.CommentRequest;
+import com.example.datasocialnetwork.dto.request.NewCommentRequest;
 import com.example.datasocialnetwork.dto.response.ErrorResponse;
 import com.example.datasocialnetwork.service.impl.CommentServiceImpl;
 import lombok.AllArgsConstructor;
@@ -30,7 +29,7 @@ public class CommentController {
     }
 
     @PostMapping("/add")
-    public  ResponseEntity<?> addNewComment(@RequestBody @Valid CommentDTO commentDTO, BindingResult bindingResult){
+    public  ResponseEntity<?> addNewComment(@RequestBody @Valid NewCommentRequest commentDTO, BindingResult bindingResult){
         if (bindingResult.hasErrors()) {
             List<String> errors = bindingResult.getAllErrors()
                     .stream()

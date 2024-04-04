@@ -1,6 +1,5 @@
 package com.example.datasocialnetwork.dto.response;
 
-import com.example.datasocialnetwork.dto.request.CommentDTO;
 import com.example.datasocialnetwork.dto.request.CommentInfo;
 import lombok.Data;
 import lombok.Getter;
